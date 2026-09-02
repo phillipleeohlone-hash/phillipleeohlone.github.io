@@ -1,0 +1,922 @@
+<title>CS-108 Lab 1</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
+<style>
+  :root{
+    --paper: #eef1ee;
+    --surface: #ffffff;
+    --surface-2: #e6eae5;
+    --ink: #1c2321;
+    --ink-soft: #5b6660;
+    --ink-faint: #8b958f;
+    --rule: #d7dbd5;
+    --rule-strong: #b9c0ba;
+    --accent-old: #b5533c;
+    --accent-old-soft: #f3e3de;
+    --accent-new: #2f7566;
+    --accent-new-soft: #e1eeea;
+    --shadow: 0 1px 0 rgba(28,35,33,0.05), 0 8px 24px -12px rgba(28,35,33,0.18);
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, "Liberation Mono", monospace;
+    --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper: #121613;
+      --surface: #1a211c;
+      --surface-2: #212a24;
+      --ink: #eceeea;
+      --ink-soft: #97a49c;
+      --ink-faint: #647069;
+      --rule: #2a332d;
+      --rule-strong: #384139;
+      --accent-old: #dd8a70;
+      --accent-old-soft: #3a2721;
+      --accent-new: #5cb5a0;
+      --accent-new-soft: #1c2d28;
+      --shadow: 0 1px 0 rgba(0,0,0,0.4), 0 12px 30px -14px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper: #121613;
+    --surface: #1a211c;
+    --surface-2: #212a24;
+    --ink: #eceeea;
+    --ink-soft: #97a49c;
+    --ink-faint: #647069;
+    --rule: #2a332d;
+    --rule-strong: #384139;
+    --accent-old: #dd8a70;
+    --accent-old-soft: #3a2721;
+    --accent-new: #5cb5a0;
+    --accent-new-soft: #1c2d28;
+    --shadow: 0 1px 0 rgba(0,0,0,0.4), 0 12px 30px -14px rgba(0,0,0,0.6);
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    overflow: hidden;
+    font-variant-ligatures: none;
+    font-feature-settings: "calt" 0, "liga" 0;
+  }
+  .codecard pre, code{
+    font-variant-ligatures: none;
+    font-feature-settings: "calt" 0, "liga" 0;
+  }
+  h1,h2,h3{ text-wrap: balance; margin: 0; }
+  code{ font-family: var(--font-mono); font-size: 0.92em; }
+
+  .deck{
+    position: relative;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--paper);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .track{ transition: none !important; }
+    * { animation: none !important; }
+  }
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    flex: 0 0 auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 22px clamp(20px, 4vw, 56px) 0;
+    font-family: var(--font-mono);
+  }
+  .topbar .brand{
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+  }
+  .topbar .brand .mark{ color: var(--accent-new); }
+  .topbar .section{
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    transition: opacity .25s ease;
+    text-align: right;
+  }
+
+  /* ---------- viewport / track ---------- */
+  .viewport{
+    flex: 1 1 auto;
+    overflow: hidden;
+    position: relative;
+  }
+  .track{
+    display: flex;
+    height: 100%;
+    width: 100%;
+    transition: transform .5s cubic-bezier(.61,.06,.27,.99);
+  }
+  .slide{
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px clamp(20px, 5vw, 72px) 28px;
+  }
+  .slide-inner{
+    width: 100%;
+    max-width: 1000px;
+  }
+  .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-new);
+    font-weight: 600;
+    margin-bottom: 14px;
+    display:flex;
+    align-items:center;
+    gap: 10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width: 20px; height: 1px;
+    background: var(--accent-new);
+    display:inline-block;
+    flex: 0 0 auto;
+  }
+
+  /* ---------- title slide ---------- */
+  .title-slide{ text-align: left; }
+  .title-slide .kicker{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 22px;
+  }
+  .title-slide h1{
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(38px, 6.6vw, 74px);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+  }
+  .title-slide h1 .dot{ color: var(--accent-new); }
+  .title-slide .sub{
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(16px, 1.9vw, 21px);
+    color: var(--ink-soft);
+    max-width: 50ch;
+    margin-top: 20px;
+    line-height: 1.5;
+  }
+  .title-slide .meta{
+    margin-top: 34px;
+    display: flex;
+    gap: 26px;
+    flex-wrap: wrap;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .title-slide .meta b{ color: var(--ink); font-weight: 600; }
+
+  /* ---------- contents (toc) slide ---------- */
+  .toc h2{
+    font-family: var(--font-mono);
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .toc .sub{ font-style: italic; color: var(--ink-soft); margin-bottom: 22px; font-size: 14px; max-width: 60ch; }
+  .toc-list{ border-top: 1px solid var(--rule-strong); }
+  .toc-row{
+    display:grid;
+    grid-template-columns: 40px 1fr auto;
+    gap:16px;
+    align-items:center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .toc-row .num{ font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); }
+  .toc-row .name{ font-family: var(--font-serif); font-size: 15px; }
+  .toc-row .name small{ display:block; font-family: var(--font-mono); font-size:11px; color: var(--ink-faint); margin-top:2px; }
+  .toc-row .status{ font-family: var(--font-mono); font-size: 10px; letter-spacing:.08em; text-transform: uppercase; padding: 3px 9px; border-radius: 10px; white-space: nowrap; }
+  .toc-row .status.swap{ color: var(--accent-new); background: var(--accent-new-soft); }
+  .toc-row .status.same{ color: var(--ink-faint); background: var(--surface-2); }
+  .toc-row.highlight .name{ font-weight: 600; }
+
+  /* ---------- section divider ---------- */
+  .divider-head{ display:flex; align-items:baseline; gap: 22px; flex-wrap: wrap; }
+  .divider-head .num{
+    font-family: var(--font-mono); font-weight:700;
+    font-size: clamp(46px, 8vw, 92px);
+    color: var(--accent-new);
+    line-height: 1;
+  }
+  .divider-head h2{
+    font-family: var(--font-mono); font-weight:700;
+    font-size: clamp(26px, 4.6vw, 44px);
+  }
+  .divider-quote{
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(15px, 1.7vw, 19px);
+    color: var(--ink-soft);
+    max-width: 58ch;
+    margin-top: 20px;
+    line-height: 1.6;
+    border-left: 2px solid var(--rule-strong);
+    padding-left: 16px;
+  }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:26px; }
+  .chip{
+    font-family: var(--font-mono); font-size: 12px;
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    border-radius: 20px; padding: 6px 14px; color: var(--ink-soft);
+  }
+
+  /* ---------- method slide ---------- */
+  .method-head{
+    display:flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .method-name{
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(30px, 4.6vw, 48px);
+    letter-spacing: -0.01em;
+  }
+  .method-name .fn{ color: var(--accent-new); }
+  .method-desc{
+    font-family: var(--font-serif);
+    font-size: clamp(14.5px, 1.5vw, 17px);
+    color: var(--ink-soft);
+    max-width: 62ch;
+    line-height: 1.55;
+    margin-bottom: 18px;
+  }
+
+  .snippet{ margin-bottom: 16px; max-width: 640px; }
+  .codecard{
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 12px 15px;
+    overflow-x: auto;
+    border-left: 3px solid var(--accent-new);
+  }
+  .codecard .tag{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display:inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    color: var(--accent-new);
+    background: var(--accent-new-soft);
+  }
+  .codecard pre{
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    white-space: pre;
+    color: var(--ink);
+  }
+
+  .fact-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 20px; }
+  .fact{
+    font-family: var(--font-mono); font-size: 11.5px;
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    border-radius: 6px; padding: 6px 12px; color: var(--ink-soft);
+  }
+  .fact b{ color: var(--ink); font-weight: 600; }
+
+  .demo{
+    background: var(--surface-2);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 14px 18px;
+  }
+  .demo .demo-label{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+  .demo .demo-note{
+    font-family: var(--font-serif); font-style: italic; font-size: 11.5px; color: var(--ink-faint);
+    margin-top: 8px;
+  }
+
+  /* mini table */
+  .mtable{ font-family: var(--font-mono); font-size: 12px; width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .mtable th{
+    text-align:left;
+    font-size: 10px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    padding: 5px 10px;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  .mtable td{
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink);
+  }
+  .mtable tr.dim td{ color: var(--ink-faint); }
+  .mtable tr.keep td{ background: var(--accent-new-soft); }
+  .mtable tr.drop td{ color: var(--ink-faint); text-decoration: line-through; text-decoration-color: var(--accent-old); }
+  .mtable td.col-drop, .mtable th.col-drop{ color: var(--ink-faint); text-decoration: line-through; text-decoration-color: var(--accent-old); }
+  .mtable td.col-keep, .mtable th.col-keep{ background: var(--accent-new-soft); }
+  .mtable tr.ellipsis td{ color: var(--ink-faint); text-align:center; letter-spacing: .3em; }
+
+  .stat-row{ display:flex; gap: 14px; flex-wrap:wrap; }
+  .stat{
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    padding: 14px 18px;
+    min-width: 120px;
+  }
+  .stat .k{ font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+  .stat .v{ font-family: var(--font-mono); font-size: 26px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; margin-top: 4px; }
+  .stat.merged .v{ color: var(--accent-new); }
+
+  .pipeline{ display:flex; align-items:center; gap: 10px; flex-wrap: wrap; }
+  .pipe-arrow{ color: var(--ink-faint); font-family: var(--font-mono); font-size: 16px; }
+  .pipe-stage{
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    padding: 10px 12px;
+    min-width: 148px;
+  }
+  .pipe-stage .st-label{ font-family: var(--font-mono); font-size: 9.5px; letter-spacing:.1em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .pipe-stage.result{ border-color: var(--accent-new); }
+  .pipe-stage.result .st-label{ color: var(--accent-new); }
+
+  .file-chip{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family: var(--font-mono); font-size: 12px;
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    border-radius: 6px; padding: 8px 12px;
+  }
+  .file-chip .dot{ width:7px; height:7px; border-radius:50%; background: var(--accent-old); }
+  .file-to-table{ display:flex; align-items:center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+
+  /* bar compare (proportions) */
+  .barset{ display:flex; flex-direction:column; gap: 12px; }
+  .barrow{ display:grid; grid-template-columns: 120px 1fr 60px; align-items:center; gap: 12px; }
+  .barrow .lbl{ font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-soft); }
+  .bartrack{ background: var(--surface); border: 1px solid var(--rule-strong); border-radius: 5px; height: 16px; overflow:hidden; }
+  .barfill{ height:100%; background: var(--accent-new); }
+  .barrow .pct{ font-family: var(--font-mono); font-size: 12.5px; font-weight:600; color: var(--ink); text-align:right; font-variant-numeric: tabular-nums; }
+
+  /* ---------- cheat sheet ---------- */
+  .cheat h2{
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(24px, 3.6vw, 34px);
+    margin-bottom: 4px;
+  }
+  .cheat .sub{ font-style: italic; color: var(--ink-soft); margin-bottom: 16px; font-size: 13.5px; }
+  table.cheat-table{ width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.cheat-table th{
+    text-align:left; font-family: var(--font-mono); font-size: 9.5px; letter-spacing:.1em; text-transform: uppercase;
+    color: var(--ink-faint); padding: 6px 10px; border-bottom: 1px solid var(--rule-strong);
+  }
+  table.cheat-table td{ padding: 6px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  table.cheat-table td.code-new{ font-family: var(--font-mono); color: var(--accent-new); font-weight:600; font-size: 11.5px; white-space: nowrap; }
+  table.cheat-table td.purpose{ color: var(--ink-soft); font-family: var(--font-serif); }
+  .cheat-wrap{ overflow-x: auto; border: 1px solid var(--rule-strong); border-radius: 8px; background: var(--surface); padding: 4px 14px; }
+
+  /* ---------- bottom nav ---------- */
+  .navbar{
+    flex: 0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content: center;
+    gap: 22px;
+    padding: 12px 20px 18px;
+  }
+  .navbtn{
+    font-family: var(--font-mono);
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    color: var(--ink);
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 15px;
+    transition: background .15s ease, color .15s ease, transform .15s ease;
+  }
+  .navbtn:hover{ background: var(--accent-new); color: var(--surface); border-color: var(--accent-new); }
+  .navbtn:active{ transform: scale(.92); }
+  .navbtn:focus-visible, .dot:focus-visible{ outline: 2px solid var(--accent-new); outline-offset: 2px; }
+  .navbtn[disabled]{ opacity: .3; cursor: default; }
+  .navbtn[disabled]:hover{ background: var(--surface); color: var(--ink); border-color: var(--rule-strong); }
+
+  .dots{ display:flex; gap: 7px; flex-wrap: wrap; justify-content:center; max-width: 46vw; }
+  .dot{
+    width: 7px; height:7px; border-radius: 50%;
+    background: var(--rule-strong);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .dot.active{ background: var(--accent-new); transform: scale(1.35); }
+
+  .counter{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    min-width: 54px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 720px){
+    .toc-row{ grid-template-columns: 26px 1fr; row-gap: 4px; }
+    .toc-row .status{ grid-column: 2; justify-self: start; }
+    .dots{ max-width: 70vw; }
+  }
+</style>
+
+<div class="deck" id="deck" role="region" aria-roledescription="carousel" aria-label="CS-108 Lab 1 slides">
+  <div class="topbar">
+    <div class="brand"><span class="mark">&gt;</span> CS-108 Lab 1</div>
+    <div class="section" id="sectionLabel">Lab 01 &middot; Getting Started</div>
+  </div>
+
+  <main class="viewport">
+    <div class="track" id="track">
+
+      <!-- 1: TITLE -->
+      <section class="slide" data-section="Lab 01 &middot; lab01-CS108.ipynb">
+        <div class="slide-inner title-slide">
+          <div class="kicker">lab01-CS108.ipynb</div>
+          <h1>CS-108<br>Lab 1</h1>
+          <p class="sub">A walk through the notebook, section by section &mdash; Jupyter mechanics first, then the Python underneath: numbers, names, functions, and how nested expressions actually simplify.</p>
+          <div class="meta">
+            <span>5 SECTIONS</span>
+            <span>2 BUILT-IN FUNCTIONS</span>
+            <span><b>abs</b></span>
+            <span><b>max</b></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2: CONTENTS -->
+      <section class="slide" data-section="Notebook Contents">
+        <div class="slide-inner toc">
+          <div class="eyebrow">Notebook Contents</div>
+          <h2>Five sections, start to finish</h2>
+          <p class="sub">The notebook's own headings, in order. This deck follows all five &mdash; how to use a notebook first, then the language ideas it introduces on top of it.</p>
+          <div class="toc-list">
+            <div class="toc-row highlight"><span class="num">1</span><span class="name">Jupyter Notebooks<small>text cells &middot; code cells &middot; the kernel &middot; errors</small></span><span class="status swap">mechanics</span></div>
+            <div class="toc-row"><span class="num">2</span><span class="name">Numbers<small>arithmetic &middot; order of operations</small></span><span class="status same">expressions</span></div>
+            <div class="toc-row"><span class="num">3</span><span class="name">Names<small>assignment &middot; comments &middot; the Apollo 15 experiment</small></span><span class="status same">statements</span></div>
+            <div class="toc-row"><span class="num">4</span><span class="name">Calling Functions<small>abs &middot; max &middot; walking-distance application</small></span><span class="status same">functions</span></div>
+            <div class="toc-row highlight"><span class="num">5</span><span class="name">Understanding Nested Expressions<small>how compound expressions simplify, step by step</small></span><span class="status swap">the core skill</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 1 DIVIDER -->
+      <section class="slide" data-section="1. Jupyter Notebooks">
+        <div class="slide-inner">
+          <div class="eyebrow">Notebook Section 1 of 5</div>
+          <div class="divider-head"><span class="num">01</span><h2>Jupyter Notebooks</h2></div>
+          <p class="divider-quote">&ldquo;This webpage is called a Jupyter Notebook. A notebook is a place to write programs and view their results, and also to write text.&rdquo; &mdash; the notebook's own opening line, before a single expression is evaluated.</p>
+          <div class="chip-row">
+            <span class="chip">text cells</span><span class="chip">code cells</span><span class="chip">shift + return</span><span class="chip">the kernel</span><span class="chip">errors</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- text & code cells -->
+      <section class="slide" data-section="1. Jupyter Notebooks">
+        <div class="slide-inner">
+          <div class="eyebrow">Jupyter Notebooks &middot; 1 of 3</div>
+          <div class="method-head">
+            <div class="method-name">text <span class="fn">&amp;</span> code cells</div>
+          </div>
+          <p class="method-desc">Every rectangle in a notebook is a <strong>cell</strong>. Text cells are written in Markdown and edited by double-clicking; code cells run Python 3. Either way, running a cell means clicking &#9654; or pressing <code>shift</code> + <code>return</code>.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python &middot; run this cell</span><pre>print("Hello, World!")</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>run a cell</b> &middot; &#9654; or shift + return</span>
+            <span class="fact"><b>text cells</b> &middot; Markdown, double-click to edit</span>
+            <span class="fact"><b>convert type</b> &middot; use the Markdown/Code dropdown in the menu bar</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">output</div>
+            <div style="font-family:var(--font-mono);font-size:13px;color:var(--ink);">Hello, World!</div>
+            <div class="demo-note">Question 1.2.1 asks you to reproduce a three-line message the same way, including the &#127760; character &mdash; written as <code>\N&#123;EARTH GLOBE ASIA-AUSTRALIA&#125;</code>.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- cell order & last-line display -->
+      <section class="slide" data-section="1. Jupyter Notebooks">
+        <div class="slide-inner">
+          <div class="eyebrow">Jupyter Notebooks &middot; 2 of 3</div>
+          <div class="method-head">
+            <div class="method-name">order <span class="fn">&amp;</span> display</div>
+          </div>
+          <p class="method-desc">Lines in a cell run top to bottom. Every <code>print</code> call writes a line as it runs &mdash; but Jupyter <em>also</em> displays the value of the cell's very last line automatically, even with no <code>print</code> at all. Anything in between that's neither printed nor last is computed and then discarded.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python</span><pre>print(2)
+3
+4</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>print(2)</b> &middot; printed, always</span>
+            <span class="fact"><b>3</b> &middot; computed, never shown &mdash; lost</span>
+            <span class="fact"><b>4</b> &middot; last line &middot; auto-displayed</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">what actually appears below the cell</div>
+            <div style="font-family:var(--font-mono);font-size:13px;color:var(--ink);">2<br><br><br>4</div>
+            <div class="demo-note">The blank lines mark where 3 would have gone, if anyone had asked for it.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- errors & the kernel -->
+      <section class="slide" data-section="1. Jupyter Notebooks">
+        <div class="slide-inner">
+          <div class="eyebrow">Jupyter Notebooks &middot; 3 of 3</div>
+          <div class="method-head">
+            <div class="method-name">errors <span class="fn">&amp;</span> the kernel</div>
+          </div>
+          <p class="method-desc">Python's rules are simple but rigid &mdash; a misplaced quote or missing parenthesis raises a <code>SyntaxError</code>, and <code>Run &gt; Run All Cells</code> stops the moment it hits one. The <strong>kernel</strong> is the program actually executing your code: an empty circle (&#9898;) means idle, filled (&#9899;) means busy, and <code>[*]</code> next to a cell means it's still running.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python &middot; missing a closing paren</span><pre>print("This line is missing something."</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>SyntaxError</b> &middot; illegal structure, not a logic bug</span>
+            <span class="fact"><b>stuck kernel?</b> &middot; Kernel &rarr; Interrupt, then Restart</span>
+            <span class="fact"><b>after restart</b> &middot; rerun cells from the top</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2 DIVIDER -->
+      <section class="slide" data-section="2. Numbers">
+        <div class="slide-inner">
+          <div class="eyebrow">Notebook Section 2 of 5</div>
+          <div class="divider-head"><span class="num">02</span><h2>Numbers</h2></div>
+          <p class="divider-quote">&ldquo;Quantitative information arises everywhere in data science. In addition to representing commands to print out lines, expressions can represent numbers and methods of combining numbers.&rdquo;</p>
+          <div class="chip-row">
+            <span class="chip">+ &minus; * /</span><span class="chip">** (power)</span><span class="chip">parentheses</span><span class="chip">order of operations</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- arithmetic & order of operations -->
+      <section class="slide" data-section="2. Numbers">
+        <div class="slide-inner">
+          <div class="eyebrow">Numbers &middot; Question 2.1.1</div>
+          <div class="method-head">
+            <div class="method-name">order of <span class="fn">operations</span></div>
+          </div>
+          <p class="method-desc">Python follows the same order of operations taught in school, plus <code>**</code> for exponents &mdash; <code>2**3</code> means 2&sup3;. Parentheses override that order, and moving them around can send the result somewhere completely different, as these two lines show.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python &middot; same digits, different parentheses</span><pre>9+6*5-6*3**2*2**3/4*7          # -717.0
+9+(6*5-(6*3))**2*((2**3)/4*7)  # 2025.0</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>**</b> &middot; exponent, evaluated before * and /</span>
+            <span class="fact"><b>( )</b> &middot; forces a different grouping</span>
+            <span class="fact"><b>same numbers</b> &middot; wildly different values</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">Question 2.1.1 &mdash; translate this formula into Python</div>
+            <div style="font-family:var(--font-serif);font-size:15px;color:var(--ink-soft);">5 &times; (3 + 10&frasl;11) &minus; (50 + 1&frasl;3) + 2<sup>0.5&times;22</sup> &minus; 7&frasl;33 + 9</div>
+            <div class="demo-note">Replace the ellipses (...) with your own expression &mdash; use parentheses only where they're actually needed.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3 DIVIDER -->
+      <section class="slide" data-section="3. Names">
+        <div class="slide-inner">
+          <div class="eyebrow">Notebook Section 3 of 5</div>
+          <div class="divider-head"><span class="num">03</span><h2>Names</h2></div>
+          <p class="divider-quote">&ldquo;In Python, we do this with assignment statements&hellip; that line of code changes what a name <em>means</em>; it now refers to the value, whereas before it meant nothing at all.&rdquo;</p>
+          <div class="chip-row">
+            <span class="chip">= assignment</span><span class="chip">NameError</span><span class="chip"># comments</span><span class="chip">Apollo 15</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- assignment statements -->
+      <section class="slide" data-section="3. Names">
+        <div class="slide-inner">
+          <div class="eyebrow">Names &middot; 1 of 3</div>
+          <div class="method-head">
+            <div class="method-name">assignment <span class="fn">statements</span></div>
+          </div>
+          <p class="method-desc">An assignment has a name on the left of <code>=</code> and an expression on the right. Python evaluates the right-hand side first, then binds that value to the name &mdash; it's a definition, not a claim of equality. Reference a name before it's defined, and you get a <code>NameError</code>.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python</span><pre>ten = 3 * 2 + 4
+ten          # 10
+
+eleven + 8   # NameError: name 'eleven' is not defined</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>right side first</b> &middot; evaluated, then bound</span>
+            <span class="fact"><b>valid names</b> &middot; letters, digits, underscores &middot; can't start with a digit</span>
+            <span class="fact"><b>naming</b> &middot; doesn't matter to Python, matters a lot to readers</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- comments -->
+      <section class="slide" data-section="3. Names">
+        <div class="slide-inner">
+          <div class="eyebrow">Names &middot; 2 of 3 &middot; Section 3.2</div>
+          <div class="method-head">
+            <div class="method-name"># <span class="fn">comments</span></div>
+          </div>
+          <p class="method-desc">Python ignores everything on a line after <code>#</code>. Comments don't change what a program does &mdash; they exist purely to explain the code to the human reading it later, including a future version of the person who wrote it.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python &middot; from the notebook</span><pre># Change the next line
+# so that it computes the number of seconds in a decade
+# and assigns that number the name, seconds_in_a_decade.
+
+seconds_in_a_decade = ...</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>#</b> &middot; everything after it on the line is ignored</span>
+            <span class="fact"><b>no runtime effect</b> &middot; purely for human readers</span>
+            <span class="fact"><b>this decade</b> &middot; 2 leap years, so 365&times;10+2 days</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Apollo 15 application -->
+      <section class="slide" data-section="3. Names">
+        <div class="slide-inner">
+          <div class="eyebrow">Names &middot; 3 of 3 &middot; Section 3.3 &middot; Application</div>
+          <div class="method-head">
+            <div class="method-name">Apollo 15, <span class="fn">Newton's law</span></div>
+          </div>
+          <p class="method-desc">David Scott dropped a feather and a hammer on the Moon to confirm Galileo's finding that gravity accelerates all objects equally. Newton's law of gravitation predicts the fall distance directly, translating one variable at a time from the formula into named Python values.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python &middot; translating the formula</span><pre>gravity_constant = 6.674 * 10**-11    # G
+moon_mass_kg = 7.34767309 * 10**22    # M
+moon_radius_m = 1.737 * 10**6         # R
+
+predicted_distance_m = ...  # translate the formula below, term by term</pre></div>
+          </div>
+          <div class="demo">
+            <div class="demo-label">the formula this section asks you to translate</div>
+            <div style="font-family:var(--font-serif);font-size:15px;color:var(--ink-soft);">&#189; &middot; G &middot; M/R&sup2; &middot; t&sup2; meters, where t is the fall's duration in seconds</div>
+            <div class="demo-note">The measured fall: 1.2 seconds, dropped from 113 cm &mdash; Question 3.3.2 compares the predicted distance against that estimate.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4 DIVIDER -->
+      <section class="slide" data-section="4. Calling Functions">
+        <div class="slide-inner">
+          <div class="eyebrow">Notebook Section 4 of 5</div>
+          <div class="divider-head"><span class="num">04</span><h2>Calling Functions</h2></div>
+          <p class="divider-quote">&ldquo;The most common way to combine or manipulate values in Python is by calling functions. Python comes with many built-in functions that perform common operations.&rdquo;</p>
+          <div class="chip-row">
+            <span class="chip">abs(x)</span><span class="chip">max(a, b, &hellip;)</span><span class="chip">multiple arguments</span><span class="chip">Manhattan distance</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- abs & max -->
+      <section class="slide" data-section="4. Calling Functions">
+        <div class="slide-inner">
+          <div class="eyebrow">Calling Functions &middot; 1 of 2</div>
+          <div class="method-head">
+            <div class="method-name"><span class="fn">abs</span>() &amp; <span class="fn">max</span>()</div>
+          </div>
+          <p class="method-desc"><code>abs</code> takes one argument and returns its absolute value &mdash; the sign is discarded either way. <code>max</code> takes any number of arguments, separated by commas, and returns the largest of them. Both are always available; no import needed.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python</span><pre>abs(5)              # 5
+abs(-5)              # 5
+max(2, -3, 4, -5)    # 4</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>abs</b> &middot; one argument, drops the sign</span>
+            <span class="fact"><b>max / min</b> &middot; any number of comma-separated arguments</span>
+            <span class="fact"><b>built-in</b> &middot; no import required</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Manhattan distance application -->
+      <section class="slide" data-section="4. Calling Functions">
+        <div class="slide-inner">
+          <div class="eyebrow">Calling Functions &middot; 2 of 2 &middot; Section 4.1 &middot; Application</div>
+          <div class="method-head">
+            <div class="method-name">Manhattan <span class="fn">distance</span></div>
+          </div>
+          <p class="method-desc">Chunhua can't cut diagonally across city blocks &mdash; she has to walk the grid. The distance in each direction is an absolute difference: streets and avenues apart, each multiplied by that block's length in meters, then added together.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python &middot; given, plus the line Question 4.1.1 fills in</span><pre>num_streets_away = abs(42-34)
+num_avenues_away = ...              # use abs, like num_streets_away above
+
+manhattan_distance = (street_length_m * num_streets_away
+                       + avenue_length_m * num_avenues_away)</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>street_length_m</b> &middot; 80</span>
+            <span class="fact"><b>avenue_length_m</b> &middot; 274</span>
+            <span class="fact"><b>why abs</b> &middot; direction doesn't matter, only distance does</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 5 DIVIDER -->
+      <section class="slide" data-section="5. Understanding Nested Expressions">
+        <div class="slide-inner">
+          <div class="eyebrow">Notebook Section 5 of 5</div>
+          <div class="divider-head"><span class="num">05</span><h2>Understanding Nested Expressions</h2></div>
+          <p class="divider-quote">&ldquo;Nested expressions can turn into complicated-looking code. However, the way in which complicated expressions break down is very regular.&rdquo;</p>
+          <div class="chip-row">
+            <span class="chip">abs(21.7 - 18.2)</span><span class="chip">simplify innermost first</span><span class="chip">max(abs(&hellip;), abs(&hellip;))</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- nesting explained -->
+      <section class="slide" data-section="5. Understanding Nested Expressions">
+        <div class="slide-inner">
+          <div class="eyebrow">Nested Expressions &middot; 1 of 2 &middot; Question 5.1</div>
+          <div class="method-head">
+            <div class="method-name">simplify, <span class="fn">step by step</span></div>
+          </div>
+          <p class="method-desc">Every nested expression collapses the same way: evaluate the innermost piece first, replace it with its value, and repeat outward until one value remains. Python does exactly this internally when it runs the line.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python &middot; average cat length is 18.2 in</span><pre>abs(21.7 - 18.2)   # Ravioli's distance from average</pre></div>
+          </div>
+          <div class="demo">
+            <div class="demo-label">the three steps this line takes to become a value</div>
+            <div class="pipeline">
+              <div class="pipe-stage"><div class="st-label">step 1</div><div style="font-family:var(--font-mono);font-size:12.5px;">abs(21.7 &minus; 18.2)</div></div>
+              <span class="pipe-arrow">&rarr;</span>
+              <div class="pipe-stage"><div class="st-label">step 2</div><div style="font-family:var(--font-mono);font-size:12.5px;">abs(3.5)</div></div>
+              <span class="pipe-arrow">&rarr;</span>
+              <div class="pipe-stage result"><div class="st-label">step 3</div><div style="font-family:var(--font-mono);font-size:12.5px;">3.5</div></div>
+            </div>
+            <div class="demo-note">Question 5.1 asks for the same computation on Genghis, 16.7 inches long &mdash; name the result genghis_distance_from_average_in.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- more nesting: max composed with abs -->
+      <section class="slide" data-section="5. Understanding Nested Expressions">
+        <div class="slide-inner">
+          <div class="eyebrow">Nested Expressions &middot; 2 of 2 &middot; Section 5.1 &middot; Question 5.1.1</div>
+          <div class="method-head">
+            <div class="method-name">composing <span class="fn">abs</span> &amp; <span class="fn">max</span></div>
+          </div>
+          <p class="method-desc">Functions nest inside each other's arguments freely. Wrapping two <code>abs</code> calls inside <code>max</code> finds whichever cat sits farther from average; the same idea, applied to differences between pairs of cats instead, is what Question 5.1.1 asks for.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python &middot; given in the notebook</span><pre>larger_distance_in = max(
+    abs(ravioli_length_in - average_cat_length),
+    abs(genghis_length_in - average_cat_length)
+)</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>inner calls first</b> &middot; both abs(&hellip;) resolve to numbers</span>
+            <span class="fact"><b>then outer</b> &middot; max compares the two results</span>
+            <span class="fact"><b>Q 5.1.1</b> &middot; only names allowed &mdash; hummus, gatkes, zeepty, no numbers</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">Question 5.1.1 &mdash; smallest pairwise difference among three cats</div>
+            <div style="font-family:var(--font-mono);font-size:12.5px;color:var(--ink-soft);">hummus = 24.5&Prime; &middot; gatkes = 19.7&Prime; &middot; zeepty = 15.8&Prime;</div>
+            <div class="demo-note">Compute all three pairwise |differences| with abs, then take the smallest with min &mdash; name it min_length_difference.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- cheat sheet -->
+      <section class="slide" data-section="Summary">
+        <div class="slide-inner cheat">
+          <div class="eyebrow">Reference</div>
+          <h2>Every tool, one page</h2>
+          <p class="sub">The mechanics and built-ins from this notebook, in the order they first appear.</p>
+          <div class="cheat-wrap">
+            <table class="cheat-table">
+              <tr><th>Tool</th><th>Form</th><th>What it does</th></tr>
+              <tr><td class="purpose"><b>run a cell</b></td><td class="code-new">shift + return</td><td class="purpose">Execute the cell's code, or render its Markdown</td></tr>
+              <tr><td class="purpose"><b>print</b></td><td class="code-new">print(&hellip;)</td><td class="purpose">Write a line of output, every time it runs</td></tr>
+              <tr><td class="purpose"><b>last-line display</b></td><td class="code-new">&mdash;</td><td class="purpose">Jupyter shows the value of a cell's final expression automatically</td></tr>
+              <tr><td class="purpose"><b>**</b></td><td class="code-new">2**3</td><td class="purpose">Exponent &mdash; 2&sup3;, evaluated before * and /</td></tr>
+              <tr><td class="purpose"><b>assignment</b></td><td class="code-new">name = expression</td><td class="purpose">Evaluate the right side, bind it to the name</td></tr>
+              <tr><td class="purpose"><b>comment</b></td><td class="code-new"># text</td><td class="purpose">Ignored by Python, explains code to readers</td></tr>
+              <tr><td class="purpose"><b>abs</b></td><td class="code-new">abs(x)</td><td class="purpose">Absolute value of one argument</td></tr>
+              <tr><td class="purpose"><b>max / min</b></td><td class="code-new">max(a, b, &hellip;)</td><td class="purpose">Largest / smallest of any number of arguments</td></tr>
+              <tr><td class="purpose"><b>nested calls</b></td><td class="code-new">outer(inner(&hellip;))</td><td class="purpose">Innermost expressions resolve first, then outward</td></tr>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div class="navbar">
+    <button class="navbtn" id="prevBtn" aria-label="Previous slide">&larr;</button>
+    <div class="dots" id="dots" role="tablist" aria-label="Slide picker"></div>
+    <button class="navbtn" id="nextBtn" aria-label="Next slide">&rarr;</button>
+    <div class="counter" id="counter">01 / 19</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var track = document.getElementById('track');
+  var slides = Array.prototype.slice.call(track.children);
+  var total = slides.length;
+  var dotsWrap = document.getElementById('dots');
+  var counter = document.getElementById('counter');
+  var sectionLabel = document.getElementById('sectionLabel');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  var idx = 0;
+
+  slides.forEach(function(_, i){
+    var d = document.createElement('button');
+    d.className = 'dot';
+    d.setAttribute('role','tab');
+    d.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    d.addEventListener('click', function(){ go(i); });
+    dotsWrap.appendChild(d);
+  });
+  var dots = Array.prototype.slice.call(dotsWrap.children);
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  function render(){
+    track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+    dots.forEach(function(d, i){ d.classList.toggle('active', i === idx); });
+    counter.textContent = pad(idx + 1) + ' / ' + pad(total);
+    sectionLabel.textContent = slides[idx].getAttribute('data-section') || '';
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === total - 1;
+  }
+
+  function go(i){
+    idx = Math.max(0, Math.min(total - 1, i));
+    render();
+  }
+
+  prevBtn.addEventListener('click', function(){ go(idx - 1); });
+  nextBtn.addEventListener('click', function(){ go(idx + 1); });
+
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'PageDown'){ go(idx + 1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp'){ go(idx - 1); e.preventDefault(); }
+    else if (e.key === 'Home'){ go(0); e.preventDefault(); }
+    else if (e.key === 'End'){ go(total - 1); e.preventDefault(); }
+  });
+
+  var touchStartX = null;
+  track.addEventListener('touchstart', function(e){ touchStartX = e.touches[0].clientX; }, {passive:true});
+  track.addEventListener('touchend', function(e){
+    if (touchStartX === null) return;
+    var dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 50){ go(idx + (dx < 0 ? 1 : -1)); }
+    touchStartX = null;
+  }, {passive:true});
+
+  render();
+})();
+</script>
