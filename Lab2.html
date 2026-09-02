@@ -1,0 +1,1111 @@
+<title>CS-108 Lab 2</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
+<style>
+  :root{
+    --paper: #eef1ee;
+    --surface: #ffffff;
+    --surface-2: #e6eae5;
+    --ink: #1c2321;
+    --ink-soft: #5b6660;
+    --ink-faint: #8b958f;
+    --rule: #d7dbd5;
+    --rule-strong: #b9c0ba;
+    --accent-old: #b5533c;
+    --accent-old-soft: #f3e3de;
+    --accent-new: #2f7566;
+    --accent-new-soft: #e1eeea;
+    --shadow: 0 1px 0 rgba(28,35,33,0.05), 0 8px 24px -12px rgba(28,35,33,0.18);
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, "Liberation Mono", monospace;
+    --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper: #121613;
+      --surface: #1a211c;
+      --surface-2: #212a24;
+      --ink: #eceeea;
+      --ink-soft: #97a49c;
+      --ink-faint: #647069;
+      --rule: #2a332d;
+      --rule-strong: #384139;
+      --accent-old: #dd8a70;
+      --accent-old-soft: #3a2721;
+      --accent-new: #5cb5a0;
+      --accent-new-soft: #1c2d28;
+      --shadow: 0 1px 0 rgba(0,0,0,0.4), 0 12px 30px -14px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper: #121613;
+    --surface: #1a211c;
+    --surface-2: #212a24;
+    --ink: #eceeea;
+    --ink-soft: #97a49c;
+    --ink-faint: #647069;
+    --rule: #2a332d;
+    --rule-strong: #384139;
+    --accent-old: #dd8a70;
+    --accent-old-soft: #3a2721;
+    --accent-new: #5cb5a0;
+    --accent-new-soft: #1c2d28;
+    --shadow: 0 1px 0 rgba(0,0,0,0.4), 0 12px 30px -14px rgba(0,0,0,0.6);
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    overflow: hidden;
+    font-variant-ligatures: none;
+    font-feature-settings: "calt" 0, "liga" 0;
+  }
+  .codecard pre, code{
+    font-variant-ligatures: none;
+    font-feature-settings: "calt" 0, "liga" 0;
+  }
+  h1,h2,h3{ text-wrap: balance; margin: 0; }
+  code{ font-family: var(--font-mono); font-size: 0.92em; }
+
+  .deck{
+    position: relative;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--paper);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .track{ transition: none !important; }
+    * { animation: none !important; }
+  }
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    flex: 0 0 auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 22px clamp(20px, 4vw, 56px) 0;
+    font-family: var(--font-mono);
+  }
+  .topbar .brand{
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+  }
+  .topbar .brand .mark{ color: var(--accent-new); }
+  .topbar .section{
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    transition: opacity .25s ease;
+    text-align: right;
+  }
+
+  /* ---------- viewport / track ---------- */
+  .viewport{
+    flex: 1 1 auto;
+    overflow: hidden;
+    position: relative;
+  }
+  .track{
+    display: flex;
+    height: 100%;
+    width: 100%;
+    transition: transform .5s cubic-bezier(.61,.06,.27,.99);
+  }
+  .slide{
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px clamp(20px, 5vw, 72px) 28px;
+  }
+  .slide-inner{
+    width: 100%;
+    max-width: 1000px;
+  }
+  .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-new);
+    font-weight: 600;
+    margin-bottom: 14px;
+    display:flex;
+    align-items:center;
+    gap: 10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width: 20px; height: 1px;
+    background: var(--accent-new);
+    display:inline-block;
+    flex: 0 0 auto;
+  }
+
+  /* ---------- title slide ---------- */
+  .title-slide{ text-align: left; }
+  .title-slide .kicker{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 22px;
+  }
+  .title-slide h1{
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(38px, 6.6vw, 74px);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+  }
+  .title-slide h1 .dot{ color: var(--accent-new); }
+  .title-slide .sub{
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(16px, 1.9vw, 21px);
+    color: var(--ink-soft);
+    max-width: 50ch;
+    margin-top: 20px;
+    line-height: 1.5;
+  }
+  .title-slide .meta{
+    margin-top: 34px;
+    display: flex;
+    gap: 26px;
+    flex-wrap: wrap;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .title-slide .meta b{ color: var(--ink); font-weight: 600; }
+
+  /* ---------- contents (toc) slide ---------- */
+  .toc h2{
+    font-family: var(--font-mono);
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .toc .sub{ font-style: italic; color: var(--ink-soft); margin-bottom: 22px; font-size: 14px; max-width: 60ch; }
+  .toc-list{ border-top: 1px solid var(--rule-strong); }
+  .toc-row{
+    display:grid;
+    grid-template-columns: 40px 1fr auto;
+    gap:16px;
+    align-items:center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .toc-row .num{ font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); }
+  .toc-row .name{ font-family: var(--font-serif); font-size: 15px; }
+  .toc-row .name small{ display:block; font-family: var(--font-mono); font-size:11px; color: var(--ink-faint); margin-top:2px; }
+  .toc-row .status{ font-family: var(--font-mono); font-size: 10px; letter-spacing:.08em; text-transform: uppercase; padding: 3px 9px; border-radius: 10px; white-space: nowrap; }
+  .toc-row .status.swap{ color: var(--accent-new); background: var(--accent-new-soft); }
+  .toc-row .status.same{ color: var(--ink-faint); background: var(--surface-2); }
+  .toc-row.highlight .name{ font-weight: 600; }
+
+  /* ---------- section divider ---------- */
+  .divider-head{ display:flex; align-items:baseline; gap: 22px; flex-wrap: wrap; }
+  .divider-head .num{
+    font-family: var(--font-mono); font-weight:700;
+    font-size: clamp(46px, 8vw, 92px);
+    color: var(--accent-new);
+    line-height: 1;
+  }
+  .divider-head h2{
+    font-family: var(--font-mono); font-weight:700;
+    font-size: clamp(26px, 4.6vw, 44px);
+  }
+  .divider-quote{
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(15px, 1.7vw, 19px);
+    color: var(--ink-soft);
+    max-width: 58ch;
+    margin-top: 20px;
+    line-height: 1.6;
+    border-left: 2px solid var(--rule-strong);
+    padding-left: 16px;
+  }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:26px; }
+  .chip{
+    font-family: var(--font-mono); font-size: 12px;
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    border-radius: 20px; padding: 6px 14px; color: var(--ink-soft);
+  }
+
+  /* ---------- method slide ---------- */
+  .method-head{
+    display:flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .method-name{
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(30px, 4.6vw, 48px);
+    letter-spacing: -0.01em;
+  }
+  .method-name .fn{ color: var(--accent-new); }
+  .method-desc{
+    font-family: var(--font-serif);
+    font-size: clamp(14.5px, 1.5vw, 17px);
+    color: var(--ink-soft);
+    max-width: 62ch;
+    line-height: 1.55;
+    margin-bottom: 18px;
+  }
+
+  .snippet{ margin-bottom: 16px; max-width: 640px; }
+  .codecard{
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 12px 15px;
+    overflow-x: auto;
+    border-left: 3px solid var(--accent-new);
+  }
+  .codecard .tag{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display:inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    color: var(--accent-new);
+    background: var(--accent-new-soft);
+  }
+  .codecard pre{
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    white-space: pre;
+    color: var(--ink);
+  }
+
+  .fact-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 20px; }
+  .fact{
+    font-family: var(--font-mono); font-size: 11.5px;
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    border-radius: 6px; padding: 6px 12px; color: var(--ink-soft);
+  }
+  .fact b{ color: var(--ink); font-weight: 600; }
+
+  .demo{
+    background: var(--surface-2);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 14px 18px;
+  }
+  .demo .demo-label{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+  .demo .demo-note{
+    font-family: var(--font-serif); font-style: italic; font-size: 11.5px; color: var(--ink-faint);
+    margin-top: 8px;
+  }
+
+  /* mini table */
+  .mtable{ font-family: var(--font-mono); font-size: 12px; width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .mtable th{
+    text-align:left;
+    font-size: 10px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    padding: 5px 10px;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  .mtable td{
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink);
+  }
+  .mtable tr.dim td{ color: var(--ink-faint); }
+  .mtable tr.keep td{ background: var(--accent-new-soft); }
+  .mtable tr.drop td{ color: var(--ink-faint); text-decoration: line-through; text-decoration-color: var(--accent-old); }
+  .mtable td.col-drop, .mtable th.col-drop{ color: var(--ink-faint); text-decoration: line-through; text-decoration-color: var(--accent-old); }
+  .mtable td.col-keep, .mtable th.col-keep{ background: var(--accent-new-soft); }
+  .mtable tr.ellipsis td{ color: var(--ink-faint); text-align:center; letter-spacing: .3em; }
+
+  .stat-row{ display:flex; gap: 14px; flex-wrap:wrap; }
+  .stat{
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    padding: 14px 18px;
+    min-width: 120px;
+  }
+  .stat .k{ font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+  .stat .v{ font-family: var(--font-mono); font-size: 26px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; margin-top: 4px; }
+  .stat.merged .v{ color: var(--accent-new); }
+
+  .pipeline{ display:flex; align-items:center; gap: 10px; flex-wrap: wrap; }
+  .pipe-arrow{ color: var(--ink-faint); font-family: var(--font-mono); font-size: 16px; }
+  .pipe-stage{
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    padding: 10px 12px;
+    min-width: 148px;
+  }
+  .pipe-stage .st-label{ font-family: var(--font-mono); font-size: 9.5px; letter-spacing:.1em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .pipe-stage.result{ border-color: var(--accent-new); }
+  .pipe-stage.result .st-label{ color: var(--accent-new); }
+
+  .file-chip{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family: var(--font-mono); font-size: 12px;
+    background: var(--surface); border: 1px solid var(--rule-strong);
+    border-radius: 6px; padding: 8px 12px;
+  }
+  .file-chip .dot{ width:7px; height:7px; border-radius:50%; background: var(--accent-old); }
+  .file-to-table{ display:flex; align-items:center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+
+  /* bar compare (proportions) */
+  .barset{ display:flex; flex-direction:column; gap: 12px; }
+  .barrow{ display:grid; grid-template-columns: 120px 1fr 60px; align-items:center; gap: 12px; }
+  .barrow .lbl{ font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-soft); }
+  .bartrack{ background: var(--surface); border: 1px solid var(--rule-strong); border-radius: 5px; height: 16px; overflow:hidden; }
+  .barfill{ height:100%; background: var(--accent-new); }
+  .barrow .pct{ font-family: var(--font-mono); font-size: 12.5px; font-weight:600; color: var(--ink); text-align:right; font-variant-numeric: tabular-nums; }
+
+  /* ---------- cheat sheet ---------- */
+  .cheat h2{
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(24px, 3.6vw, 34px);
+    margin-bottom: 4px;
+  }
+  .cheat .sub{ font-style: italic; color: var(--ink-soft); margin-bottom: 16px; font-size: 13.5px; }
+  table.cheat-table{ width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.cheat-table th{
+    text-align:left; font-family: var(--font-mono); font-size: 9.5px; letter-spacing:.1em; text-transform: uppercase;
+    color: var(--ink-faint); padding: 6px 10px; border-bottom: 1px solid var(--rule-strong);
+  }
+  table.cheat-table td{ padding: 6px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  table.cheat-table td.code-new{ font-family: var(--font-mono); color: var(--accent-new); font-weight:600; font-size: 11.5px; white-space: nowrap; }
+  table.cheat-table td.purpose{ color: var(--ink-soft); font-family: var(--font-serif); }
+  .cheat-wrap{ overflow-x: auto; border: 1px solid var(--rule-strong); border-radius: 8px; background: var(--surface); padding: 4px 14px; }
+
+  /* ---------- bottom nav ---------- */
+  .navbar{
+    flex: 0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content: center;
+    gap: 22px;
+    padding: 12px 20px 18px;
+  }
+  .navbtn{
+    font-family: var(--font-mono);
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    color: var(--ink);
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 15px;
+    transition: background .15s ease, color .15s ease, transform .15s ease;
+  }
+  .navbtn:hover{ background: var(--accent-new); color: var(--surface); border-color: var(--accent-new); }
+  .navbtn:active{ transform: scale(.92); }
+  .navbtn:focus-visible, .dot:focus-visible{ outline: 2px solid var(--accent-new); outline-offset: 2px; }
+  .navbtn[disabled]{ opacity: .3; cursor: default; }
+  .navbtn[disabled]:hover{ background: var(--surface); color: var(--ink); border-color: var(--rule-strong); }
+
+  .dots{ display:flex; gap: 7px; flex-wrap: wrap; justify-content:center; max-width: 46vw; }
+  .dot{
+    width: 7px; height:7px; border-radius: 50%;
+    background: var(--rule-strong);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .dot.active{ background: var(--accent-new); transform: scale(1.35); }
+
+  .counter{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    min-width: 54px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 720px){
+    .toc-row{ grid-template-columns: 26px 1fr; row-gap: 4px; }
+    .toc-row .status{ grid-column: 2; justify-self: start; }
+    .dots{ max-width: 70vw; }
+  }
+</style>
+
+<div class="deck" id="deck" role="region" aria-roledescription="carousel" aria-label="CS-108 Lab 2 slides">
+  <div class="topbar">
+    <div class="brand"><span class="mark">&gt;</span> CS-108 Lab 2</div>
+    <div class="section" id="sectionLabel">Lab 02 · Table Operations</div>
+  </div>
+
+  <main class="viewport">
+    <div class="track" id="track">
+
+      <!-- 1: TITLE -->
+      <section class="slide" data-section="Lab 02 · lab02_pandas.ipynb">
+        <div class="slide-inner title-slide">
+          <div class="kicker">lab02_pandas.ipynb</div>
+          <h1>CS-108<br>Lab 2</h1>
+          <p class="sub">A walk through the notebook, section by section &mdash; the core Python underneath it, then every pandas method built on top.</p>
+          <div class="meta">
+            <span>5 SECTIONS</span>
+            <span>7 PANDAS METHODS</span>
+            <span><b>farmers_markets.csv</b></span>
+            <span><b>imdb.csv</b></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2: CONTENTS -->
+      <section class="slide" data-section="Notebook Contents">
+        <div class="slide-inner toc">
+          <div class="eyebrow">Notebook Contents</div>
+          <h2>Five sections, start to finish</h2>
+          <p class="sub">The notebook's own headings, in order. This deck follows all five &mdash; the core Python first, then the pandas methods built on top of it.</p>
+          <div class="toc-list">
+            <div class="toc-row"><span class="num">1</span><span class="name">Review: The Building Blocks of Python Code<small>expressions, statements, call syntax</small></span><span class="status same">Core Python</span></div>
+            <div class="toc-row"><span class="num">1.2</span><span class="name">Programing Practices: Variable Renaming<small>why not to shadow max()</small></span><span class="status same">Core Python</span></div>
+            <div class="toc-row"><span class="num">2</span><span class="name">Importing Code<small>the math module &mdash; floor, sqrt, log</small></span><span class="status same">Core Python</span></div>
+            <div class="toc-row highlight"><span class="num">3</span><span class="name">Table Operations<small>read_csv &middot; head &middot; shape &middot; [[ ]] &middot; drop &middot; sort_values &middot; boolean filter</small></span><span class="status swap">7 methods &rarr;</span></div>
+            <div class="toc-row highlight"><span class="num">4</span><span class="name">Analyzing a Dataset<small>chaining filters &middot; shape reused for proportions</small></span><span class="status swap">2 patterns &rarr;</span></div>
+            <div class="toc-row"><span class="num">5</span><span class="name">Summary<small>every method, one page</small></span><span class="status same">Reference</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 1 DIVIDER -->
+      <section class="slide" data-section="1. Building Blocks of Python Code">
+        <div class="slide-inner">
+          <div class="eyebrow">Notebook Section 1 of 5</div>
+          <div class="divider-head"><span class="num">01</span><h2>Building Blocks of Python Code</h2></div>
+          <p class="divider-quote">&ldquo;The two building blocks of Python code are expressions and statements&hellip; large, interesting things can be built by combining many simple, uninteresting things.&rdquo; &mdash; the notebook's own framing, before any table is loaded.</p>
+          <div class="chip-row">
+            <span class="chip">expressions</span><span class="chip">call expressions</span><span class="chip">statements</span><span class="chip">assignment</span><span class="chip">variable renaming</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- expressions & statements -->
+      <section class="slide" data-section="1. Building Blocks of Python Code">
+        <div class="slide-inner">
+          <div class="eyebrow">Building Blocks &middot; 1 of 2</div>
+          <div class="method-head">
+            <div class="method-name">expressions <span class="fn">&amp;</span> statements</div>
+          </div>
+          <p class="method-desc">An <strong>expression</strong> is self-contained and always evaluates to a value. A <strong>statement</strong> is a full line of code &mdash; some are just expressions, others <em>make something happen</em>, like an assignment statement, which evaluates its right-hand side and binds the result to the name on the left.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python</span><pre>5 - 2                       # expression -> 3
+abs(2 - 5)                  # call expression -> 3
+height = 1.3                # assignment statement, no value shown
+absolute_height_difference = abs(height - 1.688)</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>expression</b> &middot; always has a value</span>
+            <span class="fact"><b>call expression</b> &middot; name(arguments)</span>
+            <span class="fact"><b>assignment</b> &middot; right side evaluates, binds to the left</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">the math built-ins this section leans on</div>
+            <table class="mtable">
+              <tr><th>Function</th><th>Does</th></tr>
+              <tr><td>abs</td><td>Absolute value of its argument</td></tr>
+              <tr><td>max / min</td><td>Largest / smallest of its arguments</td></tr>
+              <tr><td>pow</td><td>Raises the first argument to the second's power</td></tr>
+              <tr><td>round</td><td>Rounds to the nearest integer</td></tr>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Q1.1 worked example -->
+      <section class="slide" data-section="1. Building Blocks of Python Code">
+        <div class="slide-inner">
+          <div class="eyebrow">Building Blocks &middot; 2 of 2 &middot; Question 1.1</div>
+          <div class="method-head">
+            <div class="method-name">nesting <span class="fn">calls</span></div>
+          </div>
+          <p class="method-desc">Call expressions nest naturally: the innermost ones evaluate first, and their results become arguments to the ones around them &mdash; the pattern the notebook asks you to use for Question&nbsp;1.1.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python &middot; generic pattern</span><pre>outer_fn(
+    inner_fn_a(&hellip;),
+    inner_fn_b(&hellip;)
+)</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>innermost first</b> &middot; each inner call resolves to a value</span>
+            <span class="fact"><b>then outward</b> &middot; those values become the outer call's arguments</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">Question 1.1, as the notebook poses it</div>
+            <p style="font-family:var(--font-serif);font-size:14px;color:var(--ink-soft);margin:0;line-height:1.6;">Assign <code>new_year</code> to the <strong>larger</strong> of: the absolute value of 2<sup>6</sup>&minus;2<sup>11</sup>&minus;2<sup>5</sup>&minus;7, and 5&times;13&times;31+11 &mdash; in one line, using <code>abs</code> and <code>max</code>.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 1.2 variable renaming -->
+      <section class="slide" data-section="1.2 Variable Renaming">
+        <div class="slide-inner">
+          <div class="eyebrow">Section 1.2 &middot; Variable Renaming</div>
+          <div class="method-head">
+            <div class="method-name">don't shadow <span class="fn">built-ins</span></div>
+          </div>
+          <p class="method-desc">Every name in Python, including <code>max</code>, can be reassigned. Do it, and the built-in function is gone &mdash; the name now points at whatever was assigned to it, until it's deleted or the kernel restarts.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">python</span><pre>max(5, 6, 7)     # 7 -- max is still the built-in function
+
+max = 8          # max now refers to the int 8
+max(5, 6, 7)     # TypeError: 'int' object is not callable
+
+del max          # removes the shadow, restores the built-in</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>before</b> &middot; max is a function</span>
+            <span class="fact"><b>after max = 8</b> &middot; max is an int</span>
+            <span class="fact"><b>del max</b> &middot; undoes the reassignment</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2 DIVIDER -->
+      <section class="slide" data-section="2. Importing Code">
+        <div class="slide-inner">
+          <div class="eyebrow">Notebook Section 2 of 5</div>
+          <div class="divider-head"><span class="num">02</span><h2>Importing Code</h2></div>
+          <p class="divider-quote">&ldquo;Python allows us to import modules. A module is a file with Python code that has defined variables and functions.&rdquo; The notebook uses the <code>math</code> module to compute the area of a circle before ever loading a table.</p>
+          <div class="chip-row">
+            <span class="chip">import math</span><span class="chip">from math import cos, pi</span><span class="chip">from math import *</span><span class="chip">math.floor / sqrt / log</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- three ways to import -->
+      <section class="slide" data-section="2. Importing Code">
+        <div class="slide-inner">
+          <div class="eyebrow">Importing Code &middot; 1 of 2</div>
+          <div class="method-head">
+            <div class="method-name">three ways to <span class="fn">import</span></div>
+          </div>
+          <p class="method-desc">Importing the whole module keeps everything namespaced behind a dot. Importing specific names &mdash; or everything, with <code>*</code> &mdash; drops the prefix, at the cost of knowing exactly where a name came from.</p>
+          <div class="demo">
+            <div class="demo-label">module.pi computed three ways</div>
+            <table class="mtable">
+              <tr><th>Import style</th><th>Access</th><th>Needs a prefix?</th></tr>
+              <tr><td>import math</td><td>math.log(pi)</td><td>Always</td></tr>
+              <tr><td>from math import cos, pi</td><td>cos(pi) &middot; math.log(pi)</td><td>Only for names not imported</td></tr>
+              <tr><td>from math import *</td><td>log(pi)</td><td>Never</td></tr>
+            </table>
+            <div class="demo-note">The notebook's setup cell uses the first style &mdash; import math &mdash; and sticks with it for every table operation that follows.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- math module reference -->
+      <section class="slide" data-section="2. Importing Code">
+        <div class="slide-inner">
+          <div class="eyebrow">Importing Code &middot; 2 of 2</div>
+          <div class="method-head">
+            <div class="method-name">the <span class="fn">math</span> module, in use</div>
+          </div>
+          <p class="method-desc">Five <code>math</code> members carry this section: two constants, and three functions. Most take one argument, but <code>log</code> takes two &mdash; a reminder to check a function's signature before calling it.</p>
+          <div class="demo">
+            <div class="demo-label">every math.&hellip; call in the notebook</div>
+            <table class="mtable">
+              <tr><th>Name</th><th>Example</th><th>Result</th></tr>
+              <tr><td>math.pi</td><td>math.pi</td><td>3.14159&hellip;</td></tr>
+              <tr><td>math.e</td><td>math.e</td><td>2.71828&hellip;</td></tr>
+              <tr><td>math.floor</td><td>math.floor(7.5)</td><td>7</td></tr>
+              <tr><td>math.sqrt</td><td>math.sqrt(5)</td><td>2.236&hellip;</td></tr>
+              <tr><td>math.log</td><td>math.log(8, 2)</td><td>3.0</td></tr>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3: SECTION 3 DIVIDER -->
+      <section class="slide" data-section="3. Table Operations">
+        <div class="slide-inner">
+          <div class="eyebrow">Notebook Section 3 of 5</div>
+          <div class="divider-head"><span class="num">03</span><h2>Table Operations</h2></div>
+          <p class="divider-quote">&ldquo;The table <code>farmers_markets.csv</code> contains data on farmers' markets in the United States&hellip; Each row represents one such market.&rdquo; &mdash; as the notebook introduces it, right before loading the table for the first time.</p>
+          <div class="chip-row">
+            <span class="chip">read_csv</span><span class="chip">head</span><span class="chip">shape</span><span class="chip">[[ cols ]]</span><span class="chip">drop</span><span class="chip">sort_values</span><span class="chip">boolean filter</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4: read_csv -->
+      <section class="slide" data-section="3. Table Operations">
+        <div class="slide-inner">
+          <div class="eyebrow">Table Operations &middot; Method 1 of 7</div>
+          <div class="method-head">
+            <div class="method-name"><span class="fn">read_csv</span>()</div>
+          </div>
+          <p class="method-desc"><code>pd.read_csv</code> reads a delimited text file straight into a DataFrame. Pass it a path or URL; by default it treats the first line as column headers and infers each column's type from its values.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">pandas</span><pre>farmers_markets = pd.read_csv(
+    'farmers_markets.csv'
+)</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>returns</b> &middot; a new DataFrame</span>
+            <span class="fact"><b>key params</b> &middot; sep, header, index_col</span>
+            <span class="fact"><b>no output</b> &middot; it's an assignment statement</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">what farmers_markets becomes</div>
+            <div class="file-to-table">
+              <span class="file-chip"><span class="dot"></span>farmers_markets.csv</span>
+              <span class="pipe-arrow">&rarr;</span>
+              <span class="file-chip" style="border-color:var(--accent-new);"><span class="dot" style="background:var(--accent-new);"></span>DataFrame</span>
+            </div>
+            <table class="mtable">
+              <tr><th>MarketName</th><th>city</th><th>State</th></tr>
+              <tr><td>Ferry Plaza Farmers Market</td><td>San Francisco</td><td>California</td></tr>
+              <tr><td>Union Square Greenmarket</td><td>New York</td><td>New York</td></tr>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5: head -->
+      <section class="slide" data-section="3. Table Operations">
+        <div class="slide-inner">
+          <div class="eyebrow">Table Operations &middot; Method 2 of 7</div>
+          <div class="method-head">
+            <div class="method-name"><span class="fn">head</span>(n)</div>
+          </div>
+          <p class="method-desc"><code>df.head(n)</code> returns a new DataFrame holding just the first <em>n</em> rows &mdash; the original is left untouched. Question 3.1 asks you to preview <code>farmers_markets</code> with it; the notebook's own peek at the table (below) uses the same method with a different <em>n</em>.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">pandas &middot; given in the notebook</span><pre>farmers_markets.head(1)</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>returns</b> &middot; a new DataFrame (a copy)</span>
+            <span class="fact"><b>default n</b> &middot; 5, if left out entirely</span>
+            <span class="fact"><b>pairs with</b> &middot; .tail(n) for the last rows</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">.head(1) &mdash; just the first row</div>
+            <table class="mtable">
+              <tr><th>MarketName</th><th>city</th><th>State</th></tr>
+              <tr class="keep"><td>Ferry Plaza Farmers Market</td><td>San Francisco</td><td>California</td></tr>
+              <tr class="ellipsis"><td colspan="3">&hellip; the rest stay hidden &hellip;</td></tr>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6: shape -->
+      <section class="slide" data-section="3. Table Operations">
+        <div class="slide-inner">
+          <div class="eyebrow">Table Operations &middot; Method 3 of 7</div>
+          <div class="method-head">
+            <div class="method-name"><span class="fn">shape</span></div>
+          </div>
+          <p class="method-desc"><code>df.shape</code> is a single attribute that hands back both row and column counts at once, as a <code>(rows, columns)</code> tuple &mdash; index into it for just the one you need. The notebook gives you the row count directly; Question 3.2 asks you to find the column count the same way.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">pandas &middot; given in the notebook</span><pre>farmers_markets.shape[0]  # rows</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>type</b> &middot; a plain tuple, (rows, cols)</span>
+            <span class="fact"><b>no parentheses</b> &middot; it's an attribute, not a call</span>
+            <span class="fact"><b>shape[1]</b> &middot; the column count Question 3.2 wants</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">farmers_markets.shape[0]</div>
+            <div class="stat-row">
+              <div class="stat merged"><div class="k">shape[0]</div><div class="v">1,004</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7: select -->
+      <section class="slide" data-section="3. Table Operations">
+        <div class="slide-inner">
+          <div class="eyebrow">Table Operations &middot; Method 4 of 7</div>
+          <div class="method-head">
+            <div class="method-name">df[[<span class="fn">cols</span>]]</div>
+          </div>
+          <p class="method-desc">Passing a list of column names inside a second pair of brackets returns a new DataFrame with just those columns, in that order. Question 3.3 asks you to use this on <code>farmers_markets</code> to build <code>farmers_markets_locations</code> from the name, city, state, latitude, and longitude columns.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">pandas &middot; generic pattern</span><pre>farmers_markets[[
+  'MarketName', 'FMID'
+]]</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>outer [ ]</b> &middot; indexes the DataFrame</span>
+            <span class="fact"><b>inner [ ]</b> &middot; the list of column names</span>
+            <span class="fact"><b>single column</b> &middot; df['State'] alone returns a Series, not a DataFrame</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">kept vs. dropped columns, illustrated on two others</div>
+            <table class="mtable">
+              <tr><th class="col-keep">MarketName</th><th class="col-keep">FMID</th><th class="col-drop">State</th><th class="col-drop">Website</th></tr>
+              <tr><td class="col-keep">Ferry Plaza Farmers Market</td><td class="col-keep">1012063</td><td class="col-drop">California</td><td class="col-drop">http://&hellip;</td></tr>
+              <tr><td class="col-keep">Union Square Greenmarket</td><td class="col-keep">1009364</td><td class="col-drop">New York</td><td class="col-drop">http://&hellip;</td></tr>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8: drop -->
+      <section class="slide" data-section="3. Table Operations">
+        <div class="slide-inner">
+          <div class="eyebrow">Table Operations &middot; Method 5 of 7</div>
+          <div class="method-head">
+            <div class="method-name">df.<span class="fn">drop</span>(columns=)</div>
+          </div>
+          <p class="method-desc">The <code>columns=</code> keyword tells pandas you mean column labels &mdash; without it, <code>drop</code> assumes you mean row labels from the index. Question 3.4 asks you to use this to remove <code>FMID</code> and <code>updateTime</code> from <code>farmers_markets</code>.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">pandas &middot; generic pattern</span><pre>farmers_markets.drop(
+  columns=['Website']
+)</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>returns</b> &middot; a new DataFrame</span>
+            <span class="fact"><b>original</b> &middot; left unchanged</span>
+            <span class="fact"><b>needs</b> &middot; the columns= keyword</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">one column struck, illustrated on Website</div>
+            <table class="mtable">
+              <tr><th class="col-drop">Website</th><th>MarketName</th><th>FMID</th><th>State</th></tr>
+              <tr><td class="col-drop">http://&hellip;</td><td>Ferry Plaza Farmers Market</td><td>1012063</td><td>California</td></tr>
+              <tr><td class="col-drop">http://&hellip;</td><td>Union Square Greenmarket</td><td>1009364</td><td>New York</td></tr>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9: sort_values -->
+      <section class="slide" data-section="3. Table Operations">
+        <div class="slide-inner">
+          <div class="eyebrow">Table Operations &middot; Method 6 of 7</div>
+          <div class="method-head">
+            <div class="method-name">df.<span class="fn">sort_values</span>()</div>
+          </div>
+          <p class="method-desc">The notebook sorts by longitude (<code>x</code>) twice &mdash; once with the default ascending order, then again with <code>ascending=False</code> to bring the largest values to the top. Rows always move as a unit, so every other column stays aligned.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">pandas &middot; given in the notebook</span><pre>farmers_markets_locations.sort_values(
+  'x', ascending=False
+)</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>returns</b> &middot; a new, reordered DataFrame</span>
+            <span class="fact"><b>default</b> &middot; ascending=True</span>
+            <span class="fact"><b>text columns</b> &middot; sort A&rarr;Z (or Z&rarr;A)</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">sort_values('x', ascending=False)</div>
+            <div class="pipeline">
+              <table class="mtable">
+                <tr><th>MarketName</th><th>x</th></tr>
+                <tr><td>Portland Farmers Market</td><td>&minus;122.68</td></tr>
+                <tr><td>Ferry Plaza Farmers Market</td><td>&minus;122.39</td></tr>
+                <tr><td>Union Square Greenmarket</td><td>&minus;73.99</td></tr>
+              </table>
+              <span class="pipe-arrow">&rarr;</span>
+              <table class="mtable">
+                <tr><th>MarketName</th><th>x</th></tr>
+                <tr class="keep"><td>Union Square Greenmarket</td><td>&minus;73.99</td></tr>
+                <tr><td>Ferry Plaza Farmers Market</td><td>&minus;122.39</td></tr>
+                <tr><td>Portland Farmers Market</td><td>&minus;122.68</td></tr>
+              </table>
+            </div>
+            <div class="demo-note">Question 3.5 asks you to apply this same method to a different column: latitude (y), largest first.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10: boolean filter -->
+      <section class="slide" data-section="3. Table Operations">
+        <div class="slide-inner">
+          <div class="eyebrow">Table Operations &middot; Method 7 of 7</div>
+          <div class="method-head">
+            <div class="method-name">df[df[col] == v]</div>
+          </div>
+          <p class="method-desc"><code>df['State'] == 'California'</code> produces a column of True/False values, one per row. Placing that boolean column back inside <code>df[...]</code> keeps only the rows where it's True. This pattern is called <strong>boolean indexing</strong>.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">pandas &middot; given in the notebook</span><pre>farmers_markets_locations[
+  farmers_markets_locations['State'] == 'California'
+]</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>df[col] == v</b> &middot; a Series of True/False</span>
+            <span class="fact"><b>df[bool series]</b> &middot; keeps only the True rows</span>
+            <span class="fact"><b>combine with</b> &middot; & (and) / | (or)</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">california_farmers_markets &mdash; only State == 'California' survives</div>
+            <table class="mtable">
+              <tr><th>MarketName</th><th>State</th></tr>
+              <tr class="keep"><td>Ferry Plaza Farmers Market</td><td>California</td></tr>
+              <tr class="keep"><td>Berkeley Farmers Market</td><td>California</td></tr>
+              <tr class="drop"><td>Union Square Greenmarket</td><td>New York</td></tr>
+              <tr class="drop"><td>Portland Farmers Market</td><td>Oregon</td></tr>
+            </table>
+            <div class="demo-note">Question 3.6 repeats this same pattern once more, filtering california_farmers_markets down to just Berkeley.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- boolean indexing, the Series step -->
+      <section class="slide" data-section="3. Table Operations">
+        <div class="slide-inner">
+          <div class="eyebrow">Table Operations &middot; Method 7 of 7 &middot; the Series in between</div>
+          <div class="method-head">
+            <div class="method-name">df[col] <span class="fn">==</span> v</div>
+          </div>
+          <p class="method-desc">Boolean indexing is really two steps stacked into one line. The comparison alone doesn't touch the DataFrame at all &mdash; it produces a brand-new object, a <strong>Series</strong> of True/False, one entry per row, aligned to the same index. Only the second step, wrapping that Series in <code>df[...]</code>, actually keeps or drops anything.</p>
+          <div class="demo">
+            <div class="demo-label">the same rows, one step at a time</div>
+            <div class="pipeline">
+              <div class="pipe-stage">
+                <div class="st-label">farmers_markets_locations</div>
+                <table class="mtable" style="margin-top:2px;">
+                  <tr><th>MarketName</th><th>State</th></tr>
+                  <tr><td>Ferry Plaza</td><td>California</td></tr>
+                  <tr><td>Union Square</td><td>New York</td></tr>
+                  <tr><td>Berkeley</td><td>California</td></tr>
+                </table>
+              </div>
+              <span class="pipe-arrow">&rarr;</span>
+              <div class="pipe-stage">
+                <div class="st-label">['State'] == 'California' &middot; a Series</div>
+                <table class="mtable" style="margin-top:2px;">
+                  <tr><th>index</th><th>State == 'CA'</th></tr>
+                  <tr class="keep"><td>0</td><td>True</td></tr>
+                  <tr><td>1</td><td>False</td></tr>
+                  <tr class="keep"><td>2</td><td>True</td></tr>
+                </table>
+              </div>
+              <span class="pipe-arrow">&rarr;</span>
+              <div class="pipe-stage result">
+                <div class="st-label">df[ that Series ]</div>
+                <table class="mtable" style="margin-top:2px;">
+                  <tr><th>MarketName</th><th>State</th></tr>
+                  <tr><td>Ferry Plaza</td><td>California</td></tr>
+                  <tr><td>Berkeley</td><td>California</td></tr>
+                </table>
+              </div>
+            </div>
+            <div class="demo-note">The middle Series is a real, inspectable object &mdash; run <code>farmers_markets_locations['State'] == 'California'</code> by itself in a cell to see it before it's ever used to filter anything.</div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>step 1</b> &middot; comparison &rarr; a Series of True/False</span>
+            <span class="fact"><b>step 2</b> &middot; df[series] &rarr; keeps only the True rows</span>
+            <span class="fact"><b>same length</b> &middot; the Series always matches the DataFrame's row count</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 11: SECTION 4 DIVIDER -->
+      <section class="slide" data-section="4. Analyzing a dataset">
+        <div class="slide-inner">
+          <div class="eyebrow">Notebook Section 4 of 5</div>
+          <div class="divider-head"><span class="num">04</span><h2>Analyzing a Dataset</h2></div>
+          <p class="divider-quote">&ldquo;Run the cell below to load the <code>imdb</code> table. It contains information about the 250 highest-rated movies on IMDb.&rdquo; No new syntax here &mdash; just the seven Section&nbsp;3 methods, chained together on a new table.</p>
+          <div class="chip-row">
+            <span class="chip">imdb = pd.read_csv(&hellip;)</span><span class="chip">chained boolean filters</span><span class="chip">shape[0] for proportions</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 12: chaining -->
+      <section class="slide" data-section="4. Analyzing a dataset">
+        <div class="slide-inner">
+          <div class="eyebrow">Analyzing a Dataset &middot; Question 4.1</div>
+          <div class="method-head">
+            <div class="method-name">chained filters</div>
+          </div>
+          <p class="method-desc">Every pandas operation returns a DataFrame, so steps compose left to right in a single expression: wrap each comparison in parentheses, combine them with <code>&amp;</code>, then a trailing column list narrows down to just the fields you need.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">pandas &middot; generic pattern</span><pre>df[(df['colA'] >= lo) & (df['colA'] <= hi)
+   & (df['colB'] > threshold)][['colC', 'colB']]</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>each condition</b> &middot; wrapped in its own parentheses</span>
+            <span class="fact"><b>combine with</b> &middot; & inside one outer [ ]</span>
+            <span class="fact"><b>trailing [[ ]]</b> &middot; picks the final columns</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">the shape of the pipeline, not the values</div>
+            <div class="pipeline">
+              <div class="pipe-stage">
+                <div class="st-label">df &middot; every row</div>
+                <div style="font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);">row 1<br>row 2<br>row 3<br>row 4</div>
+              </div>
+              <span class="pipe-arrow">&rarr;</span>
+              <div class="pipe-stage">
+                <div class="st-label">conditions applied</div>
+                <div style="font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);"><s style="text-decoration-color:var(--accent-old);">row 1</s><br>row 2<br>row 3<br><s style="text-decoration-color:var(--accent-old);">row 4</s></div>
+              </div>
+              <span class="pipe-arrow">&rarr;</span>
+              <div class="pipe-stage result">
+                <div class="st-label">[[ colC, colB ]]</div>
+                <div style="font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);">row 2, narrowed<br>row 3, narrowed</div>
+              </div>
+            </div>
+            <div class="demo-note">Question 4.1 asks you to run this pattern on <code>imdb</code>: movies from 2010&ndash;2015 with a rating above 8, keeping just Title and Rating.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 13: proportions / shape reuse -->
+      <section class="slide" data-section="4. Analyzing a dataset">
+        <div class="slide-inner">
+          <div class="eyebrow">Analyzing a Dataset &middot; Question 4.2</div>
+          <div class="method-head">
+            <div class="method-name">shape[0], <span class="fn">again</span></div>
+          </div>
+          <p class="method-desc">No new method here &mdash; <code>shape[0]</code> resurfaces as arithmetic. Filter the DataFrame, take <code>.shape[0]</code> of what's left, divide by the total row count. Same move as Method&nbsp;3, just applied again on a subset.</p>
+          <div class="snippet">
+            <div class="codecard"><span class="tag">pandas &middot; generic pattern</span><pre>total = df.shape[0]
+matching = df[df['colA'] >= threshold].shape[0]
+proportion = matching / total</pre></div>
+          </div>
+          <div class="fact-row">
+            <span class="fact"><b>shape[0]</b> &middot; row count</span>
+            <span class="fact"><b>on a filtered df</b> &middot; count of matches only</span>
+            <span class="fact"><b>divide</b> &middot; matches &divide; total = a proportion</span>
+          </div>
+          <div class="demo">
+            <div class="demo-label">the shape of the calculation, not the values</div>
+            <div class="barset">
+              <div class="barrow"><span class="lbl">matching rows</span><span class="bartrack"><span class="barfill" style="width:45%;"></span></span><span class="pct">?</span></div>
+              <div class="barrow"><span class="lbl">everything else</span><span class="bartrack"><span class="barfill" style="width:100%;"></span></span><span class="pct">total</span></div>
+            </div>
+            <div class="demo-note">Question 4.2 asks you to run this pattern twice on <code>imdb</code>: the proportion of movies from 1900&ndash;1999, and the proportion from 2000 onward.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 14: cheat sheet -->
+      <section class="slide" data-section="5. Summary">
+        <div class="slide-inner cheat">
+          <div class="eyebrow">Notebook Section 5 of 5</div>
+          <h2>Every method, one page</h2>
+          <p class="sub">All eight pandas patterns from this notebook, in the order they first appear.</p>
+          <div class="cheat-wrap">
+            <table class="cheat-table">
+              <tr><th>Method</th><th>Call</th><th>What it does</th></tr>
+              <tr><td class="purpose"><b>read_csv</b></td><td class="code-new">pd.read_csv(path)</td><td class="purpose">Load a CSV file into a DataFrame</td></tr>
+              <tr><td class="purpose"><b>head</b></td><td class="code-new">df.head(n)</td><td class="purpose">Preview the first n rows</td></tr>
+              <tr><td class="purpose"><b>shape</b></td><td class="code-new">df.shape</td><td class="purpose">Get (rows, columns) as a tuple</td></tr>
+              <tr><td class="purpose"><b>select columns</b></td><td class="code-new">df[["A", "B"]]</td><td class="purpose">Keep only some columns, in that order</td></tr>
+              <tr><td class="purpose"><b>drop</b></td><td class="code-new">df.drop(columns=["A"])</td><td class="purpose">Remove some columns</td></tr>
+              <tr><td class="purpose"><b>sort_values</b></td><td class="code-new">df.sort_values("A", ascending=False)</td><td class="purpose">Reorder rows by a column's values</td></tr>
+              <tr><td class="purpose"><b>boolean filter</b></td><td class="code-new">df[df["A"] == v]</td><td class="purpose">Keep only rows that match a condition</td></tr>
+              <tr><td class="purpose"><b>chained filter</b></td><td class="code-new">df[(cond1) & (cond2)][["A"]]</td><td class="purpose">Combine conditions, then pick columns</td></tr>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div class="navbar">
+    <button class="navbtn" id="prevBtn" aria-label="Previous slide">&larr;</button>
+    <div class="dots" id="dots" role="tablist" aria-label="Slide picker"></div>
+    <button class="navbtn" id="nextBtn" aria-label="Next slide">&rarr;</button>
+    <div class="counter" id="counter">01 / 22</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var track = document.getElementById('track');
+  var slides = Array.prototype.slice.call(track.children);
+  var total = slides.length;
+  var dotsWrap = document.getElementById('dots');
+  var counter = document.getElementById('counter');
+  var sectionLabel = document.getElementById('sectionLabel');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  var idx = 0;
+
+  slides.forEach(function(_, i){
+    var d = document.createElement('button');
+    d.className = 'dot';
+    d.setAttribute('role','tab');
+    d.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    d.addEventListener('click', function(){ go(i); });
+    dotsWrap.appendChild(d);
+  });
+  var dots = Array.prototype.slice.call(dotsWrap.children);
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  function render(){
+    track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+    dots.forEach(function(d, i){ d.classList.toggle('active', i === idx); });
+    counter.textContent = pad(idx + 1) + ' / ' + pad(total);
+    sectionLabel.textContent = slides[idx].getAttribute('data-section') || '';
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === total - 1;
+  }
+
+  function go(i){
+    idx = Math.max(0, Math.min(total - 1, i));
+    render();
+  }
+
+  prevBtn.addEventListener('click', function(){ go(idx - 1); });
+  nextBtn.addEventListener('click', function(){ go(idx + 1); });
+
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'PageDown'){ go(idx + 1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp'){ go(idx - 1); e.preventDefault(); }
+    else if (e.key === 'Home'){ go(0); e.preventDefault(); }
+    else if (e.key === 'End'){ go(total - 1); e.preventDefault(); }
+  });
+
+  var touchStartX = null;
+  track.addEventListener('touchstart', function(e){ touchStartX = e.touches[0].clientX; }, {passive:true});
+  track.addEventListener('touchend', function(e){
+    if (touchStartX === null) return;
+    var dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 50){ go(idx + (dx < 0 ? 1 : -1)); }
+    touchStartX = null;
+  }, {passive:true});
+
+  render();
+})();
+</script>
