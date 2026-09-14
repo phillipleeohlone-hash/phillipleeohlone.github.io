@@ -281,9 +281,73 @@
   @media (max-width:640px){
     .slide{ padding:56px 22px 88px; }
   }
+
+  /* --- math expressions (quiz review) --- */
+  .expr-row{ display:flex; gap:56px; flex-wrap:wrap; align-items:flex-start; }
+  .expr-card{ display:flex; flex-direction:column; gap:14px; }
+  .expr-label{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    letter-spacing:.04em;
+    color:var(--ink-soft);
+  }
+  .frac-line{ display:flex; align-items:center; gap:12px; }
+  .frac{ display:inline-flex; flex-direction:column; align-items:center; line-height:1.3; }
+  .frac-num, .frac-den{
+    font-family:"Source Serif 4", Georgia, serif;
+    font-size:26px;
+    color:var(--ink);
+    padding:0 4px;
+  }
+  .frac-num{ border-bottom:2px solid var(--ink); padding-bottom:4px; }
+  .frac-den{ padding-top:5px; }
+  .frac-plus{
+    font-family:"Source Serif 4", Georgia, serif;
+    font-size:26px;
+    color:var(--ink);
+  }
 </style>
 
 <div id="deck">
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Quiz Review &middot; 5 pts</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Which Expression Is Larger?</h2>
+        <p class="lede">Write each equation as a Python expression, assign each to a variable, then use <span class="code-inline">max()</span> to print the larger value.</p>
+        <div class="expr-row">
+          <div class="expr-card">
+            <div class="expr-label">Expression A</div>
+            <div class="frac-line">
+              <div class="frac">
+                <span class="frac-num">(6 + 2)<sup>2</sup> &minus; 3<sup>3</sup></span>
+                <span class="frac-den">(5 &minus; 2) &times; 4</span>
+              </div>
+              <span class="frac-plus">+ 7</span>
+            </div>
+          </div>
+          <div class="expr-card">
+            <div class="expr-label">Expression B</div>
+            <div class="frac-line">
+              <div class="frac">
+                <span class="frac-num">(3 + 5)<sup>2</sup> &minus; 4<sup>3</sup></span>
+                <span class="frac-den">2(6 &minus; 2)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="code-cell">
+          <div class="cell-head">Solution</div>
+          <pre>expression_a = ((<span class="c-num">6</span> + <span class="c-num">2</span>) ** <span class="c-num">2</span> - <span class="c-num">3</span> ** <span class="c-num">3</span>) / ((<span class="c-num">5</span> - <span class="c-num">2</span>) * <span class="c-num">4</span>) + <span class="c-num">7</span>
+expression_b = ((<span class="c-num">3</span> + <span class="c-num">5</span>) ** <span class="c-num">2</span> - <span class="c-num">4</span> ** <span class="c-num">3</span>) / (<span class="c-num">2</span> * (<span class="c-num">6</span> - <span class="c-num">2</span>))
+
+print(max(expression_a, expression_b))
+<span class="c-com"># 10.083333333333334 -- expression_a is larger</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section class="slide" data-kind="cover" data-tick="1">
     <div class="slide-frame">
@@ -317,6 +381,95 @@
             <pre>population_amounts / <span class="c-num">1_000_000_000</span>
 <span class="c-com"># one operation, every element, at once</span></pre>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Common Bug &middot; Q2.1.3 &amp; Q5.1.1</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Off-By-One: <span class="code-inline">np.arange</span> Stops Before the End</h2>
+        <p class="lede"><span class="code-inline">np.arange(start, stop, step)</span> never includes <span class="code-inline">stop</span>. Miss it on either end of the range and the array comes up one value short.</p>
+        <div class="grid-2">
+          <div class="code-cell">
+            <div class="cell-head">Q2.1.3 &middot; multiples of 99, 0 through 9999</div>
+            <pre>np.arange(<span class="c-num">0</span>, <span class="c-num">9999</span>, <span class="c-num">99</span>)
+<span class="c-com"># common error: stops before 9999, so it's excluded</span>
+
+np.arange(<span class="c-num">0</span>, <span class="c-num">10000</span>, <span class="c-num">99</span>)
+<span class="c-com"># fix: push stop past 9999 to include it</span></pre>
+          </div>
+          <div class="code-cell">
+            <div class="cell-head">Q5.1.1 &middot; time since start of month</div>
+            <pre>np.arange(<span class="c-num">1</span>, <span class="c-num">31*24*60*60</span>, <span class="c-num">3600</span>)
+<span class="c-com"># common error: starts at 1, but midnight is t = 0</span>
+
+np.arange(<span class="c-num">0</span>, <span class="c-num">31*24*60*60</span>, <span class="c-num">3600</span>)
+<span class="c-com"># fix: start counting from 0</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Common Bug &middot; Q4.1</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Filtering Narrows Rows &mdash; It Doesn't Hand You The Answer</h2>
+        <p class="lede">Q4.1 &middot; Compute the year the world's population first crossed 6 billion, and assign the year to <span class="code-inline">year_x</span>.</p>
+        <div class="code-cell">
+          <div class="cell-head">Common error</div>
+          <pre>year_x = population[population[<span class="c-str">'Population'</span>] &gt; <span class="c-num">6e9</span>]
+year_x
+<span class="c-com"># a table of rows, starting in 1999 -- not the year itself</span></pre>
+        </div>
+        <div class="code-cell">
+          <div class="cell-head">Solution</div>
+          <pre>year_x = population[population[<span class="c-str">'Population'</span>] &gt; <span class="c-num">6e9</span>][<span class="c-str">'Year'</span>].iloc[<span class="c-num">0</span>]
+<span class="c-com"># pick the Year column, then the first row -- 1999</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Common Bug &middot; Q5.2.3</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Sum the Array You Actually Built</h2>
+        <p class="lede">Q5.2.3 &middot; What was the sum of all the bills in <span class="code-inline">more_restaurant_bills</span>, including tips?</p>
+        <div class="code-cell">
+          <div class="cell-head">Common error</div>
+          <pre>sum_of_bills = sum(more_restaurant_bills)
+<span class="c-com"># the original bills -- tip not included</span></pre>
+        </div>
+        <div class="code-cell">
+          <div class="cell-head">Solution</div>
+          <pre>sum_of_bills = sum(more_total_charges)
+<span class="c-com"># more_total_charges already has the tip added in</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Common Bug &middot; Q5.2.4</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Powers of 2 &mdash; One Line, No Loop</h2>
+        <p class="lede">Q5.2.4 &middot; Use <span class="code-inline">np.arange</span> and <span class="code-inline">**</span> to compute the first 30 powers of 2, starting from 2<sup>0</sup>.</p>
+        <div class="code-cell">
+          <div class="cell-head">Common error</div>
+          <pre>powers_of_2 = ...
+<span class="c-com"># left as a placeholder -- never completed</span></pre>
+        </div>
+        <div class="code-cell">
+          <div class="cell-head">Solution</div>
+          <pre>powers_of_2 = <span class="c-num">2</span> ** np.arange(<span class="c-num">30</span>)
+<span class="c-com"># 2**0, 2**1, ... 2**29 -- all 30 powers, one line</span></pre>
         </div>
       </div>
     </div>
