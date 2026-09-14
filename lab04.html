@@ -1,0 +1,891 @@
+<title>Lab 04: Functions and Visualizations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap">
+<style>
+  :root{
+    --paper:#F1F4F8;
+    --paper-raise:#FFFFFF;
+    --ink:#152433;
+    --ink-soft:#4C5F72;
+    --rule:#D5DEE8;
+    --grid: 213,222,232;
+    --blue:#003262;
+    --blue-text:#003262;
+    --gold:#FDB515;
+    --gold-ink:#6B4A05;
+    --shadow: 20,36,51;
+    --navy-fixed:#00284F;
+    --gold-fixed:#FDB515;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0B1926;
+      --paper-raise:#122232;
+      --ink:#E9F1F8;
+      --ink-soft:#96ACC2;
+      --rule:#22384E;
+      --grid: 34,56,78;
+      --blue-text:#84B6E8;
+      --gold-ink:#FDB515;
+      --shadow: 0,0,0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0B1926;
+    --paper-raise:#122232;
+    --ink:#E9F1F8;
+    --ink-soft:#96ACC2;
+    --rule:#22384E;
+    --grid: 34,56,78;
+    --blue-text:#84B6E8;
+    --gold-ink:#FDB515;
+    --shadow: 0,0,0;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    overflow:hidden;
+    height:100vh;
+    width:100vw;
+  }
+  ::selection{ background:var(--gold); color:var(--navy-fixed); }
+
+  h1,h2,h3{ font-family:"Source Serif 4", Georgia, serif; text-wrap:balance; margin:0; }
+
+  .mono{ font-family:"IBM Plex Mono", "Courier New", monospace; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--blue-text);
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:.6em;
+  }
+  .eyebrow::before{
+    content:"";
+    width:18px; height:2px;
+    background:var(--gold);
+    display:inline-block;
+  }
+
+  code, .code-inline{
+    font-family:"IBM Plex Mono", monospace;
+    background:rgba(var(--grid),.55);
+    padding:.12em .42em;
+    border-radius:3px;
+    font-size:.92em;
+  }
+
+  #deck{
+    position:relative;
+    width:100vw;
+    height:100vh;
+  }
+
+  .slide{
+    position:absolute;
+    inset:0;
+    display:none;
+    padding:min(6.5vh,64px) min(9vw,96px) min(9vh,72px);
+    opacity:0;
+  }
+  .slide.active{
+    display:flex;
+    flex-direction:column;
+    animation: rise .48s ease both;
+  }
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .slide.active{ animation:none; opacity:1; }
+  }
+
+  .slide-frame{
+    width:100%;
+    height:100%;
+    max-width:1180px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    min-height:0;
+  }
+
+  .slide-body{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:28px;
+    padding-right:4px;
+  }
+
+  .title-lg{ font-size:clamp(30px,3.6vw,46px); font-weight:600; line-height:1.08; color:var(--ink); }
+  .title-md{ font-size:clamp(24px,2.6vw,32px); font-weight:600; line-height:1.15; color:var(--ink); }
+
+  .lede{ font-size:clamp(15px,1.25vw,18px); color:var(--ink-soft); line-height:1.55; max-width:62ch; }
+
+  ul.points{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; max-width:66ch; }
+  ul.points li{
+    position:relative;
+    padding-left:28px;
+    font-size:clamp(14.5px,1.15vw,17px);
+    line-height:1.55;
+    color:var(--ink);
+  }
+  ul.points li::before{
+    content:"";
+    position:absolute; left:0; top:.55em;
+    width:8px; height:8px;
+    background:var(--gold);
+    border-radius:1px;
+    transform:rotate(45deg);
+  }
+  ul.points b{ font-weight:600; }
+  ul.points .soft{ color:var(--ink-soft); }
+
+  .grid-2{ display:grid; grid-template-columns:1.05fr .95fr; gap:34px; align-items:center; }
+  @media (max-width:860px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .panel{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:22px 24px;
+    box-shadow:0 1px 0 rgba(var(--shadow),.03);
+  }
+
+  .code-cell{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--blue-text);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .code-cell .cell-head{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    padding:7px 14px;
+    border-bottom:1px dashed var(--rule);
+    letter-spacing:.03em;
+  }
+  .code-cell pre{
+    margin:0;
+    padding:14px 16px;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--ink);
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .code-cell .c-str{ color:#2E7D5B; }
+  :root[data-theme="dark"] .code-cell .c-str, @media (prefers-color-scheme:dark){ .code-cell .c-str{ color:#63C695; } }
+  .code-cell .c-num{ color:var(--gold-ink); }
+  .code-cell .c-com{ color:var(--ink-soft); font-style:italic; }
+
+  .cheat{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  .cheat th{
+    text-align:left; font-family:"IBM Plex Mono",monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft);
+    padding:0 12px 10px; font-weight:600;
+  }
+  .cheat td{
+    font-family:"IBM Plex Mono", monospace;
+    padding:11px 12px;
+    border-top:1px solid var(--rule);
+    vertical-align:middle;
+  }
+  .cheat td.old{ color:var(--ink-soft); text-decoration:line-through; text-decoration-color:rgba(var(--shadow),.35); }
+  .cheat td.arrow{ color:var(--gold-ink); font-family:"IBM Plex Sans",sans-serif; width:24px; text-align:center; }
+  .cheat td.new{ color:var(--blue-text); font-weight:600; }
+
+  .ref-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:26px 22px; }
+  @media (max-width:860px){ .ref-grid{ grid-template-columns:repeat(2,1fr); } }
+  .ref-col{ display:flex; flex-direction:column; gap:13px; min-width:0; }
+  .ref-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.08em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .ref-item .name{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    word-break:break-word;
+  }
+  .ref-item .desc{ font-size:12px; color:var(--ink-soft); line-height:1.4; margin-top:2px; }
+
+  .qcount{ display:flex; align-items:baseline; gap:12px; }
+  .qcount .big{ font-family:"Source Serif 4", serif; font-size:clamp(40px,5vw,56px); font-weight:600; color:var(--gold-ink); line-height:1; }
+  .qcount .label{ font-size:14.5px; color:var(--ink-soft); max-width:34ch; line-height:1.5; }
+
+  .qnum-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:20px; }
+  @media (max-width:900px){ .qnum-grid{ grid-template-columns:repeat(3,1fr); } }
+  .qnum-col{ display:flex; flex-direction:column; gap:10px; }
+  .qnum-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:10.5px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .qnum-chips{ display:flex; flex-direction:column; gap:7px; }
+  .qnum-chip{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:3px;
+    padding:5px 9px;
+    text-align:center;
+  }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:12px; }
+  .chip{
+    display:flex; flex-direction:column; gap:4px;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--gold);
+    border-radius:4px;
+    padding:10px 14px;
+    min-width:210px;
+    flex:1 1 260px;
+  }
+  .chip .qid{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px; font-weight:600;
+    color:var(--gold-ink);
+    letter-spacing:.04em;
+  }
+  .chip .qtext{ font-size:13.5px; color:var(--ink); line-height:1.45; }
+
+  /* --- diagram: array indexing --- */
+  .array-diagram{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .array-row{ display:flex; gap:10px; }
+  .array-box{
+    width:64px; height:64px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:18px; font-weight:600;
+    background:var(--paper-raise);
+    border:1.5px solid var(--rule);
+    border-radius:5px;
+    color:var(--ink);
+  }
+  .array-box.hi{
+    background:var(--gold);
+    border-color:var(--gold-ink);
+    color:var(--navy-fixed);
+  }
+  .index-row{ display:flex; gap:10px; }
+  .index-cell{
+    width:64px; text-align:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12px; color:var(--ink-soft);
+  }
+  .index-cell.hi{ color:var(--gold-ink); font-weight:700; }
+  .diagram-caption{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:14px; color:var(--ink);
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:8px 16px;
+  }
+  .diagram-caption .gold{ color:var(--gold-ink); font-weight:600; }
+
+  /* --- cover --- */
+  .slide[data-kind="cover"] .slide-frame{ justify-content:center; }
+  .cover-mark{ display:flex; gap:8px; flex-wrap:wrap; }
+  .cover-mark span{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    padding:5px 10px;
+    border-radius:3px;
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+  }
+  .cover-mark span.hi{ background:var(--gold); border-color:var(--gold-ink); color:var(--navy-fixed); font-weight:700; }
+  .cover-title{ font-size:clamp(40px,6vw,74px); font-weight:600; line-height:1.02; }
+  .cover-rule{ width:96px; height:5px; background:var(--navy-fixed); position:relative; margin:22px 0 16px; }
+  .cover-rule::after{ content:""; position:absolute; left:0; top:8px; width:96px; height:2px; background:var(--gold); }
+
+  /* --- divider (fixed identity, ignores theme -- deliberate, see header note) --- */
+  .slide[data-kind="divider"]{
+    background:var(--navy-fixed);
+    color:#F2F6FB;
+  }
+  .slide[data-kind="divider"] .slide-frame{ justify-content:center; align-items:flex-start; gap:10px; }
+  .divider-num{
+    font-family:"Source Serif 4", serif;
+    font-size:clamp(90px,13vw,168px);
+    font-weight:600;
+    line-height:.85;
+    color:var(--gold-fixed);
+  }
+  .divider-title{ font-size:clamp(30px,4vw,48px); font-weight:600; color:#F2F6FB; }
+  .divider-sub{ font-size:clamp(14px,1.3vw,18px); color:#B9CBE0; max-width:52ch; }
+  .divider-rule{ width:64px; height:3px; background:var(--gold-fixed); margin:6px 0 14px; }
+
+  /* --- chrome: controls + progress --- */
+  .chrome{
+    position:fixed; left:0; right:0; bottom:0;
+    display:flex; align-items:center; gap:18px;
+    padding:14px min(9vw,96px);
+    z-index:20;
+    pointer-events:none;
+  }
+  .chrome > *{ pointer-events:auto; }
+  .progress-track{
+    position:relative;
+    flex:1;
+    height:3px;
+    background:rgba(var(--grid),.7);
+    border-radius:2px;
+  }
+  .progress-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    background:var(--gold);
+    border-radius:2px;
+    width:0%;
+    transition:width .35s ease;
+  }
+  .progress-tick{
+    position:absolute; top:-3px;
+    width:2px; height:9px;
+    background:var(--ink-soft);
+    opacity:.5;
+    transform:translateX(-1px);
+  }
+  .idx-readout{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+    min-width:92px;
+  }
+  .navbtn{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.04em;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    color:var(--ink);
+    border-radius:4px;
+    padding:8px 14px;
+    cursor:pointer;
+  }
+  .navbtn:hover{ border-color:var(--blue-text); }
+  .navbtn:focus-visible, a:focus-visible, button:focus-visible{
+    outline:2px solid var(--gold-ink);
+    outline-offset:2px;
+  }
+  .navbtn:disabled{ opacity:.35; cursor:default; }
+
+  a{ color:var(--blue-text); }
+
+  .signoff{ font-family:"Source Serif 4", serif; font-style:italic; color:var(--ink-soft); font-size:15px; }
+
+  @media (max-width:640px){
+    .slide{ padding:56px 22px 88px; }
+    .array-box, .index-cell{ width:44px; }
+    .array-box{ height:44px; font-size:14px; }
+  }
+</style>
+
+<div id="deck">
+
+  <section class="slide" data-kind="cover" data-tick="1">
+    <div class="slide-frame">
+      <div class="eyebrow">CS108 &middot; Lab 04</div>
+      <div class="cover-rule"></div>
+      <h1 class="cover-title">Functions and<br>Visualizations</h1>
+      <p class="lede" style="margin-top:6px;">Writing your own functions, applying one across a whole column with <span class="code-inline">apply</span>, and drawing your first histogram.</p>
+      <div class="cover-mark" style="margin-top:28px;">
+        <span class="hi">arr[0]</span>
+        <span>arr[1]</span>
+        <span>arr[2]</span>
+        <span>arr[3]</span>
+        <span>arr[4]</span>
+        <span>&hellip;</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">About This Deck</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Library Changes</h2>
+        <p class="lede">This copy trades the class's <span class="code-inline">datascience</span> library for plain NumPy and pandas &mdash; the tools you'll actually keep using after this course. The exercises didn't change; only the syntax around them did.</p>
+        <table class="cheat">
+          <tr><th>datascience</th><th></th><th>numpy / pandas</th></tr>
+          <tr><td class="old">Table.read_table(path)</td><td class="arrow">&rarr;</td><td class="new">pd.read_csv(path)</td></tr>
+          <tr><td class="old">tbl.column('x')</td><td class="arrow">&rarr;</td><td class="new">tbl['x'].to_numpy()</td></tr>
+          <tr><td class="old">make_array(...)</td><td class="arrow">&rarr;</td><td class="new">np.array([...])</td></tr>
+          <tr><td class="old">arr.item(i)</td><td class="arrow">&rarr;</td><td class="new">arr[i]</td></tr>
+          <tr><td class="old">tbl.apply(fn, col)</td><td class="arrow">&rarr;</td><td class="new">df[col].apply(fn)</td></tr>
+          <tr><td class="old">tbl.with_column(name, vals)</td><td class="arrow">&rarr;</td><td class="new">df[name] = vals (on a df.copy())</td></tr>
+          <tr><td class="old">tbl.hist(col)</td><td class="arrow">&rarr;</td><td class="new">df[col].hist()</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Reference</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Functions and Methods in This Lab</h2>
+        <div class="ref-grid">
+          <div class="ref-col">
+            <h3>Built-in Functions</h3>
+            <div class="ref-item"><div class="name">def / return</div><div class="desc">define a function and send back a value</div></div>
+            <div class="ref-item"><div class="name">print(value, ...)</div><div class="desc">display output; not the same as returning it</div></div>
+            <div class="ref-item"><div class="name">len(s)</div><div class="desc">number of characters in a string</div></div>
+            <div class="ref-item"><div class="name">type(x)</div><div class="desc">the data type of a value</div></div>
+            <div class="ref-item"><div class="name">float(s)</div><div class="desc">convert a numeric-looking string to a float</div></div>
+            <div class="ref-item"><div class="name">max(a, b, ...)</div><div class="desc">the largest of its arguments</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>String Methods</h3>
+            <div class="ref-item"><div class="name">s.replace(old, new)</div><div class="desc">swap out a substring</div></div>
+            <div class="ref-item"><div class="name">s.strip(char)</div><div class="desc">remove a character from an end of a string</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>NumPy</h3>
+            <div class="ref-item"><div class="name">np.array([...])</div><div class="desc">build an array out of a list of values</div></div>
+            <div class="ref-item"><div class="name">np.average(arr)</div><div class="desc">the mean of an array</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>pandas</h3>
+            <div class="ref-item"><div class="name">pd.read_csv(path)</div><div class="desc">load a CSV file as a table</div></div>
+            <div class="ref-item"><div class="name">df[col].to_numpy()</div><div class="desc">pull a column out as an array</div></div>
+            <div class="ref-item"><div class="name">df[col].apply(fn)</div><div class="desc">call fn on every value in a column</div></div>
+            <div class="ref-item"><div class="name">df.copy()</div><div class="desc">an independent copy of a table</div></div>
+            <div class="ref-item"><div class="name">df[col].hist()</div><div class="desc">histogram of a numeric column</div></div>
+            <div class="ref-item"><div class="name">df[col].str.contains(x)</div><div class="desc">rows whose string column contains x</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Reference</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Questions in This Lab</h2>
+        <div class="qcount">
+          <div class="big">16</div>
+          <div class="label">questions across 4 sections.</div>
+        </div>
+        <div class="qnum-grid">
+          <div class="qnum-col">
+            <h3>1. Defining Functions</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">1.1</div>
+              <div class="qnum-chip">1.2</div>
+              <div class="qnum-chip">1.3</div>
+              <div class="qnum-chip">1.4</div>
+            </div>
+          </div>
+          <div class="qnum-col">
+            <h3>2. CEO Incomes</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">2.1</div>
+              <div class="qnum-chip">2.2</div>
+              <div class="qnum-chip">2.3</div>
+              <div class="qnum-chip">2.4</div>
+            </div>
+          </div>
+          <div class="qnum-col">
+            <h3>3. Applying Functions</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">3.1</div>
+              <div class="qnum-chip">3.2</div>
+              <div class="qnum-chip">3.3</div>
+              <div class="qnum-chip">3.4</div>
+              <div class="qnum-chip">3.5</div>
+              <div class="qnum-chip">3.6</div>
+            </div>
+          </div>
+          <div class="qnum-col">
+            <h3>4. Histograms</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">4.1</div>
+              <div class="qnum-chip">4.2</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Section 1: Defining Functions ===================== -->
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">1</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Defining Functions</div>
+      <div class="divider-sub">The anatomy of a function: name, signature, body, and what return actually does.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.1&ndash;1.2 &middot; Function Anatomy</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Defining a Function</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><b>def</b>, then a name, then a signature in parentheses &mdash; the argument names the body gets to use.</li>
+            <li>A colon starts the body; every line inside it must be indented.</li>
+            <li><b>return</b> is what the function call evaluates to. Names created inside the body disappear once the call ends.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>def to_double(x):
+    <span class="c-str">"""Doubles a number."""</span>
+    return x <span class="c-num">*</span> <span class="c-num">2</span>
+
+to_double(<span class="c-num">21</span>)  <span class="c-com"># 42</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 1.1</div><div class="qtext">Define <code>to_percentage</code>, which converts a proportion to a percentage, and use it to compute <code>twenty_percent</code>.</div></div>
+          <div class="chip"><div class="qid">Question 1.2</div><div class="qtext">Call <code>to_percentage</code> again on the given <code>a_proportion</code> to get <code>a_percentage</code>.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.3&ndash;1.4 &middot; Calls on Calls, Print vs. Return</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Functions Calling Functions</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>A function's body can call any other function you've already defined &mdash; including one you just wrote.</li>
+            <li><code>print</code> only displays a value; it doesn't hand it back to the caller.</li>
+            <li>A function with no <code>return</code> statement evaluates to <code>None</code>, even if it printed something.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>def shout(word):
+    print(word.upper())
+
+result = shout(<span class="c-str">"hi"</span>)  <span class="c-com"># prints HI</span>
+result <span class="c-com"># None -- shout never returned anything</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 1.3</div><div class="qtext">Write <code>num_non_vowels</code>, which counts non-vowel characters, by calling the provided <code>disemvowel</code> function inside it.</div></div>
+          <div class="chip"><div class="qid">Question 1.4</div><div class="qtext">Write <code>print_kth_top_movie_year(k)</code>, which prints a sentence about the year ranked <code>k</code>-th by total gross movie sales.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Section 2: Functions and CEO Incomes ===================== -->
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">2</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Functions and CEO Incomes</div>
+      <div class="divider-sub">Real CSV data rarely arrives as clean numbers -- cleaning it is a job for a function.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">2.1&ndash;2.2 &middot; Inspecting Data</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Checking Data Types</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>type(x)</code> tells you what kind of value you're holding.</li>
+            <li>A CSV column can load as text even when every entry looks like a number.</li>
+            <li>Calling <code>np.average</code> on a column of strings raises a <code>TypeError</code> &mdash; that's the clue something needs converting.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>type(raw_compensation[<span class="c-str">"Total Pay"</span>].iloc[<span class="c-num">0</span>])
+<span class="c-com"># str -- even though it looks like a number!</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 2.1</div><div class="qtext">Set <code>total_pay_type</code> to the type of the first value in the <code>Total Pay</code> column.</div></div>
+          <div class="chip"><div class="qid">Question 2.2</div><div class="qtext">Extract the first value in <code>Total Pay</code> as <code>mark_hurd_pay_string</code>.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">2.3&ndash;2.4 &middot; String to Number</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Converting Pay Strings to Numbers</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>s.strip(char)</code> removes a character from the start or end of a string.</li>
+            <li><code>float(s)</code> turns a numeric-looking string into an actual number.</li>
+            <li>Once you've worked out the steps for one value, wrap them in a function so you can reuse them on any pay string.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre><span class="c-str">"$9"</span>.strip(<span class="c-str">"$"</span>)        <span class="c-com"># '9'</span>
+float(<span class="c-str">"9"</span>) <span class="c-num">*</span> <span class="c-num">1_000_000</span>  <span class="c-com"># 9000000.0</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 2.3</div><div class="qtext">Convert <code>mark_hurd_pay_string</code> to a number of dollars (not millions of dollars).</div></div>
+          <div class="chip"><div class="qid">Question 2.4</div><div class="qtext">Generalize that into <code>convert_pay_string_to_number(pay_string)</code>, using the argument instead of the specific string.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Section 3: Applying Functions ===================== -->
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">3</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Applying Functions</div>
+      <div class="divider-sub">Functions are values too -- apply calls one on every row of a column at once.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">3.1 &middot; Functions as Values</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Functions Are Values</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>A function name with no parentheses after it is just a value &mdash; like a number or a string.</li>
+            <li>That means you can store it in a variable, or put several of them in an array.</li>
+            <li>You still need parentheses to actually call one you've pulled out.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>some_functions = np.array([max, np.average, len])
+some_functions[<span class="c-num">0</span>](<span class="c-num">4</span>, <span class="c-num">-2</span>, <span class="c-num">7</span>)  <span class="c-com"># 4</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 3.1</div><div class="qtext">Make an array containing any 3 other functions you've seen, called <code>some_functions</code>.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">3.2 &middot; The apply Method</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Calling a Function on Every Row</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>df[col].apply(fn)</code> calls <code>fn</code> once for every value in that column and collects the results.</li>
+            <li>It returns a new Series &mdash; the original column is left alone.</li>
+            <li><code>df.copy()</code> makes a new table, so adding a column to it leaves the original untouched.</li>
+          </ul>
+          <div class="panel" style="background:#FFFFFF;">
+            <img src="apply.png" alt="Diagram: raw_compensation's Total Pay column feeds into .apply(convert_pay_string_to_number, &quot;Total Pay&quot;), producing an array of converted numeric values." style="width:100%; height:auto; display:block; border-radius:3px;">
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 3.2</div><div class="qtext">Using <code>apply</code>, build <code>compensation</code>: a copy of <code>raw_compensation</code> with an added <code>Total Pay ($)</code> column.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">3.3&ndash;3.4 &middot; Computing with a Converted Column</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Working with Converted Pay</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>Once a column holds real numbers, ordinary arithmetic and <code>np.average</code> work on it directly.</li>
+            <li>Dividing one converted column by another gives you a proportion, one per row.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>prices = pd.Series([<span class="c-num">9.99</span>, <span class="c-num">14.50</span>, <span class="c-num">3.25</span>])
+np.average(prices)</pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 3.3</div><div class="qtext">Compute the average total pay of the CEOs in the dataset, as <code>average_total_pay</code>.</div></div>
+          <div class="chip"><div class="qid">Question 3.4</div><div class="qtext">Compute <code>cash_proportion</code>: the fraction of each CEO's pay that was cash.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">3.5&ndash;3.6 &middot; Filtering, Then Reapplying</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Filtering Rows and Reapplying apply</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>Boolean indexing (<code>df[df[col] != x]</code>) drops rows, same as before &mdash; now combined with the columns you've converted.</li>
+            <li>You can <code>apply</code> your own function again to parse a second string column.</li>
+            <li>Chain filtering, converting, and computing to go from raw strings to a final answer.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>tbl2 = tbl[tbl[<span class="c-str">"Notes"</span>] != <span class="c-str">"(none)"</span>]
+tbl2[<span class="c-str">"Notes"</span>].apply(parse_note)</pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 3.5</div><div class="qtext">Build <code>with_previous_compensation</code>: filter out CEOs with no previous year, then add a <code>2014 Total Pay ($)</code> column.</div></div>
+          <div class="chip"><div class="qid">Question 3.6</div><div class="qtext">Compute <code>average_pay_2014</code>, the average 2014 pay among those CEOs.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Section 4: Histograms ===================== -->
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">4</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Histograms</div>
+      <div class="divider-sub">Visualizing how values are spread out, not just what they average to.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">4.1&ndash;4.2 &middot; Plotting a Distribution</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Histograms with .hist()</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>df[col].hist()</code> plots the distribution of a numeric column.</li>
+            <li>A histogram shows how spread out the values are &mdash; a few CEOs can pull the average up without most of them earning anywhere near it.</li>
+            <li>Boolean indexing plus <code>len(...)</code> lets you count rows above a threshold, to check the histogram against a number.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>compensation[<span class="c-str">"Total Pay ($)"</span>].hist()</pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 4.1</div><div class="qtext">Make a histogram of the total pay of the CEOs in <code>compensation</code>.</div></div>
+          <div class="chip"><div class="qid">Question 4.2</div><div class="qtext">Find how many CEOs made more than $30 million in total pay, and check it against the histogram.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content" data-tick="1">
+    <div class="slide-frame">
+      <div class="eyebrow">Wrap-Up</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Wrap-Up and Resources</h2>
+        <ul class="points">
+          <li>Stuck on a specific question? <b>Reread the hint inside that cell</b> before asking someone else for the answer &mdash; most of them spell out the exact move.</li>
+          <li>This is an unlocked practice copy: no autograder cells, no submission step. Run cells top to bottom and check your own output against what each question asks for.</li>
+          <li>The <a href="https://www.data8.org/sp26/reference/">Python Reference sheet</a> covers every built-in, string method, NumPy, and pandas call used in this lab.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="chrome">
+  <button class="navbtn" id="prevBtn" aria-label="Previous slide">&larr; prev</button>
+  <div class="progress-track" id="track">
+    <div class="progress-fill" id="fill"></div>
+  </div>
+  <div class="idx-readout mono" id="readout">arr[00 / 00]</div>
+  <button class="navbtn" id="nextBtn" aria-label="Next slide">next &rarr;</button>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var current = 0;
+
+  var fill = document.getElementById('fill');
+  var readout = document.getElementById('readout');
+  var track = document.getElementById('track');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+
+  slides.forEach(function(s, i){
+    if (s.getAttribute('data-tick') === '1'){
+      var t = document.createElement('div');
+      t.className = 'progress-tick';
+      t.style.left = (i/(total-1)*100) + '%';
+      track.appendChild(t);
+    }
+  });
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  function render(){
+    slides.forEach(function(s, i){ s.classList.toggle('active', i === current); });
+    fill.style.width = (current/(total-1)*100) + '%';
+    readout.textContent = 'arr[' + pad(current) + ' / ' + pad(total-1) + ']';
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+  }
+
+  function go(delta){
+    current = Math.max(0, Math.min(total - 1, current + delta));
+    render();
+  }
+
+  prevBtn.addEventListener('click', function(){ go(-1); });
+  nextBtn.addEventListener('click', function(){ go(1); });
+  track.addEventListener('click', function(e){
+    var r = track.getBoundingClientRect();
+    var pct = (e.clientX - r.left) / r.width;
+    current = Math.round(pct * (total - 1));
+    render();
+  });
+
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown'){ e.preventDefault(); go(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace'){ e.preventDefault(); go(-1); }
+    else if (e.key === 'Home'){ current = 0; render(); }
+    else if (e.key === 'End'){ current = total - 1; render(); }
+  });
+
+  render();
+})();
+</script>
