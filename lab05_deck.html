@@ -1,0 +1,903 @@
+<title>Lab 05 Simulations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap">
+<style>
+  :root{
+    --paper:#F1F4F8;
+    --paper-raise:#FFFFFF;
+    --ink:#152433;
+    --ink-soft:#4C5F72;
+    --rule:#D5DEE8;
+    --grid: 213,222,232;
+    --blue:#003262;
+    --blue-text:#003262;
+    --gold:#FDB515;
+    --gold-ink:#6B4A05;
+    --shadow: 20,36,51;
+    --navy-fixed:#00284F;
+    --gold-fixed:#FDB515;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0B1926;
+      --paper-raise:#122232;
+      --ink:#E9F1F8;
+      --ink-soft:#96ACC2;
+      --rule:#22384E;
+      --grid: 34,56,78;
+      --blue-text:#84B6E8;
+      --gold-ink:#FDB515;
+      --shadow: 0,0,0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0B1926;
+    --paper-raise:#122232;
+    --ink:#E9F1F8;
+    --ink-soft:#96ACC2;
+    --rule:#22384E;
+    --grid: 34,56,78;
+    --blue-text:#84B6E8;
+    --gold-ink:#FDB515;
+    --shadow: 0,0,0;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    overflow:hidden;
+    height:100vh;
+    width:100vw;
+  }
+  ::selection{ background:var(--gold); color:var(--navy-fixed); }
+
+  h1,h2,h3{ font-family:"Source Serif 4", Georgia, serif; text-wrap:balance; margin:0; }
+
+  .mono{ font-family:"IBM Plex Mono", "Courier New", monospace; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--blue-text);
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:.6em;
+  }
+  .eyebrow::before{
+    content:"";
+    width:18px; height:2px;
+    background:var(--gold);
+    display:inline-block;
+  }
+
+  code, .code-inline{
+    font-family:"IBM Plex Mono", monospace;
+    background:rgba(var(--grid),.55);
+    padding:.12em .42em;
+    border-radius:3px;
+    font-size:.92em;
+  }
+
+  #deck{
+    position:relative;
+    width:100vw;
+    height:100vh;
+  }
+
+  .slide{
+    position:absolute;
+    inset:0;
+    display:none;
+    padding:min(6.5vh,64px) min(9vw,96px) min(9vh,72px);
+    opacity:0;
+  }
+  .slide.active{
+    display:flex;
+    flex-direction:column;
+    animation: rise .48s ease both;
+  }
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .slide.active{ animation:none; opacity:1; }
+  }
+
+  .slide-frame{
+    width:100%;
+    height:100%;
+    max-width:1180px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    min-height:0;
+  }
+
+  .slide-body{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:28px;
+    padding-right:4px;
+  }
+
+  .title-lg{ font-size:clamp(30px,3.6vw,46px); font-weight:600; line-height:1.08; color:var(--ink); }
+  .title-md{ font-size:clamp(24px,2.6vw,32px); font-weight:600; line-height:1.15; color:var(--ink); }
+
+  .lede{ font-size:clamp(15px,1.25vw,18px); color:var(--ink-soft); line-height:1.55; max-width:62ch; }
+
+  ul.points{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; max-width:66ch; }
+  ul.points li{
+    position:relative;
+    padding-left:28px;
+    font-size:clamp(14.5px,1.15vw,17px);
+    line-height:1.55;
+    color:var(--ink);
+  }
+  ul.points li::before{
+    content:"";
+    position:absolute; left:0; top:.55em;
+    width:8px; height:8px;
+    background:var(--gold);
+    border-radius:1px;
+    transform:rotate(45deg);
+  }
+  ul.points b{ font-weight:600; }
+  ul.points .soft{ color:var(--ink-soft); }
+
+  .grid-2{ display:grid; grid-template-columns:1.05fr .95fr; gap:34px; align-items:center; }
+  @media (max-width:860px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .panel{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:22px 24px;
+    box-shadow:0 1px 0 rgba(var(--shadow),.03);
+  }
+
+  .code-cell{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--blue-text);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .code-cell .cell-head{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    padding:7px 14px;
+    border-bottom:1px dashed var(--rule);
+    letter-spacing:.03em;
+  }
+  .code-cell pre{
+    margin:0;
+    padding:14px 16px;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--ink);
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .code-cell .c-str{ color:#2E7D5B; }
+  :root[data-theme="dark"] .code-cell .c-str, @media (prefers-color-scheme:dark){ .code-cell .c-str{ color:#63C695; } }
+  .code-cell .c-num{ color:var(--gold-ink); }
+  .code-cell .c-com{ color:var(--ink-soft); font-style:italic; }
+
+  .cheat{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  .cheat th{
+    text-align:left; font-family:"IBM Plex Mono",monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft);
+    padding:0 12px 10px; font-weight:600;
+  }
+  .cheat td{
+    font-family:"IBM Plex Mono", monospace;
+    padding:11px 12px;
+    border-top:1px solid var(--rule);
+    vertical-align:middle;
+  }
+  .cheat td.old{ color:var(--ink-soft); text-decoration:line-through; text-decoration-color:rgba(var(--shadow),.35); }
+  .cheat td.arrow{ color:var(--gold-ink); font-family:"IBM Plex Sans",sans-serif; width:24px; text-align:center; }
+  .cheat td.new{ color:var(--blue-text); font-weight:600; }
+
+  .ref-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:26px 22px; }
+  @media (max-width:860px){ .ref-grid{ grid-template-columns:repeat(2,1fr); } }
+  .ref-col{ display:flex; flex-direction:column; gap:13px; min-width:0; }
+  .ref-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.08em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .ref-item .name{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    word-break:break-word;
+  }
+  .ref-item .desc{ font-size:12px; color:var(--ink-soft); line-height:1.4; margin-top:2px; }
+
+  .qcount{ display:flex; align-items:baseline; gap:12px; }
+  .qcount .big{ font-family:"Source Serif 4", serif; font-size:clamp(40px,5vw,56px); font-weight:600; color:var(--gold-ink); line-height:1; }
+  .qcount .label{ font-size:14.5px; color:var(--ink-soft); max-width:34ch; line-height:1.5; }
+
+  .qnum-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:20px; }
+  @media (max-width:900px){ .qnum-grid{ grid-template-columns:repeat(3,1fr); } }
+  .qnum-col{ display:flex; flex-direction:column; gap:10px; }
+  .qnum-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:10.5px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .qnum-chips{ display:flex; flex-direction:column; gap:7px; }
+  .qnum-chip{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:3px;
+    padding:5px 9px;
+    text-align:center;
+  }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:12px; }
+  .chip{
+    display:flex; flex-direction:column; gap:4px;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--gold);
+    border-radius:4px;
+    padding:10px 14px;
+    min-width:210px;
+    flex:1 1 260px;
+  }
+  .chip .qid{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px; font-weight:600;
+    color:var(--gold-ink);
+    letter-spacing:.04em;
+  }
+  .chip .qtext{ font-size:13.5px; color:var(--ink); line-height:1.45; }
+
+  /* --- diagram: array indexing --- */
+  .array-diagram{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .array-row{ display:flex; gap:10px; }
+  .array-box{
+    width:64px; height:64px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:18px; font-weight:600;
+    background:var(--paper-raise);
+    border:1.5px solid var(--rule);
+    border-radius:5px;
+    color:var(--ink);
+  }
+  .array-box.hi{
+    background:var(--gold);
+    border-color:var(--gold-ink);
+    color:var(--navy-fixed);
+  }
+  .index-row{ display:flex; gap:10px; }
+  .index-cell{
+    width:64px; text-align:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12px; color:var(--ink-soft);
+  }
+  .index-cell.hi{ color:var(--gold-ink); font-weight:700; }
+  .diagram-caption{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:14px; color:var(--ink);
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:8px 16px;
+  }
+  .diagram-caption .gold{ color:var(--gold-ink); font-weight:600; }
+
+  /* --- cover --- */
+  .slide[data-kind="cover"] .slide-frame{ justify-content:center; }
+  .cover-mark{ display:flex; gap:8px; flex-wrap:wrap; }
+  .cover-mark span{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    padding:5px 10px;
+    border-radius:3px;
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+  }
+  .cover-mark span.hi{ background:var(--gold); border-color:var(--gold-ink); color:var(--navy-fixed); font-weight:700; }
+  .cover-title{ font-size:clamp(40px,6vw,74px); font-weight:600; line-height:1.02; }
+  .cover-rule{ width:96px; height:5px; background:var(--navy-fixed); position:relative; margin:22px 0 16px; }
+  .cover-rule::after{ content:""; position:absolute; left:0; top:8px; width:96px; height:2px; background:var(--gold); }
+
+  /* --- divider (fixed identity, ignores theme -- deliberate, see header note) --- */
+  .slide[data-kind="divider"]{
+    background:var(--navy-fixed);
+    color:#F2F6FB;
+  }
+  .slide[data-kind="divider"] .slide-frame{ justify-content:center; align-items:flex-start; gap:10px; }
+  .divider-num{
+    font-family:"Source Serif 4", serif;
+    font-size:clamp(90px,13vw,168px);
+    font-weight:600;
+    line-height:.85;
+    color:var(--gold-fixed);
+  }
+  .divider-title{ font-size:clamp(30px,4vw,48px); font-weight:600; color:#F2F6FB; }
+  .divider-sub{ font-size:clamp(14px,1.3vw,18px); color:#B9CBE0; max-width:52ch; }
+  .divider-rule{ width:64px; height:3px; background:var(--gold-fixed); margin:6px 0 14px; }
+
+  /* --- chrome: controls + progress --- */
+  .chrome{
+    position:fixed; left:0; right:0; bottom:0;
+    display:flex; align-items:center; gap:18px;
+    padding:14px min(9vw,96px);
+    z-index:20;
+    pointer-events:none;
+  }
+  .chrome > *{ pointer-events:auto; }
+  .progress-track{
+    position:relative;
+    flex:1;
+    height:3px;
+    background:rgba(var(--grid),.7);
+    border-radius:2px;
+  }
+  .progress-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    background:var(--gold);
+    border-radius:2px;
+    width:0%;
+    transition:width .35s ease;
+  }
+  .progress-tick{
+    position:absolute; top:-3px;
+    width:2px; height:9px;
+    background:var(--ink-soft);
+    opacity:.5;
+    transform:translateX(-1px);
+  }
+  .idx-readout{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+    min-width:92px;
+  }
+  .navbtn{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.04em;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    color:var(--ink);
+    border-radius:4px;
+    padding:8px 14px;
+    cursor:pointer;
+  }
+  .navbtn:hover{ border-color:var(--blue-text); }
+  .navbtn:focus-visible, a:focus-visible, button:focus-visible{
+    outline:2px solid var(--gold-ink);
+    outline-offset:2px;
+  }
+  .navbtn:disabled{ opacity:.35; cursor:default; }
+
+  a{ color:var(--blue-text); }
+
+  .signoff{ font-family:"Source Serif 4", serif; font-style:italic; color:var(--ink-soft); font-size:15px; }
+
+  @media (max-width:640px){
+    .slide{ padding:56px 22px 88px; }
+    .array-box, .index-cell{ width:44px; }
+    .array-box{ height:44px; font-size:14px; }
+  }
+</style>
+
+<div id="deck">
+
+  <section class="slide" data-kind="cover" data-tick="1">
+    <div class="slide-frame">
+      <div class="eyebrow">CS108 &middot; Lab 05</div>
+      <div class="cover-rule"></div>
+      <h1 class="cover-title">Simulations</h1>
+      <p class="lede" style="margin-top:6px;">Comparisons and conditionals, <span class="code-inline">for</span> loops, and random sampling &mdash; using code to imitate chance.</p>
+      <div class="cover-mark" style="margin-top:28px;">
+        <span class="hi">arr[0]</span>
+        <span>arr[1]</span>
+        <span>arr[2]</span>
+        <span>arr[3]</span>
+        <span>arr[4]</span>
+        <span>&hellip;</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">About This Deck</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Library Changes</h2>
+        <p class="lede">This copy trades the class's <span class="code-inline">datascience</span> library for plain NumPy and pandas &mdash; the tools you'll actually keep using after this course. The exercises didn't change; only the syntax around them did.</p>
+        <table class="cheat">
+          <tr><th>datascience</th><th></th><th>numpy / pandas</th></tr>
+          <tr><td class="old">make_array(...)</td><td class="arrow">&rarr;</td><td class="new">np.array([...])</td></tr>
+          <tr><td class="old">Table.read_table(path)</td><td class="arrow">&rarr;</td><td class="new">pd.read_csv(path)</td></tr>
+          <tr><td class="old">Table().with_column(name, vals)</td><td class="arrow">&rarr;</td><td class="new">pd.DataFrame({name: vals})</td></tr>
+          <tr><td class="old">tbl.column('x')</td><td class="arrow">&rarr;</td><td class="new">df['x'].to_numpy()</td></tr>
+          <tr><td class="old">tbl.show(n)</td><td class="arrow">&rarr;</td><td class="new">df.head(n)</td></tr>
+          <tr><td class="old">tbl.sample(n)</td><td class="arrow">&rarr;</td><td class="new">df.sample(n, replace=True)</td></tr>
+          <tr><td class="old">tbl.sample(n, with_replacement=False)</td><td class="arrow">&rarr;</td><td class="new">df.sample(n)  (the default)</td></tr>
+          <tr><td class="old">tbl.hist(col)</td><td class="arrow">&rarr;</td><td class="new">df[col].hist(density=True)</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Reference</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Functions and Methods in This Lab</h2>
+        <div class="ref-grid">
+          <div class="ref-col">
+            <h3>Built-in Functions</h3>
+            <div class="ref-item"><div class="name">==  !=  &lt;  &gt;  &lt;=  &gt;=</div><div class="desc">comparisons; on an array they compare every element</div></div>
+            <div class="ref-item"><div class="name">if / elif / else</div><div class="desc">run the body of the first condition that is true</div></div>
+            <div class="ref-item"><div class="name">for x in array:</div><div class="desc">run the body once for each element</div></div>
+            <div class="ref-item"><div class="name">len(s)</div><div class="desc">number of characters in a string</div></div>
+            <div class="ref-item"><div class="name">min(arr), max(arr)</div><div class="desc">the smallest or largest value</div></div>
+            <div class="ref-item"><div class="name">open(path).read()</div><div class="desc">read a text file into one string</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>String Methods</h3>
+            <div class="ref-item"><div class="name">s.split()</div><div class="desc">break a string into a list of words</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>NumPy</h3>
+            <div class="ref-item"><div class="name">np.array([...])</div><div class="desc">build an array out of a list of values</div></div>
+            <div class="ref-item"><div class="name">np.arange(n)</div><div class="desc">the numbers 0 up to n &minus; 1</div></div>
+            <div class="ref-item"><div class="name">np.random.choice(arr, n)</div><div class="desc">n random picks from arr, with replacement</div></div>
+            <div class="ref-item"><div class="name">np.count_nonzero(arr)</div><div class="desc">how many non-zero values; for booleans, how many are True</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>pandas</h3>
+            <div class="ref-item"><div class="name">pd.read_csv(path)</div><div class="desc">load a CSV file as a table</div></div>
+            <div class="ref-item"><div class="name">pd.DataFrame({...})</div><div class="desc">build a table from named columns</div></div>
+            <div class="ref-item"><div class="name">df.head(n)</div><div class="desc">the first n rows of a table</div></div>
+            <div class="ref-item"><div class="name">df.sample(n, replace=...)</div><div class="desc">n random rows, as a new table</div></div>
+            <div class="ref-item"><div class="name">df[col].apply(fn)</div><div class="desc">call fn on every value in a column</div></div>
+            <div class="ref-item"><div class="name">df[col].to_numpy()</div><div class="desc">pull a column out as an array</div></div>
+            <div class="ref-item"><div class="name">df.assign(col=vals)</div><div class="desc">a copy of the table with a column set</div></div>
+            <div class="ref-item"><div class="name">df[col].hist(...)</div><div class="desc">histogram of a numeric column</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Reference</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Questions in This Lab</h2>
+        <div class="qcount">
+          <div class="big">11</div>
+          <div class="label">questions across 4 sections, split into two notebooks: Questions 1&ndash;2 and Questions 3&ndash;4.</div>
+        </div>
+        <div class="qnum-grid">
+          <div class="qnum-col">
+            <h3>1. Nachos and Conditionals</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">1.1</div>
+              <div class="qnum-chip">1.2</div>
+              <div class="qnum-chip">1.3</div>
+              <div class="qnum-chip">1.4</div>
+              <div class="qnum-chip">1.5</div>
+            </div>
+          </div>
+          <div class="qnum-col">
+            <h3>2. Simulations and For Loops</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">2.1</div>
+              <div class="qnum-chip">2.2</div>
+            </div>
+          </div>
+          <div class="qnum-col">
+            <h3>3. Sampling Basketball Data</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">3.1</div>
+              <div class="qnum-chip">3.2</div>
+            </div>
+          </div>
+          <div class="qnum-col">
+            <h3>4. More Random Sampling</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">4.1</div>
+              <div class="qnum-chip">4.2</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Section 1: Nachos and Conditionals ===================== -->
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">1</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Nachos and Conditionals</div>
+      <div class="divider-sub">Comparisons, random choice, and if/elif/else &mdash; letting a program decide what to do based on a value.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1 &middot; Comparison Operators</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Comparisons Return Booleans</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>A comparison like <code>&lt;</code>, <code>&gt;</code>, or <code>==</code> evaluates to <code>True</code> or <code>False</code>.</li>
+            <li><code>==</code> asks whether two values are equal; <code>=</code> assigns a name. They are <b>not</b> the same.</li>
+            <li>Applied to an array, a comparison checks every element and returns an <b>array of booleans</b>.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>result = <span class="c-num">10</span> / <span class="c-num">2</span> == <span class="c-num">5</span>
+result  <span class="c-com"># True</span>
+
+np.array([<span class="c-num">2</span>, <span class="c-num">9</span>, <span class="c-num">4</span>]) &gt; <span class="c-num">3</span>
+<span class="c-com"># array([False,  True,  True])</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.1 &middot; Random Choice and Counting</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Random Choice and Counting</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>np.random.choice(arr)</code> picks one item at random; every item is equally likely.</li>
+            <li>Passing a count <code>n</code> draws <code>n</code> items <b>with replacement</b> &mdash; an item can be picked again &mdash; and returns an array.</li>
+            <li><code>np.count_nonzero</code> counts the <code>True</code> values in a boolean array, since <code>True</code> is 1 and <code>False</code> is 0.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>nachos = np.array([<span class="c-str">'cheese'</span>, <span class="c-str">'salsa'</span>,
+                   <span class="c-str">'both'</span>, <span class="c-str">'neither'</span>])
+np.random.choice(nachos, <span class="c-num">10</span>)
+
+np.count_nonzero(
+    np.array([<span class="c-num">True</span>, <span class="c-num">False</span>, <span class="c-num">True</span>]))
+<span class="c-com"># 2</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 1.1</div><div class="qtext">Using code, count how many of the ten given nachos have only cheese &mdash; don't type the number in by hand.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.2&ndash;1.3 &middot; Conditional Statements</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Conditional Statements</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>An <code>if</code> statement lets Python choose among alternatives based on whether an expression is true.</li>
+            <li>Conditions are checked in order, top to bottom. <b>Only the first true one</b> runs; the rest are skipped.</li>
+            <li><code>elif</code> needs an <code>if</code> before it; <code>else</code> runs when nothing above was true.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>def sign(x):
+    if x &gt; <span class="c-num">0</span>:
+        return <span class="c-str">'Positive'</span>
+    else:
+        return <span class="c-str">'Negative'</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 1.2</div><div class="qtext">Use an <code>if</code> statement to set <code>say_please</code> based on the number of cheese nachos from 1.1.</div></div>
+          <div class="chip"><div class="qid">Question 1.3</div><div class="qtext">Write <code>nacho_reaction</code>, which returns the reaction string for whichever nacho type it is given.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.4&ndash;1.5 &middot; Tables and apply</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Applying a Function to a Column</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>pd.DataFrame({ ... })</code> builds a table; each key becomes a column name.</li>
+            <li><code>df[col].apply(fn)</code> calls <code>fn</code> once on each value in the column and returns a new <b>Series</b> of the results.</li>
+            <li>Pass the function's name without parentheses &mdash; <code>apply</code> does the calling.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>words = pd.DataFrame({<span class="c-str">'Word'</span>: [<span class="c-str">'cat'</span>, <span class="c-str">'horse'</span>]})
+words[<span class="c-str">'Word'</span>].apply(len)
+<span class="c-com"># 0    3
+# 1    5</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 1.4</div><div class="qtext">Build a table of the ten nachos and their reactions, with columns called <code>Nachos</code> and <code>Reactions</code>.</div></div>
+          <div class="chip"><div class="qid">Question 1.5</div><div class="qtext">Using code, count the <code>'Wow!'</code> reactions in that table.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Section 2: Simulations and For Loops ===================== -->
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">2</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Simulations and For Loops</div>
+      <div class="divider-sub">Repeating a task with <code style="background:rgba(255,255,255,.12);">for</code>, then using repetition to simulate chance.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">2.1 &middot; Iteration</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Iterating Over an Array</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>for &lt;placeholder&gt; in &lt;array&gt;:</code> runs the indented body once for each element.</li>
+            <li>The placeholder name is arbitrary, but pick an informative one and use it consistently in the body.</li>
+            <li>To count as you go, start a variable at 0 and add to it inside the loop.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>num_colors = <span class="c-num">0</span>
+for color in rainbow:
+    num_colors = num_colors + <span class="c-num">1</span>
+num_colors  <span class="c-com"># 7 for a 7-item array</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 2.1</div><div class="qtext">Use a <code>for</code> loop to count the words in <i>Pride and Prejudice</i> that are longer than five letters.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">2.2 &middot; Simulation</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Repeating Code Many Times</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>Sometimes the placeholder's value doesn't matter &mdash; only how many times the loop runs.</li>
+            <li><code>np.arange(n)</code> makes an array of length <code>n</code>, so looping over it repeats the body <code>n</code> times.</li>
+            <li>A simulation repeats a random experiment many times (the <b>trials</b>) and tallies what happens.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>for i in np.arange(<span class="c-num">5</span>):
+    print(<span class="c-str">"Hello, world!"</span>)
+<span class="c-com"># printed 5 times; i is never used</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 2.2</div><div class="qtext">Simulate 10,000 trials of picking two words at random from <i>Pride and Prejudice</i>, and count how often their lengths differ.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Section 3: Sampling Basketball Data ===================== -->
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">3</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Sampling Basketball Data</div>
+      <div class="divider-sub">Estimating facts about a whole population from a smaller sample, using NBA player data.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">3.1 &middot; Parameters and Statistics</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Parameters and Statistics</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>A <b>parameter</b> is a numerical property of the whole population; a <b>statistic</b> is an estimate of it computed from a sample.</li>
+            <li>How useful the estimate is depends on how the sample was gathered.</li>
+            <li>The lab hands you a <code>histograms</code> function that draws the Age and Salary histograms for any table with those columns.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>full_data = pd.read_csv(<span class="c-str">"nba.csv"</span>)
+full_data.head(<span class="c-num">10</span>)
+
+histograms(full_data)</pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 3.1</div><div class="qtext">Write <code>compute_statistics</code>, which draws both histograms and returns the average age and average salary of a table.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">3.2 &middot; Simple Random Samples</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Sampling Rows from a Table</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>In a <b>simple random sample without replacement</b>, every row is equally likely to be chosen and none is chosen twice.</li>
+            <li><code>df.sample(n)</code> returns a new table of <code>n</code> randomly chosen rows. Unlike <code>datascience</code>, pandas samples <b>without</b> replacement by default.</li>
+            <li>Pass <code>replace=True</code> to allow a row to be picked again.</li>
+            <li><code>np.random.choice</code> picks values out of an <i>array</i>; <code>sample</code> picks <i>rows</i> out of a table.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>full_data.sample(<span class="c-num">5</span>, replace=<span class="c-num">True</span>)
+
+full_data.sample(<span class="c-num">5</span>, replace=<span class="c-num">False</span>)</pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 3.2</div><div class="qtext">Draw a simple random sample of size 44 without replacement, run <code>compute_statistics</code> on it, and describe how the results change across runs.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Section 4: More Random Sampling Practice ===================== -->
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">4</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">More Random Sampling Practice</div>
+      <div class="divider-sub">Simulating many trials at once with <code style="background:rgba(255,255,255,.12);">np.random.choice</code>, then comparing sample sizes.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">4.1 &middot; Simulating Many Trials</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Simulating Many Trials at Once</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>First decide what values one trial can take; then <code>np.random.choice(options, n)</code> draws all <code>n</code> trials in a single call &mdash; no loop needed.</li>
+            <li>The result is an array, so you can summarize it with the same tools you've already used on arrays.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>coin = np.array([<span class="c-str">'heads'</span>, <span class="c-str">'tails'</span>])
+flips = np.random.choice(coin, <span class="c-num">100</span>)
+np.count_nonzero(flips == <span class="c-str">'heads'</span>)</pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 4.1</div><div class="qtext">Simulate Bing and Mia's total score after 1,000 rolls of a standard six-sided die, where each roll scores the face that comes up.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">4.2 &middot; Sample Size</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Comparing Sample Sizes</h2>
+        <ul class="points">
+          <li>Reuse your <code>compute_statistics</code> function on several random samples, and run the cell more than once &mdash; each run is a different sample.</li>
+          <li>Watch two things across runs: how much the histogram <b>shapes</b> change, and how far the sample <b>averages</b> land from the full-data values.</li>
+          <li>Compare what you see here with the size-44 samples from 3.2, and with what you expected before you ran anything.</li>
+        </ul>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 4.2</div><div class="qtext">Analyze several simple random samples of size 100 from <code>full_data</code> and compare them with the size-44 samples.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="chrome">
+  <button class="navbtn" id="prevBtn" aria-label="Previous slide">&larr; prev</button>
+  <div class="progress-track" id="track">
+    <div class="progress-fill" id="fill"></div>
+  </div>
+  <div class="idx-readout mono" id="readout">arr[00 / 00]</div>
+  <button class="navbtn" id="nextBtn" aria-label="Next slide">next &rarr;</button>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var current = 0;
+
+  var fill = document.getElementById('fill');
+  var readout = document.getElementById('readout');
+  var track = document.getElementById('track');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+
+  slides.forEach(function(s, i){
+    if (s.getAttribute('data-tick') === '1'){
+      var t = document.createElement('div');
+      t.className = 'progress-tick';
+      t.style.left = (i/(total-1)*100) + '%';
+      track.appendChild(t);
+    }
+  });
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  function render(){
+    slides.forEach(function(s, i){ s.classList.toggle('active', i === current); });
+    fill.style.width = (current/(total-1)*100) + '%';
+    readout.textContent = 'arr[' + pad(current) + ' / ' + pad(total-1) + ']';
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+  }
+
+  function go(delta){
+    current = Math.max(0, Math.min(total - 1, current + delta));
+    render();
+  }
+
+  prevBtn.addEventListener('click', function(){ go(-1); });
+  nextBtn.addEventListener('click', function(){ go(1); });
+  track.addEventListener('click', function(e){
+    var r = track.getBoundingClientRect();
+    var pct = (e.clientX - r.left) / r.width;
+    current = Math.round(pct * (total - 1));
+    render();
+  });
+
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown'){ e.preventDefault(); go(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace'){ e.preventDefault(); go(-1); }
+    else if (e.key === 'Home'){ current = 0; render(); }
+    else if (e.key === 'End'){ current = total - 1; render(); }
+  });
+
+  render();
+})();
+</script>
