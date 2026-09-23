@@ -540,11 +540,15 @@
           <div class="code-cell">
             <div class="cell-head">In&nbsp;[1]:</div>
             <pre>orders = pd.DataFrame({
-    <span class="c-str">'order_id'</span>: [1, 2, 3, 4],
-    <span class="c-str">'customer_id'</span>: [101, 102, 101, 103],
+    <span class="c-str">'order_id'</span>: [1, 2, 3, 4, 5, 6, 7],
+    <span class="c-str">'customer_id'</span>: [101, 102, 101, 103,
+                    105, 102, 106],
     <span class="c-str">'date'</span>: [<span class="c-str">'2024-01-05'</span>, <span class="c-str">'2024-01-07'</span>,
-             <span class="c-str">'2024-01-10'</span>, <span class="c-str">'2024-01-12'</span>],
-    <span class="c-str">'amount'</span>: [59.99, 120.00, 15.50, 84.25]
+             <span class="c-str">'2024-01-10'</span>, <span class="c-str">'2024-01-12'</span>,
+             <span class="c-str">'2024-01-15'</span>, <span class="c-str">'2024-01-18'</span>,
+             <span class="c-str">'2024-01-20'</span>],
+    <span class="c-str">'amount'</span>: [59.99, 120.00, 15.50, 84.25,
+               42.00, 65.75, 30.00]
 })
 orders</pre>
           </div>
@@ -554,17 +558,22 @@ orders</pre>
 0         1          101  2024-01-05   59.99
 1         2          102  2024-01-07  120.00
 2         3          101  2024-01-10   15.50
-3         4          103  2024-01-12   84.25</pre>
+3         4          103  2024-01-12   84.25
+4         5          105  2024-01-15   42.00
+5         6          102  2024-01-18   65.75
+6         7          106  2024-01-20   30.00</pre>
           </div>
         </div>
         <div class="grid-2">
           <div class="code-cell">
             <div class="cell-head">In&nbsp;[2]:</div>
             <pre>customers = pd.DataFrame({
-    <span class="c-str">'customer_id'</span>: [101, 102, 103],
-    <span class="c-str">'name'</span>: [<span class="c-str">'Priya'</span>, <span class="c-str">'Marcus'</span>, <span class="c-str">'Ana'</span>],
+    <span class="c-str">'customer_id'</span>: [101, 102, 103, 105, 106],
+    <span class="c-str">'name'</span>: [<span class="c-str">'Priya'</span>, <span class="c-str">'Marcus'</span>, <span class="c-str">'Ana'</span>,
+             <span class="c-str">'Devon'</span>, <span class="c-str">'Sofia'</span>],
     <span class="c-str">'date'</span>: [<span class="c-str">'2023-11-02'</span>, <span class="c-str">'2023-12-15'</span>,
-             <span class="c-str">'2024-01-01'</span>]
+             <span class="c-str">'2024-01-01'</span>, <span class="c-str">'2024-01-08'</span>,
+             <span class="c-str">'2024-01-13'</span>]
 })
 customers</pre>
           </div>
@@ -573,7 +582,9 @@ customers</pre>
             <pre>   customer_id    name        date
 0          101   Priya  2023-11-02
 1          102  Marcus  2023-12-15
-2          103     Ana  2024-01-01</pre>
+2          103     Ana  2024-01-01
+3          105   Devon  2024-01-08
+4          106   Sofia  2024-01-13</pre>
           </div>
         </div>
         <ul class="points">
@@ -787,11 +798,70 @@ orders.join(customers_idx, on=<span class="c-str">'customer_id'</span>,
     </div>
   </section>
 
-  <!-- ===================== Section 6: Practice with Real Data ===================== -->
+  <!-- ===================== Section 6: Pivot Tables ===================== -->
 
   <section class="slide" data-kind="divider" data-tick="1">
     <div class="slide-frame">
       <div class="divider-num">6</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Pivot Tables</div>
+      <div class="divider-sub">Once two tables are merged, pivot_table() summarizes the result into a grid.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">6.1 &middot; pivot_table()</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Summarizing a Merge with pivot_table()</h2>
+        <div class="grid-2">
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[9]:</div>
+            <pre>orders[<span class="c-str">'category'</span>] = [
+    <span class="c-str">'Electronics'</span>, <span class="c-str">'Home'</span>,
+    <span class="c-str">'Home'</span>, <span class="c-str">'Home'</span>,
+    <span class="c-str">'Home'</span>, <span class="c-str">'Electronics'</span>,
+    <span class="c-str">'Electronics'</span>
+]
+merged = pd.merge(orders, customers,
+                   on=<span class="c-str">'customer_id'</span>)</pre>
+          </div>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[10]:</div>
+            <pre>pd.pivot_table(
+    merged, values=<span class="c-str">'amount'</span>,
+    index=<span class="c-str">'name'</span>, columns=<span class="c-str">'category'</span>,
+    aggfunc=<span class="c-str">'sum'</span>, fill_value=<span class="c-num">0</span>
+)</pre>
+          </div>
+        </div>
+        <div class="grid-2">
+          <ul class="points">
+            <li><b>pivot_table()</b> summarizes a table you already have &mdash; often the output of a merge &mdash; into a compact grid.</li>
+            <li><b>index='name'</b> groups rows by customer, <b>columns='category'</b> spreads the category values into their own columns.</li>
+            <li><b>values='amount', aggfunc='sum'</b> says what to put in each cell and how to combine rows that land in the same spot.</li>
+            <li><b>fill_value=0</b> replaces NaN for combinations that never occurred &mdash; Ana never bought anything in Electronics.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">Out[10]:</div>
+            <pre>category  Electronics    Home
+name
+Ana              0.00   84.25
+Devon             0.00   42.00
+Marcus           65.75  120.00
+Priya            59.99   15.50
+Sofia            30.00    0.00</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Section 7: Practice with Real Data ===================== -->
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">7</div>
       <div class="divider-rule"></div>
       <div class="divider-title">Practice with Real Data</div>
       <div class="divider-sub">Three CSV pairs, all cut from the same box-office table, each built to test a different part of this deck.</div>
@@ -800,7 +870,7 @@ orders.join(customers_idx, on=<span class="c-str">'customer_id'</span>,
 
   <section class="slide" data-kind="content">
     <div class="slide-frame">
-      <div class="eyebrow">6.1 &middot; movies_by_year.csv, split three ways</div>
+      <div class="eyebrow">7.1 &middot; movies_by_year.csv, split three ways</div>
       <div class="slide-body">
         <h2 class="title-lg">Movie Data Practice Problems</h2>
         <p class="lede">Load each pair with <span class="code-inline">pd.read_csv()</span> and work the problem before checking your result against the original <span class="code-inline">movies_by_year.csv</span>.</p>
