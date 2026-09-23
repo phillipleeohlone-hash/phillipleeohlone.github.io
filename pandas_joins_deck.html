@@ -857,6 +857,46 @@ Sofia            30.00    0.00</pre>
     </div>
   </section>
 
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">6.2 &middot; Visualizing pivot_table()</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Plotting the Pivot Table</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>A pivot table is just a DataFrame, so any plotting method works directly on it &mdash; no reshaping needed.</li>
+            <li>A <b>heatmap</b> is the natural fit for a full grid: color shows magnitude, <b>annot=True</b> prints the exact value in each cell.</li>
+            <li>A <b>bar chart</b> works well for comparing categories within each row &mdash; <b>pivot.plot(kind='bar')</b> turns every column into its own bar series.</li>
+          </ul>
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div class="code-cell">
+              <div class="cell-head">In&nbsp;[11]:</div>
+              <pre><span class="c-com"># heatmap</span>
+<span class="c-com">import seaborn as sns</span>
+<span class="c-com">import matplotlib.pyplot as plt</span>
+
+pivot = pd.pivot_table(
+    merged, values=<span class="c-str">'amount'</span>,
+    index=<span class="c-str">'name'</span>, columns=<span class="c-str">'category'</span>,
+    aggfunc=<span class="c-str">'sum'</span>, fill_value=<span class="c-num">0</span>
+)
+
+sns.heatmap(pivot, annot=<span class="c-num">True</span>,
+            fmt=<span class="c-str">'.2f'</span>, cmap=<span class="c-str">'Blues'</span>)
+plt.show()</pre>
+            </div>
+            <div class="code-cell">
+              <div class="cell-head">In&nbsp;[12]:</div>
+              <pre><span class="c-com"># grouped bar chart, straight off the pivot table</span>
+pivot.plot(kind=<span class="c-str">'bar'</span>)
+plt.show()</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ===================== Section 7: Practice with Real Data ===================== -->
 
   <section class="slide" data-kind="divider" data-tick="1">
