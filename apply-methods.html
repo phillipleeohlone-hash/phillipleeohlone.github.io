@@ -1,0 +1,1056 @@
+<title>Supplementary: Ways to Apply</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap">
+<style>
+  :root{
+    --paper:#F1F4F8;
+    --paper-raise:#FFFFFF;
+    --ink:#152433;
+    --ink-soft:#4C5F72;
+    --rule:#D5DEE8;
+    --grid: 213,222,232;
+    --blue:#003262;
+    --blue-text:#003262;
+    --gold:#FDB515;
+    --gold-ink:#6B4A05;
+    --shadow: 20,36,51;
+    --navy-fixed:#00284F;
+    --gold-fixed:#FDB515;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0B1926;
+      --paper-raise:#122232;
+      --ink:#E9F1F8;
+      --ink-soft:#96ACC2;
+      --rule:#22384E;
+      --grid: 34,56,78;
+      --blue-text:#84B6E8;
+      --gold-ink:#FDB515;
+      --shadow: 0,0,0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0B1926;
+    --paper-raise:#122232;
+    --ink:#E9F1F8;
+    --ink-soft:#96ACC2;
+    --rule:#22384E;
+    --grid: 34,56,78;
+    --blue-text:#84B6E8;
+    --gold-ink:#FDB515;
+    --shadow: 0,0,0;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    overflow:hidden;
+    height:100vh;
+    width:100vw;
+  }
+  ::selection{ background:var(--gold); color:var(--navy-fixed); }
+
+  h1,h2,h3{ font-family:"Source Serif 4", Georgia, serif; text-wrap:balance; margin:0; }
+
+  .mono{ font-family:"IBM Plex Mono", "Courier New", monospace; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--blue-text);
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:.6em;
+  }
+  .eyebrow::before{
+    content:"";
+    width:18px; height:2px;
+    background:var(--gold);
+    display:inline-block;
+  }
+
+  code, .code-inline{
+    font-family:"IBM Plex Mono", monospace;
+    background:rgba(var(--grid),.55);
+    padding:.12em .42em;
+    border-radius:3px;
+    font-size:.92em;
+  }
+
+  #deck{
+    position:relative;
+    width:100vw;
+    height:100vh;
+  }
+
+  .slide{
+    position:absolute;
+    inset:0;
+    display:none;
+    padding:min(6.5vh,64px) min(9vw,96px) min(9vh,72px);
+    opacity:0;
+  }
+  .slide.active{
+    display:flex;
+    flex-direction:column;
+    animation: rise .48s ease both;
+  }
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .slide.active{ animation:none; opacity:1; }
+  }
+
+  .slide-frame{
+    width:100%;
+    height:100%;
+    max-width:1180px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    min-height:0;
+  }
+
+  .slide-body{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    gap:28px;
+    padding-right:4px;
+    padding-top:6px;
+  }
+
+  .title-lg{ font-size:clamp(30px,3.6vw,46px); font-weight:600; line-height:1.08; color:var(--ink); }
+  .title-md{ font-size:clamp(24px,2.6vw,32px); font-weight:600; line-height:1.15; color:var(--ink); }
+
+  .lede{ font-size:clamp(15px,1.25vw,18px); color:var(--ink-soft); line-height:1.55; max-width:66ch; }
+
+  ul.points{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; max-width:66ch; }
+  ul.points li{
+    position:relative;
+    padding-left:28px;
+    font-size:clamp(14.5px,1.15vw,17px);
+    line-height:1.55;
+    color:var(--ink);
+  }
+  ul.points li::before{
+    content:"";
+    position:absolute; left:0; top:.55em;
+    width:8px; height:8px;
+    background:var(--gold);
+    border-radius:1px;
+    transform:rotate(45deg);
+  }
+  ul.points b{ font-weight:600; }
+  ul.points .soft{ color:var(--ink-soft); }
+
+  .grid-2{ display:grid; grid-template-columns:1.05fr .95fr; gap:34px; align-items:center; }
+  @media (max-width:860px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .panel{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:22px 24px;
+    box-shadow:0 1px 0 rgba(var(--shadow),.03);
+  }
+
+  .code-cell{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--blue-text);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .code-cell .cell-head{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    padding:7px 14px;
+    border-bottom:1px dashed var(--rule);
+    letter-spacing:.03em;
+  }
+  .code-cell pre{
+    margin:0;
+    padding:14px 16px;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--ink);
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .code-cell .c-str{ color:#2E7D5B; }
+  :root[data-theme="dark"] .code-cell .c-str, @media (prefers-color-scheme:dark){ .code-cell .c-str{ color:#63C695; } }
+  .code-cell .c-num{ color:var(--gold-ink); }
+  .code-cell .c-com{ color:var(--ink-soft); font-style:italic; }
+
+  .cheat{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  .cheat th{
+    text-align:left; font-family:"IBM Plex Mono",monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft);
+    padding:0 12px 10px; font-weight:600;
+  }
+  .cheat td{
+    font-family:"IBM Plex Mono", monospace;
+    padding:11px 12px;
+    border-top:1px solid var(--rule);
+    vertical-align:middle;
+  }
+  .cheat td.new{ color:var(--blue-text); font-weight:600; }
+  .cheat td.desc{ font-family:"IBM Plex Sans", sans-serif; color:var(--ink-soft); font-size:13px; }
+
+  .ref-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:26px 22px; }
+  @media (max-width:860px){ .ref-grid{ grid-template-columns:repeat(2,1fr); } }
+  .ref-col{ display:flex; flex-direction:column; gap:13px; min-width:0; }
+  .ref-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.08em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .ref-item .name{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    word-break:break-word;
+  }
+  .ref-item .desc{ font-size:12px; color:var(--ink-soft); line-height:1.4; margin-top:2px; }
+
+  .qcount{ display:flex; align-items:baseline; gap:12px; }
+  .qcount .big{ font-family:"Source Serif 4", serif; font-size:clamp(40px,5vw,56px); font-weight:600; color:var(--gold-ink); line-height:1; }
+  .qcount .label{ font-size:14.5px; color:var(--ink-soft); max-width:34ch; line-height:1.5; }
+
+  .qnum-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+  @media (max-width:900px){ .qnum-grid{ grid-template-columns:repeat(2,1fr); } }
+  .qnum-col{ display:flex; flex-direction:column; gap:10px; }
+  .qnum-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:10.5px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .qnum-chips{ display:flex; flex-direction:column; gap:7px; }
+  .qnum-chip{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:3px;
+    padding:5px 9px;
+    text-align:center;
+  }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:12px; }
+  .chip{
+    display:flex; flex-direction:column; gap:16px;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:5px solid var(--gold);
+    border-radius:8px;
+    padding:22px 26px;
+    min-width:210px;
+    flex:1 1 260px;
+    box-shadow:0 2px 12px rgba(var(--shadow),.05);
+  }
+  .chip .qid{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:13px; font-weight:700;
+    text-transform:uppercase;
+    color:var(--gold-ink);
+    letter-spacing:.08em;
+  }
+  .chip .qtext{ font-size:clamp(16.5px,1.5vw,19px); color:var(--ink); line-height:1.55; font-weight:500; max-width:62ch; }
+  .chip .qtext code{ font-size:.84em; }
+  .chip .code-cell{ margin-top:2px; }
+  .chip.practice{ border-left-color:var(--blue-text); }
+  .chip.practice .qid{ color:var(--blue-text); }
+
+  .code-cell .blank{
+    display:inline-block;
+    min-width:2.1em;
+    padding:0 6px;
+    border-radius:3px;
+    color:var(--gold-ink);
+    background:rgba(253,181,21,.24);
+    font-weight:700;
+    text-align:center;
+  }
+
+  .side-stack{ display:flex; flex-direction:column; gap:20px; }
+  .grid-2.top{ align-items:flex-start; }
+
+  .bridge-row{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .bridge-tag{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    padding:8px 14px;
+    border-radius:4px;
+    border:1px solid var(--rule);
+    background:var(--paper-raise);
+    color:var(--ink-soft);
+  }
+  .bridge-tag.hi{ background:var(--gold); border-color:var(--gold-ink); color:var(--navy-fixed); }
+  .bridge-arrow{ font-size:20px; color:var(--gold-ink); }
+
+  .axis-diagram{ display:flex; gap:28px; flex-wrap:wrap; }
+  .axis-card{
+    flex:1 1 260px;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:16px 18px;
+  }
+  .axis-card h4{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12px; font-weight:600; letter-spacing:.04em;
+    color:var(--gold-ink); margin:0 0 10px;
+  }
+  .axis-grid{ display:grid; grid-template-columns:repeat(3,32px); gap:5px; margin-bottom:10px; }
+  .axis-cell{
+    width:32px; height:26px;
+    border:1.5px solid var(--rule);
+    border-radius:3px;
+    background:var(--paper);
+  }
+  .axis-card.col-mode .axis-cell.hit0{ border-color:var(--gold-ink); background:var(--gold); }
+  .axis-card.row-mode .axis-cell.hit-row1{ border-color:var(--gold-ink); background:var(--gold); }
+  .axis-card p{ font-size:13px; color:var(--ink-soft); line-height:1.5; margin:0; }
+
+  /* --- cover --- */
+  .slide[data-kind="cover"] .slide-frame{ justify-content:center; }
+  .cover-mark{ display:flex; gap:8px; flex-wrap:wrap; }
+  .cover-mark span{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    padding:5px 10px;
+    border-radius:3px;
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+  }
+  .cover-mark span.hi{ background:var(--gold); border-color:var(--gold-ink); color:var(--navy-fixed); font-weight:700; }
+  .cover-title{ font-size:clamp(40px,6vw,74px); font-weight:600; line-height:1.02; }
+  .cover-rule{ width:96px; height:5px; background:var(--navy-fixed); position:relative; margin:22px 0 16px; }
+  .cover-rule::after{ content:""; position:absolute; left:0; top:8px; width:96px; height:2px; background:var(--gold); }
+
+  /* --- divider (fixed identity, ignores theme -- deliberate, see header note) --- */
+  .slide[data-kind="divider"]{
+    background:var(--navy-fixed);
+    color:#F2F6FB;
+  }
+  .slide[data-kind="divider"] .slide-frame{ justify-content:center; align-items:flex-start; gap:10px; }
+  .divider-num{
+    font-family:"Source Serif 4", serif;
+    font-size:clamp(90px,13vw,168px);
+    font-weight:600;
+    line-height:.85;
+    color:var(--gold-fixed);
+  }
+  .divider-title{ font-size:clamp(30px,4vw,48px); font-weight:600; color:#F2F6FB; }
+  .divider-sub{ font-size:clamp(14px,1.3vw,18px); color:#B9CBE0; max-width:52ch; }
+  .divider-rule{ width:64px; height:3px; background:var(--gold-fixed); margin:6px 0 14px; }
+  .divider-cta{
+    margin-top:18px;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:14px; font-weight:600;
+    color:var(--navy-fixed);
+    background:var(--gold-fixed);
+    border-radius:4px;
+    padding:10px 18px;
+    text-decoration:none;
+  }
+  .divider-cta:hover{ opacity:.9; }
+
+  /* --- chrome: controls + progress --- */
+  .chrome{
+    position:fixed; left:0; right:0; bottom:0;
+    display:flex; align-items:center; gap:18px;
+    padding:14px min(9vw,96px);
+    z-index:20;
+    pointer-events:none;
+  }
+  .chrome > *{ pointer-events:auto; }
+  .progress-track{
+    position:relative;
+    flex:1;
+    height:3px;
+    background:rgba(var(--grid),.7);
+    border-radius:2px;
+  }
+  .progress-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    background:var(--gold);
+    border-radius:2px;
+    width:0%;
+    transition:width .35s ease;
+  }
+  .progress-tick{
+    position:absolute; top:-3px;
+    width:2px; height:9px;
+    background:var(--ink-soft);
+    opacity:.5;
+    transform:translateX(-1px);
+  }
+  .idx-readout{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+    min-width:92px;
+  }
+  .navbtn{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.04em;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    color:var(--ink);
+    border-radius:4px;
+    padding:8px 14px;
+    cursor:pointer;
+  }
+  .navbtn:hover{ border-color:var(--blue-text); }
+  .navbtn:focus-visible, a:focus-visible, button:focus-visible{
+    outline:2px solid var(--gold-ink);
+    outline-offset:2px;
+  }
+  .navbtn:disabled{ opacity:.35; cursor:default; }
+
+  a{ color:var(--blue-text); }
+
+  .signoff{ font-family:"Source Serif 4", serif; font-style:italic; color:var(--ink-soft); font-size:15px; }
+
+  @media (max-width:640px){
+    .slide{ padding:56px 22px 88px; }
+    .ref-grid{ grid-template-columns:1fr; }
+    .qnum-grid{ grid-template-columns:1fr; }
+  }
+</style>
+
+<div id="deck">
+
+  <section class="slide" data-kind="cover" data-tick="1">
+    <div class="slide-frame">
+      <div class="eyebrow">CS108 &middot; Supplementary</div>
+      <div class="cover-rule"></div>
+      <h1 class="cover-title">Four Ways to<br>Apply</h1>
+      <p class="lede" style="margin-top:6px;">Same box-office dataset, four different tools: <span class="code-inline">Series.apply</span>, <span class="code-inline">DataFrame.apply</span> across rows and columns, <span class="code-inline">.map</span>, and skipping apply entirely with vectorized operations.</p>
+      <div class="cover-mark" style="margin-top:28px;">
+        <span class="hi">df[col].apply(fn)</span>
+        <span>df.apply(fn, axis=1)</span>
+        <span>df[col].map(fn)</span>
+        <span>df[col1] / df[col2]</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">About This Deck</div>
+      <div class="slide-body">
+        <h2 class="title-lg">The Dataset</h2>
+        <p class="lede"><span class="code-inline">movies_by_year.csv</span> has one row per year (1980&ndash;2015): <span class="code-inline">Year</span>, <span class="code-inline">Total Gross</span> (in $M), <span class="code-inline">Number of Movies</span> released, and that year's <span class="code-inline">#1 Movie</span>. Two numeric columns and one text column is exactly the mix that makes the different flavors of <span class="code-inline">apply</span> worth comparing.</p>
+        <div class="code-cell">
+          <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+          <pre>movies = pd.read_csv(<span class="c-str">"movies_by_year.csv"</span>)
+movies.head()
+<span class="c-com">#    Year  Total Gross  Number of Movies                    #1 Movie</span>
+<span class="c-com"># 0  2015      11128.5               702  Star Wars: The Force Awakens</span>
+<span class="c-com"># 1  2014      10360.8               702               American Sniper</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Reference</div>
+      <div class="slide-body">
+        <h2 class="title-lg">The Four Tools, Side by Side</h2>
+        <div class="ref-grid">
+          <div class="ref-col">
+            <h3>Series.apply</h3>
+            <div class="ref-item"><div class="name">df[col].apply(fn)</div><div class="desc">calls fn once per value in one column</div></div>
+            <div class="ref-item"><div class="name">fn(value) &rarr; value</div><div class="desc">fn takes a single cell, returns a single result</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>DataFrame.apply</h3>
+            <div class="ref-item"><div class="name">df.apply(fn, axis=0)</div><div class="desc">fn runs once per column (fn sees a whole column)</div></div>
+            <div class="ref-item"><div class="name">df.apply(fn, axis=1)</div><div class="desc">fn runs once per row (fn sees a whole row)</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>.map</h3>
+            <div class="ref-item"><div class="name">df[col].map(fn)</div><div class="desc">Series-only; fn OR a dict/Series lookup</div></div>
+            <div class="ref-item"><div class="name">df[col].map({...})</div><div class="desc">recode values by lookup, no function needed</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>Vectorized</h3>
+            <div class="ref-item"><div class="name">df[a] / df[b]</div><div class="desc">whole-column arithmetic, no apply at all</div></div>
+            <div class="ref-item"><div class="name">df[col].str.contains(x)</div><div class="desc">built-in string ops, run on the whole column</div></div>
+            <div class="ref-item"><div class="name">np.where(cond, a, b)</div><div class="desc">vectorized if/else across a whole column</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Reference</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Questions in This Deck</h2>
+        <div class="qcount">
+          <div class="big">11</div>
+          <div class="label">questions across 4 sections, plus a supplementary timing exercise.</div>
+        </div>
+        <div class="qnum-grid">
+          <div class="qnum-col">
+            <h3>1. Series.apply</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">1.1</div>
+              <div class="qnum-chip">1.2</div>
+              <div class="qnum-chip">1.3</div>
+            </div>
+          </div>
+          <div class="qnum-col">
+            <h3>2. Table apply: axis=0 / 1</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">2.1</div>
+              <div class="qnum-chip">2.2</div>
+              <div class="qnum-chip">2.3</div>
+            </div>
+          </div>
+          <div class="qnum-col">
+            <h3>3. map vs. apply</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">3.1</div>
+              <div class="qnum-chip">3.2</div>
+              <div class="qnum-chip">3.3</div>
+            </div>
+          </div>
+          <div class="qnum-col">
+            <h3>4. Skip apply: vectorize</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">4.1</div>
+              <div class="qnum-chip">4.2</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Section 1: Series.apply ===================== -->
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">1</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Applying to a Series</div>
+      <div class="divider-sub">The form you already know: one column in, one function, one column of results out.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.1 &middot; A Function of One Value</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Bucketing a Numeric Column</h2>
+        <div class="grid-2 top">
+          <ul class="points">
+            <li><span class="code-inline">df[col].apply(fn)</span> calls <span class="code-inline">fn</span> once per value in that column.</li>
+            <li><span class="code-inline">fn</span> only ever sees <i>one</i> cell at a time &mdash; it has no idea what row it came from.</li>
+            <li>Build on a copy (<span class="code-inline">movies.copy()</span>) before adding a column, so the original stays clean.</li>
+          </ul>
+          <div class="chip">
+            <div class="qid">Question 1.1</div>
+            <div class="qtext">Write a function that labels a year <code>"Busy Year"</code> if its <code>Number of Movies</code> is at least some threshold you choose, otherwise <code>"Quiet Year"</code>. Apply it to add a <code>Volume Label</code> column to a copy of <code>movies</code>.</div>
+            <div class="code-cell">
+              <div class="cell-head">Fill in the blanks</div>
+              <pre><span class="c-num">def</span> classify_volume(n):
+    <span class="c-num">if</span> n &gt;= <span class="blank">___</span>:
+        <span class="c-num">return</span> <span class="blank">"____"</span>
+    <span class="c-num">else</span>:
+        <span class="c-num">return</span> <span class="blank">"____"</span>
+
+movies_copy = movies.copy()
+movies_copy[<span class="c-str">"Volume Label"</span>] = movies_copy[<span class="c-str">"Number of Movies"</span>].apply(<span class="blank">____</span>)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.2 &middot; apply on a Text Column</div>
+      <div class="slide-body">
+        <h2 class="title-lg">apply Works on Strings Too</h2>
+        <div class="grid-2 top">
+          <ul class="points">
+            <li>Nothing about <span class="code-inline">apply</span> is numbers-only &mdash; <span class="code-inline">fn</span> can be any function, including a built-in one.</li>
+            <li>The result is a new Series of the same length, ready to store as a column or feed into sorting.</li>
+          </ul>
+          <div class="chip">
+            <div class="qid">Question 1.2</div>
+            <div class="qtext">Add a <code>Title Length</code> column that stores the number of characters in each <code>#1 Movie</code> title. Which year's title is the longest?</div>
+            <div class="code-cell">
+              <div class="cell-head">Fill in the blanks</div>
+              <pre>movies_copy[<span class="c-str">"Title Length"</span>] = movies_copy[<span class="c-str">"#1 Movie"</span>].apply(<span class="blank">____</span>)
+movies_copy.sort_values(<span class="blank">"____"</span>, ascending=<span class="blank">____</span>).head(<span class="c-num">1</span>)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.3 &middot; Your Own Function, Reused</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Deriving a New Category</h2>
+        <div class="grid-2 top">
+          <ul class="points">
+            <li>Integer division (<span class="code-inline">//</span>) can round a year down to the start of its decade &mdash; no string slicing needed.</li>
+            <li>Once your function exists, <span class="code-inline">apply</span> is what lets you run it on all 36 years at once.</li>
+          </ul>
+          <div class="chip">
+            <div class="qid">Question 1.3</div>
+            <div class="qtext">Write a function that converts a year into a decade label like <code>"1990s"</code>, then apply it to <code>Year</code> to create a <code>Decade</code> column.</div>
+            <div class="code-cell">
+              <div class="cell-head">Fill in the blanks</div>
+              <pre><span class="c-num">def</span> label_decade(year):
+    decade = (year // <span class="blank">___</span>) * <span class="blank">___</span>
+    <span class="c-num">return</span> <span class="c-num">str</span>(decade) + <span class="blank">"_"</span>
+
+movies_copy[<span class="c-str">"Decade"</span>] = movies_copy[<span class="c-str">"Year"</span>].apply(<span class="blank">____</span>)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Section 2: axis=0 vs axis=1 ===================== -->
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">2</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Applying to a Table</div>
+      <div class="divider-sub">DataFrame.apply hands your function a whole column or a whole row at once &mdash; axis decides which.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Concept &middot; Reading axis</div>
+      <div class="slide-body">
+        <h2 class="title-lg">axis=0 Goes Down, axis=1 Goes Across</h2>
+        <p class="lede">The axis argument names the direction that <i>gets collapsed</i>. <span class="code-inline">axis=0</span> collapses down each column, so <span class="code-inline">fn</span> receives one column (a Series) at a time. <span class="code-inline">axis=1</span> collapses across each row, so <span class="code-inline">fn</span> receives one row (a Series) at a time.</p>
+        <div class="axis-diagram">
+          <div class="axis-card col-mode">
+            <h4>axis=0 &middot; fn(column)</h4>
+            <div class="axis-grid">
+              <div class="axis-cell hit0"></div><div class="axis-cell"></div><div class="axis-cell"></div>
+              <div class="axis-cell hit0"></div><div class="axis-cell"></div><div class="axis-cell"></div>
+              <div class="axis-cell hit0"></div><div class="axis-cell"></div><div class="axis-cell"></div>
+            </div>
+            <p>One call per column &mdash; fn sees every year's value for <i>one</i> field.</p>
+          </div>
+          <div class="axis-card row-mode">
+            <h4>axis=1 &middot; fn(row)</h4>
+            <div class="axis-grid">
+              <div class="axis-cell"></div><div class="axis-cell"></div><div class="axis-cell"></div>
+              <div class="axis-cell hit-row1"></div><div class="axis-cell hit-row1"></div><div class="axis-cell hit-row1"></div>
+              <div class="axis-cell"></div><div class="axis-cell"></div><div class="axis-cell"></div>
+            </div>
+            <p>One call per row &mdash; fn sees every field for <i>one</i> year at once.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">2.1 &middot; axis=0, Whole Columns</div>
+      <div class="slide-body">
+        <h2 class="title-lg">One Call per Column</h2>
+        <div class="grid-2 top">
+          <ul class="points">
+            <li>With <span class="code-inline">axis=0</span> (the default), <span class="code-inline">fn</span> gets an entire column as a Series and returns one summary value for it.</li>
+            <li>Restrict to the numeric columns first &mdash; a function expecting numbers will fail on the text column.</li>
+          </ul>
+          <div class="chip">
+            <div class="qid">Question 2.1</div>
+            <div class="qtext">Using <code>.apply(..., axis=0)</code> on the two numeric columns, compute the range (max &minus; min) of each as <code>column_ranges</code>.</div>
+            <div class="code-cell">
+              <div class="cell-head">Fill in the blanks</div>
+              <pre>numeric = movies[[<span class="c-str">"Total Gross"</span>, <span class="c-str">"Number of Movies"</span>]]
+column_ranges = numeric.apply(<span class="c-num">lambda</span> col: col.<span class="blank">____</span>() - col.<span class="blank">____</span>(), axis=<span class="blank">_</span>)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">2.2 &middot; axis=1, Whole Rows</div>
+      <div class="slide-body">
+        <h2 class="title-lg">One Call per Row</h2>
+        <div class="grid-2 top">
+          <ul class="points">
+            <li>With <span class="code-inline">axis=1</span>, <span class="code-inline">fn</span> gets one row as a Series, so it can pull out several fields with <span class="code-inline">row["col"]</span> and combine them.</li>
+            <li>This is the one thing plain <span class="code-inline">Series.apply</span> can't do &mdash; it never sees more than one column.</li>
+          </ul>
+          <div class="chip">
+            <div class="qid">Question 2.2</div>
+            <div class="qtext">Write a row function that computes the average gross per movie for a year, then apply it with <code>axis=1</code> to add an <code>Avg Gross per Movie</code> column.</div>
+            <div class="code-cell">
+              <div class="cell-head">Fill in the blanks</div>
+              <pre><span class="c-num">def</span> avg_gross_per_movie(row):
+    <span class="c-num">return</span> row[<span class="blank">"____"</span>] / row[<span class="blank">"____"</span>]
+
+movies_copy[<span class="c-str">"Avg Gross per Movie"</span>] = movies_copy.apply(<span class="blank">____</span>, axis=<span class="blank">_</span>)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">2.3 &middot; Building Text from a Row</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Combining Columns into One String</h2>
+        <div class="grid-2 top">
+          <ul class="points">
+            <li>An <span class="code-inline">axis=1</span> function can return anything &mdash; a number, a string, even a small Series.</li>
+            <li>f-strings make it easy to weave several row fields into one sentence.</li>
+          </ul>
+          <div class="chip">
+            <div class="qid">Question 2.3</div>
+            <div class="qtext">Write a row function that returns one sentence combining <code>Year</code>, <code>#1 Movie</code>, and <code>Total Gross</code>, then apply it with <code>axis=1</code> to create a <code>Summary</code> column.</div>
+            <div class="code-cell">
+              <div class="cell-head">Fill in the blanks</div>
+              <pre><span class="c-num">def</span> summarize(row):
+    <span class="c-num">return</span> <span class="c-num">f</span><span class="c-str">"{row['<span class="blank">____</span>']}: {row['<span class="blank">____</span>']} led with ${row['<span class="blank">____</span>']}M"</span>
+
+movies_copy[<span class="c-str">"Summary"</span>] = movies_copy.apply(<span class="blank">____</span>, axis=<span class="blank">_</span>)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Section 3: map vs apply ===================== -->
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">3</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">map vs. apply</div>
+      <div class="divider-sub">Both call something on every value of a Series &mdash; but only one of them accepts a lookup table.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">3.1 &middot; Same Function, Same Result</div>
+      <div class="slide-body">
+        <h2 class="title-lg">On a Series, map and apply Often Agree</h2>
+        <div class="grid-2 top">
+          <ul class="points">
+            <li><span class="code-inline">Series.map(fn)</span> and <span class="code-inline">Series.apply(fn)</span> do the same thing when <span class="code-inline">fn</span> is a plain function of one value.</li>
+            <li>The difference only shows up once you reach for what each one <i>can't</i> do &mdash; see the next two questions.</li>
+          </ul>
+          <div class="chip">
+            <div class="qid">Question 3.1</div>
+            <div class="qtext">Pick any plain, one-argument function and confirm that <code>.map()</code> and <code>.apply()</code> produce the same Series when called on <code>#1 Movie</code>.</div>
+            <div class="code-cell">
+              <div class="cell-head">Fill in the blanks</div>
+              <pre>by_map = movies[<span class="c-str">"#1 Movie"</span>].map(<span class="blank">____</span>)
+by_apply = movies[<span class="c-str">"#1 Movie"</span>].apply(<span class="blank">____</span>)
+(by_map == by_apply).all()</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">3.2 &middot; map's Superpower: a Lookup Table</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Recoding Values with a Dictionary</h2>
+        <div class="grid-2 top">
+          <ul class="points">
+            <li><span class="code-inline">map</span> accepts a <b>dict</b> (or another Series) instead of a function &mdash; it looks each value up directly.</li>
+            <li><span class="code-inline">apply</span> has no equivalent: passing a dict to <span class="code-inline">apply</span> is an error, because <span class="code-inline">apply</span> only ever calls something.</li>
+          </ul>
+          <div class="chip">
+            <div class="qid">Question 3.2</div>
+            <div class="qtext">Build an <code>era_names</code> dict that renames every decade in the data to an era nickname of your choosing, then use <code>.map()</code> to create an <code>Era</code> column from <code>Decade</code>.</div>
+            <div class="code-cell">
+              <div class="cell-head">Fill in the blanks</div>
+              <pre>era_names = {
+    <span class="c-str">"1980s"</span>: <span class="blank">"________"</span>,
+    <span class="c-str">"1990s"</span>: <span class="blank">"________"</span>,
+    <span class="c-str">"2000s"</span>: <span class="blank">"________"</span>,
+    <span class="c-str">"2010s"</span>: <span class="blank">"________"</span>,
+}
+movies_copy[<span class="c-str">"Era"</span>] = movies_copy[<span class="c-str">"Decade"</span>].map(<span class="blank">____</span>)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">3.3 &middot; apply's Superpower: Whole Rows</div>
+      <div class="slide-body">
+        <h2 class="title-lg">map Can't See More Than One Column</h2>
+        <div class="grid-2 top">
+          <div class="side-stack">
+            <ul class="points">
+              <li><span class="code-inline">map</span> only exists on a <b>Series</b> &mdash; there's no <span class="code-inline">DataFrame.map</span> that works row-by-row like <span class="code-inline">axis=1</span> apply does.</li>
+              <li>If your function needs values from two or more columns at once (like Question 2.2), <span class="code-inline">apply(..., axis=1)</span> is the only one of the two that can do it.</li>
+            </ul>
+            <div class="code-cell">
+              <div class="cell-head">This won't work</div>
+              <pre>movies[<span class="c-str">"Total Gross"</span>].map(<span class="c-num">lambda</span> g: g / movies[<span class="c-str">"Number of Movies"</span>])
+<span class="c-com"># map's fn only ever sees one Total Gross value,</span>
+<span class="c-com"># never the matching Number of Movies for that same row</span></pre>
+            </div>
+          </div>
+          <div class="chip">
+            <div class="qid">Question 3.3</div>
+            <div class="qtext">Explain in a sentence why <code>Avg Gross per Movie</code> (Question 2.2) can't be built with <code>.map()</code>, only with row-wise <code>.apply()</code>.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Section 4: vectorized instead of apply ===================== -->
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">4</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Skipping apply Altogether</div>
+      <div class="divider-sub">pandas already knows how to run an operation across a whole column &mdash; often you don't need apply at all.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Practice &middot; Arithmetic Needs No Function</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Dividing Two Columns Directly</h2>
+        <div class="grid-2 top">
+          <ul class="points">
+            <li>Question 2.2 wrote a function just to divide two fields &mdash; but <span class="code-inline">+ - * /</span> already work elementwise on whole columns.</li>
+            <li>The vectorized version is shorter <i>and</i> faster: pandas runs the division in optimized C, instead of calling a Python function once per row.</li>
+          </ul>
+          <div class="chip practice">
+            <div class="qid">Try It</div>
+            <div class="qtext">Write two versions of <code>Avg Gross per Movie</code>: the row-wise <code>apply</code> from Question 2.2, and a plain vectorized division. Confirm they match &mdash; you'll time them against each other next.</div>
+            <div class="code-cell">
+              <div class="cell-head">Fill in the blanks</div>
+              <pre>by_apply = movies_copy.apply(<span class="blank">____</span>, axis=<span class="blank">_</span>)
+by_vectorized = movies_copy[<span class="blank">"____"</span>] / movies_copy[<span class="blank">"____"</span>]
+(by_apply == by_vectorized).all()</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Practice &middot; Timing the Difference</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Prove It: Time Both Versions</h2>
+        <div class="grid-2 top">
+          <ul class="points">
+            <li>36 rows run in a fraction of a millisecond either way &mdash; too fast to see a real gap. Stack copies of <span class="code-inline">movies</span> into a much bigger table first.</li>
+            <li><span class="code-inline">pd.concat([movies] * n, ignore_index=True)</span> repeats the whole table <span class="code-inline">n</span> times into one DataFrame.</li>
+            <li><span class="code-inline">time.time()</span> called before and after a block gives elapsed seconds &mdash; no notebook magic required, just <span class="code-inline">import time</span>.</li>
+          </ul>
+          <div class="chip practice">
+            <div class="qid">Try It</div>
+            <div class="qtext">Fill in a repeat count for <code>n</code>, run the timing code below, then try a few other values of <code>n</code> and see how the gap between the two changes.</div>
+            <div class="code-cell">
+              <div class="cell-head">Fill in the blank</div>
+              <pre><span class="c-num">import</span> time
+
+big = pd.concat([movies_copy] * <span class="blank">____</span>, ignore_index=<span class="c-num">True</span>)
+
+start = time.time()
+big.apply(avg_gross_per_movie, axis=<span class="c-num">1</span>)
+<span class="c-num">print</span>(<span class="c-str">"apply:"</span>, time.time() - start, <span class="c-str">"sec"</span>)
+
+start = time.time()
+big[<span class="c-str">"Total Gross"</span>] / big[<span class="c-str">"Number of Movies"</span>]
+<span class="c-num">print</span>(<span class="c-str">"vectorized:"</span>, time.time() - start, <span class="c-str">"sec"</span>)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">4.1 &middot; Vectorized String Methods</div>
+      <div class="slide-body">
+        <h2 class="title-lg">.str Instead of apply(lambda ...)</h2>
+        <div class="grid-2 top">
+          <ul class="points">
+            <li>Some titles are written as <span class="code-inline">"Harry Potter / Deathly Hallows (P2)"</span> &mdash; a franchise name and subtitle joined by <span class="code-inline">/</span>.</li>
+            <li>pandas' <span class="code-inline">.str</span> accessor has vectorized string methods that check every value in a column at once &mdash; no <span class="code-inline">apply</span> or <span class="code-inline">lambda</span> required.</li>
+          </ul>
+          <div class="chip">
+            <div class="qid">Question 4.1</div>
+            <div class="qtext">Add a <code>Franchise Title</code> boolean column that flags <code>#1 Movie</code> titles containing <code>"/"</code>, without using <code>apply</code>. Which years does it flag?</div>
+            <div class="code-cell">
+              <div class="cell-head">Fill in the blanks</div>
+              <pre>movies_copy[<span class="c-str">"Franchise Title"</span>] = movies_copy[<span class="blank">"____"</span>].str.<span class="blank">________</span>(<span class="c-str">"/"</span>)
+movies_copy[movies_copy[<span class="c-str">"Franchise Title"</span>]]</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">4.2 &middot; Vectorized if/else</div>
+      <div class="slide-body">
+        <h2 class="title-lg">np.where Instead of an apply'd if/else</h2>
+        <div class="grid-2 top">
+          <ul class="points">
+            <li><span class="code-inline">np.where(condition, if_true, if_false)</span> checks a whole boolean Series at once and picks a value for every row.</li>
+            <li>It's the vectorized equivalent of an <span class="code-inline">if</span>/<span class="code-inline">else</span> you'd otherwise write inside a function and <span class="code-inline">apply</span>.</li>
+          </ul>
+          <div class="chip">
+            <div class="qid">Question 4.2</div>
+            <div class="qtext">Add a <code>Gross Tier</code> column that labels each year <code>"High"</code> or <code>"Low"</code> based on a <code>Total Gross</code> threshold you choose &mdash; using <code>np.where</code>, with no <code>apply</code> at all.</div>
+            <div class="code-cell">
+              <div class="cell-head">Fill in the blanks</div>
+              <pre>movies_copy[<span class="c-str">"Gross Tier"</span>] = np.where(movies_copy[<span class="c-str">"Total Gross"</span>] &gt; <span class="blank">____</span>, <span class="blank">"____"</span>, <span class="blank">"____"</span>)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-title">Rule of Thumb</div>
+      <div class="divider-rule"></div>
+      <div class="divider-sub">If pandas or NumPy already has a vectorized way to say what you mean, use it. Reach for apply when the logic genuinely needs a custom, row-by-row rule &mdash; and reach for map only when a Series-only lookup or function is all you need.</div>
+      <a class="divider-cta" href="index.html">Back to Course Page &rarr;</a>
+    </div>
+  </section>
+
+</div>
+
+<div class="chrome">
+  <button class="navbtn" id="prevBtn" aria-label="Previous slide">&larr; prev</button>
+  <div class="progress-track" id="track">
+    <div class="progress-fill" id="fill"></div>
+  </div>
+  <div class="idx-readout mono" id="readout">arr[00 / 00]</div>
+  <button class="navbtn" id="nextBtn" aria-label="Next slide">next &rarr;</button>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var current = 0;
+
+  var fill = document.getElementById('fill');
+  var readout = document.getElementById('readout');
+  var track = document.getElementById('track');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+
+  slides.forEach(function(s, i){
+    if (s.getAttribute('data-tick') === '1'){
+      var t = document.createElement('div');
+      t.className = 'progress-tick';
+      t.style.left = (i/(total-1)*100) + '%';
+      track.appendChild(t);
+    }
+  });
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  function render(){
+    slides.forEach(function(s, i){ s.classList.toggle('active', i === current); });
+    fill.style.width = (current/(total-1)*100) + '%';
+    readout.textContent = 'arr[' + pad(current) + ' / ' + pad(total-1) + ']';
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+  }
+
+  function go(delta){
+    current = Math.max(0, Math.min(total - 1, current + delta));
+    render();
+  }
+
+  prevBtn.addEventListener('click', function(){ go(-1); });
+  nextBtn.addEventListener('click', function(){ go(1); });
+  track.addEventListener('click', function(e){
+    var r = track.getBoundingClientRect();
+    var pct = (e.clientX - r.left) / r.width;
+    current = Math.round(pct * (total - 1));
+    render();
+  });
+
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown'){ e.preventDefault(); go(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace'){ e.preventDefault(); go(-1); }
+    else if (e.key === 'Home'){ current = 0; render(); }
+    else if (e.key === 'End'){ current = total - 1; render(); }
+  });
+
+  render();
+})();
+</script>
