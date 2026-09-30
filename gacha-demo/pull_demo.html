@@ -1,0 +1,810 @@
+<title>151 Booster Pull</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+/* Layout concept: a card-shop counter under warm lamp light — four face-up
+   commons laid left to right, one face-down mystery card front and center;
+   clicking it flips to reveal a weighted pull, and a running tally below
+   builds the empirical tier distribution live as the class pulls more cards. */
+:root{
+  --bg:#15110c;
+  --surface:#201a12;
+  --surface-2:#2b2318;
+  --fg:#f3ead9;
+  --fg-dim:#b3a68c;
+  --line:#3c331f;
+  --tier-s:#f0b93d;
+  --tier-a:#b07cff;
+  --tier-b:#57b7ff;
+  --tier-c:#9a917c;
+  --display: 'Bebas Neue', 'Arial Narrow', sans-serif;
+  --body: 'Manrope', system-ui, sans-serif;
+  color-scheme: dark;
+}
+
+*{box-sizing:border-box;}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--body);
+  padding-inline:16px;
+  padding-block:32px;
+  display:flex;
+  justify-content:center;
+}
+
+.page{
+  width:100%;
+  max-width:760px;
+  display:flex;
+  flex-direction:column;
+  gap:28px;
+}
+
+.tabs{
+  display:flex;
+  justify-content:center;
+  gap:4px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:4px;
+  align-self:center;
+}
+
+button.tab-btn{
+  font-family:var(--body);
+  font-weight:700;
+  font-size:0.85rem;
+  letter-spacing:0.02em;
+  background:transparent;
+  color:var(--fg-dim);
+  border:none;
+  border-radius:999px;
+  padding:8px 18px;
+  cursor:pointer;
+}
+
+button.tab-btn.active{
+  background:var(--tier-b);
+  color:#0c1116;
+}
+
+.tab-panel{
+  display:none;
+  flex-direction:column;
+  gap:28px;
+}
+
+.tab-panel.active{
+  display:flex;
+}
+
+.data-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:24px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+  text-align:center;
+}
+
+.data-card p{
+  color:var(--fg-dim);
+  font-size:0.9rem;
+  margin:0;
+  max-width:46ch;
+}
+
+button.get-data{
+  font-family:var(--body);
+  font-weight:800;
+  font-size:0.95rem;
+  letter-spacing:0.02em;
+  background:var(--tier-s);
+  color:#0c1116;
+  border:none;
+  border-radius:999px;
+  padding:12px 26px;
+  cursor:pointer;
+}
+
+button.get-data:hover{filter:brightness(1.08);}
+button.get-data:active{filter:brightness(0.95);}
+button.get-data:disabled{filter:brightness(0.75);cursor:default;}
+
+.data-status{
+  color:var(--tier-b);
+  font-size:0.85rem;
+  font-weight:700;
+  min-height:1.2em;
+}
+
+header{
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+h1{
+  font-family:var(--display);
+  font-size:clamp(2.4rem,7vw,3.4rem);
+  letter-spacing:0.03em;
+  margin:0;
+  text-wrap:balance;
+}
+
+.subtitle{
+  color:var(--fg-dim);
+  font-size:0.95rem;
+  margin:0;
+}
+
+.odds{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:4px;
+}
+
+.odds span{
+  font-variant-numeric:tabular-nums;
+  font-size:0.8rem;
+  padding:3px 10px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  color:var(--fg-dim);
+}
+
+.odds .s{color:var(--tier-s);border-color:color-mix(in srgb, var(--tier-s) 45%, var(--line));}
+.odds .a{color:var(--tier-a);border-color:color-mix(in srgb, var(--tier-a) 45%, var(--line));}
+.odds .b{color:var(--tier-b);border-color:color-mix(in srgb, var(--tier-b) 45%, var(--line));}
+.odds .c{color:var(--tier-c);border-color:color-mix(in srgb, var(--tier-c) 45%, var(--line));}
+
+.commons-row{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+
+.slot{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:6px;
+  min-width:0;
+}
+
+.slot img{
+  display:block;
+  width:100%;
+  height:auto;
+  border-radius:6px;
+}
+
+.slot .cap{
+  text-align:center;
+  font-size:0.7rem;
+  color:var(--fg-dim);
+  padding-top:4px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.mystery-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:16px;
+}
+
+.mystery-card{
+  width:min(52vw,220px);
+  aspect-ratio:245/342;
+  perspective:1200px;
+  cursor:pointer;
+}
+
+.mystery-card:focus-visible .card-inner{
+  outline:2px solid var(--tier-b);
+  outline-offset:4px;
+}
+
+.card-inner{
+  position:relative;
+  width:100%;
+  height:100%;
+  transition:transform 0.55s cubic-bezier(.2,.8,.2,1);
+  transform-style:preserve-3d;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .card-inner{transition:none;}
+}
+
+.card-inner.flipped{
+  transform:rotateY(180deg);
+}
+
+.card-face{
+  position:absolute;
+  inset:0;
+  backface-visibility:hidden;
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid var(--line);
+}
+
+.card-back{
+  background:
+    radial-gradient(circle at 50% 42%, var(--surface-2) 0 18%, transparent 19%),
+    repeating-linear-gradient(45deg, var(--surface-2) 0 10px, var(--surface) 10px 20px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.card-back .mark{
+  width:44%;
+  aspect-ratio:1;
+  border-radius:50%;
+  border:4px solid var(--fg-dim);
+  position:relative;
+  background:var(--surface);
+}
+
+.card-back .mark::before{
+  content:"";
+  position:absolute;
+  left:-4px;right:-4px;top:calc(50% - 2px);
+  height:4px;
+  background:var(--fg-dim);
+}
+
+.card-back .mark::after{
+  content:"";
+  position:absolute;
+  left:50%;top:50%;
+  width:22%;
+  aspect-ratio:1;
+  border-radius:50%;
+  border:4px solid var(--fg-dim);
+  background:var(--surface);
+  transform:translate(-50%,-50%);
+}
+
+.card-front{
+  transform:rotateY(180deg);
+  background:var(--surface);
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 0 0 3px transparent inset;
+}
+
+.card-front[data-tier="S"]{box-shadow:0 0 0 3px var(--tier-s) inset, 0 0 28px -6px var(--tier-s);}
+.card-front[data-tier="A"]{box-shadow:0 0 0 3px var(--tier-a) inset, 0 0 28px -6px var(--tier-a);}
+.card-front[data-tier="B"]{box-shadow:0 0 0 3px var(--tier-b) inset, 0 0 22px -8px var(--tier-b);}
+.card-front[data-tier="C"]{box-shadow:0 0 0 3px var(--tier-c) inset;}
+
+.card-front img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.hint{
+  color:var(--fg-dim);
+  font-size:0.85rem;
+  min-height:1.2em;
+}
+
+.reveal-info{
+  text-align:center;
+  min-height:2.6em;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.reveal-info .name{
+  font-family:var(--display);
+  font-size:1.4rem;
+  letter-spacing:0.02em;
+}
+
+.reveal-info .tier{
+  font-size:0.8rem;
+  font-weight:800;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+}
+
+.reveal-info .tier[data-tier="S"]{color:var(--tier-s);}
+.reveal-info .tier[data-tier="A"]{color:var(--tier-a);}
+.reveal-info .tier[data-tier="B"]{color:var(--tier-b);}
+.reveal-info .tier[data-tier="C"]{color:var(--tier-c);}
+
+button.pull-again{
+  font-family:var(--body);
+  font-weight:800;
+  font-size:0.9rem;
+  letter-spacing:0.02em;
+  background:var(--tier-b);
+  color:#0c1116;
+  border:none;
+  border-radius:999px;
+  padding:10px 22px;
+  cursor:pointer;
+  visibility:hidden;
+}
+
+button.pull-again.show{visibility:visible;}
+button.pull-again:hover{filter:brightness(1.08);}
+button.pull-again:active{filter:brightness(0.95);}
+
+.bulk{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+}
+
+.bulk-label{
+  color:var(--fg-dim);
+  font-size:0.75rem;
+}
+
+.bulk-row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+button.bulk-sim{
+  font-family:var(--body);
+  font-weight:700;
+  font-size:0.8rem;
+  letter-spacing:0.02em;
+  background:transparent;
+  color:var(--fg-dim);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:7px 16px;
+  cursor:pointer;
+}
+
+button.bulk-sim:hover{color:var(--fg);border-color:var(--tier-b);}
+button.bulk-sim:active{filter:brightness(0.9);}
+
+.tally{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:16px 18px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.tally-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  color:var(--fg-dim);
+  font-size:0.8rem;
+}
+
+.tally-head .n{
+  font-variant-numeric:tabular-nums;
+  color:var(--fg);
+  font-weight:700;
+}
+
+.tally-row{
+  display:grid;
+  grid-template-columns:70px 1fr 64px;
+  align-items:center;
+  gap:10px;
+  font-size:0.85rem;
+}
+
+.tally-row .label{font-weight:800;letter-spacing:0.03em;}
+.tally-row .label.s{color:var(--tier-s);}
+.tally-row .label.a{color:var(--tier-a);}
+.tally-row .label.b{color:var(--tier-b);}
+.tally-row .label.c{color:var(--tier-c);}
+
+.bar-track{
+  background:var(--surface-2);
+  border-radius:999px;
+  height:8px;
+  overflow:hidden;
+}
+
+.bar-fill{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  transition:width 0.4s ease;
+}
+
+.bar-fill.s{background:var(--tier-s);}
+.bar-fill.a{background:var(--tier-a);}
+.bar-fill.b{background:var(--tier-b);}
+.bar-fill.c{background:var(--tier-c);}
+
+.tally-row .val{
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+  color:var(--fg-dim);
+}
+
+footer{
+  text-align:center;
+  color:var(--fg-dim);
+  font-size:0.75rem;
+}
+
+@media (max-width:480px){
+  .commons-row{grid-template-columns:repeat(4,1fr);gap:6px;}
+  .tally-row{grid-template-columns:56px 1fr 56px;}
+}
+</style>
+
+<div class="page">
+  <div class="tabs">
+    <button class="tab-btn active" id="tabBtnPull">Booster Pull</button>
+    <button class="tab-btn" id="tabBtnData">Get Your Data</button>
+  </div>
+
+  <div class="tab-panel active" id="tabPull">
+  <header>
+    <h1>151 Booster Pull</h1>
+    <p class="subtitle">Four commons are already face up. The fifth card is always a holo hit &mdash; click it to reveal.</p>
+    <div class="odds">
+      <span class="s">S 1%</span>
+      <span class="a">A 4%</span>
+      <span class="b">B 15%</span>
+      <span class="c">C 80%</span>
+    </div>
+  </header>
+
+  <div class="commons-row" id="commonsRow"></div>
+
+  <div class="mystery-wrap">
+    <div class="mystery-card" id="mysteryCard" tabindex="0" role="button" aria-label="Reveal the fifth card">
+      <div class="card-inner" id="cardInner">
+        <div class="card-face card-back"><div class="mark"></div></div>
+        <div class="card-face card-front" id="cardFront" data-tier="">
+          <img id="revealedImg" src="" alt="">
+        </div>
+      </div>
+    </div>
+    <p class="hint" id="hint">Click to open</p>
+    <div class="reveal-info">
+      <span class="tier" id="tierLabel" data-tier=""></span>
+      <span class="name" id="nameLabel"></span>
+    </div>
+    <button class="pull-again" id="pullAgain">Pull again</button>
+  </div>
+
+  <div class="bulk">
+    <p class="bulk-label">Bulk simulate (adds straight to the tally below, no card shown)</p>
+    <div class="bulk-row">
+      <button class="bulk-sim" id="bulk5">Simulate 5</button>
+      <button class="bulk-sim" id="bulk10">Simulate 10</button>
+      <button class="bulk-sim" id="bulk100">Simulate 100</button>
+    </div>
+  </div>
+
+  <div class="tally">
+    <div class="tally-head"><span>Pulls so far</span><span class="n" id="totalPulls">0</span></div>
+    <div class="tally-row">
+      <span class="label s">S</span>
+      <div class="bar-track"><div class="bar-fill s" id="barS"></div></div>
+      <span class="val" id="valS">0 &mdash; 0%</span>
+    </div>
+    <div class="tally-row">
+      <span class="label a">A</span>
+      <div class="bar-track"><div class="bar-fill a" id="barA"></div></div>
+      <span class="val" id="valA">0 &mdash; 0%</span>
+    </div>
+    <div class="tally-row">
+      <span class="label b">B</span>
+      <div class="bar-track"><div class="bar-fill b" id="barB"></div></div>
+      <span class="val" id="valB">0 &mdash; 0%</span>
+    </div>
+    <div class="tally-row">
+      <span class="label c">C</span>
+      <div class="bar-track"><div class="bar-fill c" id="barC"></div></div>
+      <span class="val" id="valC">0 &mdash; 0%</span>
+    </div>
+  </div>
+
+  <footer>151 (Scarlet &amp; Violet) card art via the Pokemon TCG API &mdash; classroom demo, not for redistribution</footer>
+  </div>
+
+  <div class="tab-panel" id="tabData">
+    <header>
+      <h1>Get Your Data</h1>
+      <p class="subtitle">One click gives you one dataset for the investigation. Every click rolls independently, so don't assume anyone else in the room has the same file you do.</p>
+    </header>
+
+    <div class="data-card">
+      <p>This downloads <code>gacha_pull_results.csv</code> &mdash; a real record of pulls from one player group, already scored against the game's claimed drop rates. You'll analyze it yourself; nothing here tells you whether it makes the game look fair.</p>
+      <button class="get-data" id="getDataBtn">Get My Dataset</button>
+      <p class="data-status" id="dataStatus"></p>
+    </div>
+  </div>
+</div>
+
+<script src="cardData.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var EM = "—"; // em dash, escaped so it renders correctly regardless of charset
+
+  // Ten real trial datasets for the "Get Your Data" tab. Each browser that
+  // clicks "Get My Dataset" rolls its own random pick independently — this
+  // is a static page with no server, so it can't coordinate across students
+  // to guarantee no two people get the same trial (true without-replacement
+  // would need a shared backend). Good enough for a single-section demo;
+  // worth knowing about if you're running this across multiple sections.
+  var TRIAL_DATA = {
+    "1": "Pull Result\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nB\nC\nC\nB\nC\nB\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nB\nC\nC\nB\nC\nC\nC\nB\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nB\nC\nC\nB\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nB\nC\nB\nC\nC",
+    "2": "Pull Result\nC\nB\nC\nC\nC\nB\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nB\nB\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nB\nC\nB\nB\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nA\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nB\nC\nC\nC",
+    "3": "Pull Result\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nA\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nS\nC\nC\nC\nB\nC\nC\nC\nC\nC\nB\nC\nC\nB\nA\nC\nC\nA\nC\nC\nC\nC\nC\nC\nC\nB\nB\nC\nB\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nS\nC\nB\nC\nB\nC\nC\nC\nC\nC\nC\nC\nB\nB\nA\nB\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nB\nC\nC\nB\nC\nA\nC\nC\nC\nC\nC\nC\nB\nB\nC\nC\nC\nA\nC\nC\nC",
+    "4": "Pull Result\nC\nC\nC\nB\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nB\nC\nC\nC\nB\nC\nB\nB\nC\nC\nC\nC\nC\nB\nC\nB\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nB\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nB\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nB\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC",
+    "5": "Pull Result\nC\nC\nB\nC\nB\nC\nC\nC\nB\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nB\nB\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nB\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nB\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nB\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nA\nC\nC\nC\nB\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC",
+    "6": "Pull Result\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nA\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nA\nC\nC\nB\nC\nC\nC\nC\nB\nC\nC\nC\nA\nB\nC\nC\nC\nC\nC\nC\nB\nC\nC\nB\nC\nC\nC\nC\nC\nA\nC\nC\nC\nC\nC\nC\nA\nC\nB\nB\nC\nC\nC\nC\nC\nC\nC\nB\nC\nB\nC\nC\nC\nC\nC\nC\nC\nB\nC\nB\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nB\nC\nC\nB\nC\nC\nC\nC\nC\nC\nB\nC\nB\nC\nB\nB\nC\nC\nC\nC\nA\nB\nC\nC\nC\nB\nB\nC\nC\nC\nC\nC\nB\nB\nC\nC\nC\nC\nC\nA\nC\nS\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC",
+    "7": "Pull Result\nC\nB\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nB\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nB\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nB\nB\nC\nB\nC\nC\nC\nC\nC\nB\nB\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nB\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC",
+    "8": "Pull Result\nC\nB\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nA\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nB\nC\nB\nC\nC\nB\nC\nB\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nB\nC\nC\nC\nC\nB\nB\nC\nC\nB\nC\nC\nC\nC\nC\nB\nC\nB\nC\nC\nC\nC\nC\nC",
+    "9": "Pull Result\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nA\nC\nB\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nA\nC\nC\nB\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nA\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nB\nB\nC\nC\nC\nS\nC\nC\nC\nC\nC\nA\nC\nB\nC\nC\nC\nC\nB\nC\nC\nS\nC\nC\nA\nC\nC\nB\nC\nB\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nB\nC\nC\nC\nC\nB\nC\nB\nC\nC\nB\nC\nC\nC\nC\nB\nC\nB\nC\nB\nC\nB\nC",
+    "10": "Pull Result\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nB\nC\nC\nC\nC\nB\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nB\nC\nC\nC\nB\nC\nC\nC\nC\nC\nB\nC\nC\nC\nB\nB\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nC\nC\nC\nC\nC\nC\nC\nB\nC\nB\nC\nC\nB\nC\nC\nC\nC\nB\nB\nB\nC\nB\nB\nC\nC\nC\nC\nC\nC\nC\nC\nC\nC"
+  };
+
+  var TIERS = [
+    { key:"S", label:"S-Tier " + EM + " Special Illustration Rare", weight:0.01,
+      cards:[
+        {name:"Venusaur ex", num:"198"},
+        {name:"Charizard ex", num:"199"},
+        {name:"Blastoise ex", num:"200"},
+        {name:"Alakazam ex", num:"201"},
+        {name:"Zapdos ex", num:"202"}
+      ]
+    },
+    { key:"A", label:"A-Tier " + EM + " Illustration Rare", weight:0.04,
+      cards:[
+        {name:"Caterpie", num:"172"},
+        {name:"Pikachu", num:"173"},
+        {name:"Charmander", num:"168"},
+        {name:"Bulbasaur", num:"166"},
+        {name:"Charmeleon", num:"169"},
+        {name:"Wartortle", num:"171"}
+      ]
+    },
+    { key:"B", label:"B-Tier " + EM + " Double Rare", weight:0.15,
+      cards:[
+        {name:"Venusaur ex", num:"3"},
+        {name:"Blastoise ex", num:"9"},
+        {name:"Arbok ex", num:"24"},
+        {name:"Charizard ex", num:"6"},
+        {name:"Wigglytuff ex", num:"40"},
+        {name:"Ninetales ex", num:"38"},
+        {name:"Golem ex", num:"76"},
+        {name:"Alakazam ex", num:"65"}
+      ]
+    },
+    { key:"C", label:"C-Tier " + EM + " Rare Holo", weight:0.80,
+      cards:[
+        {name:"Marowak", num:"105"},
+        {name:"Weezing", num:"110"},
+        {name:"Jolteon", num:"135"},
+        {name:"Mewtwo", num:"150"}
+      ]
+    }
+  ];
+
+  // Plain (non-holo) commons shown face up for pack flavor — a separate
+  // pool from the weighted pull above, which only ever draws holo cards.
+  var DISPLAY_COMMONS = [
+    {name:"Bulbasaur", num:"1"},
+    {name:"Squirtle", num:"7"},
+    {name:"Rattata", num:"19"},
+    {name:"Ekans", num:"23"},
+    {name:"Pikachu", num:"25"},
+    {name:"Pidgey", num:"16"}
+  ];
+
+  function shuffled(arr){
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function pickWeightedTier(){
+    var r = Math.random();
+    var cumulative = 0;
+    for (var i = 0; i < TIERS.length; i++){
+      cumulative += TIERS[i].weight;
+      if (r < cumulative) return TIERS[i];
+    }
+    return TIERS[TIERS.length - 1];
+  }
+
+  function pickCard(){
+    var tier = pickWeightedTier();
+    var card = tier.cards[Math.floor(Math.random() * tier.cards.length)];
+    return { tier: tier, card: card };
+  }
+
+  var tally = { S:0, A:0, B:0, C:0, total:0 };
+
+  function renderCommons(){
+    var row = document.getElementById("commonsRow");
+    var picks = shuffled(DISPLAY_COMMONS).slice(0, 4);
+    row.innerHTML = "";
+    picks.forEach(function(c){
+      var slot = document.createElement("div");
+      slot.className = "slot";
+      var img = document.createElement("img");
+      img.src = CARD_IMAGES[c.num];
+      img.alt = c.name;
+      var cap = document.createElement("div");
+      cap.className = "cap";
+      cap.textContent = c.name;
+      slot.appendChild(img);
+      slot.appendChild(cap);
+      row.appendChild(slot);
+    });
+  }
+
+  function updateTally(){
+    document.getElementById("totalPulls").textContent = tally.total;
+    ["S","A","B","C"].forEach(function(k){
+      var pct = tally.total ? Math.round((tally[k] / tally.total) * 100) : 0;
+      document.getElementById("val" + k).textContent = tally[k] + " " + EM + " " + pct + "%";
+      document.getElementById("bar" + k).style.width = pct + "%";
+    });
+  }
+
+  var mysteryCard = document.getElementById("mysteryCard");
+  var cardInner = document.getElementById("cardInner");
+  var cardFront = document.getElementById("cardFront");
+  var revealedImg = document.getElementById("revealedImg");
+  var tierLabel = document.getElementById("tierLabel");
+  var nameLabel = document.getElementById("nameLabel");
+  var pullAgainBtn = document.getElementById("pullAgain");
+  var hint = document.getElementById("hint");
+
+  var state = "facedown"; // facedown -> revealed
+
+  function doReveal(){
+    var pick = pickCard();
+    tally[pick.tier.key] += 1;
+    tally.total += 1;
+    updateTally();
+
+    revealedImg.src = CARD_IMAGES[pick.card.num];
+    revealedImg.alt = pick.card.name;
+    cardFront.setAttribute("data-tier", pick.tier.key);
+    tierLabel.setAttribute("data-tier", pick.tier.key);
+    tierLabel.textContent = pick.tier.label;
+    nameLabel.textContent = pick.card.name;
+
+    cardInner.classList.add("flipped");
+    state = "revealed";
+    hint.textContent = "";
+    pullAgainBtn.classList.add("show");
+  }
+
+  function doReset(){
+    cardInner.classList.remove("flipped");
+    state = "facedown";
+    hint.textContent = "Click to open";
+    pullAgainBtn.classList.remove("show");
+    tierLabel.textContent = "";
+    tierLabel.setAttribute("data-tier","");
+    nameLabel.textContent = "";
+    window.setTimeout(function(){
+      if (state === "facedown") doReveal();
+    }, 550);
+  }
+
+  function handleOpen(){
+    if (state === "facedown") doReveal();
+  }
+
+  mysteryCard.addEventListener("click", handleOpen);
+  mysteryCard.addEventListener("keydown", function(e){
+    if (e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      handleOpen();
+    }
+  });
+  pullAgainBtn.addEventListener("click", doReset);
+
+  function simulateBulk(n){
+    for (var i = 0; i < n; i++){
+      var pick = pickCard();
+      tally[pick.tier.key] += 1;
+      tally.total += 1;
+    }
+    updateTally();
+  }
+
+  document.getElementById("bulk5").addEventListener("click", function(){ simulateBulk(5); });
+  document.getElementById("bulk10").addEventListener("click", function(){ simulateBulk(10); });
+  document.getElementById("bulk100").addEventListener("click", function(){ simulateBulk(100); });
+
+  // Tabs
+  var tabBtnPull = document.getElementById("tabBtnPull");
+  var tabBtnData = document.getElementById("tabBtnData");
+  var tabPull = document.getElementById("tabPull");
+  var tabData = document.getElementById("tabData");
+
+  function showTab(name){
+    var pullActive = name === "pull";
+    tabBtnPull.classList.toggle("active", pullActive);
+    tabBtnData.classList.toggle("active", !pullActive);
+    tabPull.classList.toggle("active", pullActive);
+    tabData.classList.toggle("active", !pullActive);
+  }
+
+  tabBtnPull.addEventListener("click", function(){ showTab("pull"); });
+  tabBtnData.addEventListener("click", function(){ showTab("data"); });
+
+  // Get Your Data: one random trial per browser, committed on first click
+  var getDataBtn = document.getElementById("getDataBtn");
+  var dataStatus = document.getElementById("dataStatus");
+  var myTrialNumber = null;
+
+  function downloadMyDataset(){
+    if (myTrialNumber === null){
+      var trialNumbers = Object.keys(TRIAL_DATA);
+      var randomIndex = Math.floor(Math.random() * trialNumbers.length);
+      myTrialNumber = trialNumbers[randomIndex];
+    }
+
+    var csvText = TRIAL_DATA[myTrialNumber];
+    var blob = new Blob([csvText], { type: "text/csv" });
+    var url = URL.createObjectURL(blob);
+
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = "gacha_pull_results.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    dataStatus.textContent = "Downloaded. Click again anytime to re-download the same file.";
+    getDataBtn.textContent = "Get My Dataset Again";
+  }
+
+  getDataBtn.addEventListener("click", downloadMyDataset);
+
+  renderCommons();
+  updateTally();
+
+  function boot(){
+    renderCommons();
+    updateTally();
+  }
+  if (window.claude && window.claude.hot){
+    window.claude.hot.ready ? window.claude.hot.ready(boot) : boot();
+  }
+})();
+</script>
