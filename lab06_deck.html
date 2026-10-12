@@ -1,0 +1,861 @@
+<title>Lab 06 Therapeutic Touch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap">
+<style>
+  :root{
+    --paper:#F1F4F8;
+    --paper-raise:#FFFFFF;
+    --ink:#152433;
+    --ink-soft:#4C5F72;
+    --rule:#D5DEE8;
+    --grid: 213,222,232;
+    --blue:#003262;
+    --blue-text:#003262;
+    --gold:#FDB515;
+    --gold-ink:#6B4A05;
+    --shadow: 20,36,51;
+    --navy-fixed:#00284F;
+    --gold-fixed:#FDB515;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0B1926;
+      --paper-raise:#122232;
+      --ink:#E9F1F8;
+      --ink-soft:#96ACC2;
+      --rule:#22384E;
+      --grid: 34,56,78;
+      --blue-text:#84B6E8;
+      --gold-ink:#FDB515;
+      --shadow: 0,0,0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0B1926;
+    --paper-raise:#122232;
+    --ink:#E9F1F8;
+    --ink-soft:#96ACC2;
+    --rule:#22384E;
+    --grid: 34,56,78;
+    --blue-text:#84B6E8;
+    --gold-ink:#FDB515;
+    --shadow: 0,0,0;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    overflow:hidden;
+    height:100vh;
+    width:100vw;
+  }
+  ::selection{ background:var(--gold); color:var(--navy-fixed); }
+
+  h1,h2,h3{ font-family:"Source Serif 4", Georgia, serif; text-wrap:balance; margin:0; }
+
+  .mono{ font-family:"IBM Plex Mono", "Courier New", monospace; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--blue-text);
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:.6em;
+  }
+  .eyebrow::before{
+    content:"";
+    width:18px; height:2px;
+    background:var(--gold);
+    display:inline-block;
+  }
+
+  code, .code-inline{
+    font-family:"IBM Plex Mono", monospace;
+    background:rgba(var(--grid),.55);
+    padding:.12em .42em;
+    border-radius:3px;
+    font-size:.92em;
+  }
+
+  #deck{
+    position:relative;
+    width:100vw;
+    height:100vh;
+  }
+
+  .slide{
+    position:absolute;
+    inset:0;
+    display:none;
+    padding:min(6.5vh,64px) min(9vw,96px) min(9vh,72px);
+    opacity:0;
+  }
+  .slide.active{
+    display:flex;
+    flex-direction:column;
+    animation: rise .48s ease both;
+  }
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .slide.active{ animation:none; opacity:1; }
+  }
+
+  .slide-frame{
+    width:100%;
+    height:100%;
+    max-width:1180px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    min-height:0;
+  }
+
+  .slide-body{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:28px;
+    padding-right:4px;
+  }
+
+  .title-lg{ font-size:clamp(30px,3.6vw,46px); font-weight:600; line-height:1.08; color:var(--ink); }
+  .title-md{ font-size:clamp(24px,2.6vw,32px); font-weight:600; line-height:1.15; color:var(--ink); }
+
+  .lede{ font-size:clamp(15px,1.25vw,18px); color:var(--ink-soft); line-height:1.55; max-width:62ch; }
+
+  ul.points{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; max-width:66ch; }
+  ul.points li{
+    position:relative;
+    padding-left:28px;
+    font-size:clamp(14.5px,1.15vw,17px);
+    line-height:1.55;
+    color:var(--ink);
+  }
+  ul.points li::before{
+    content:"";
+    position:absolute; left:0; top:.55em;
+    width:8px; height:8px;
+    background:var(--gold);
+    border-radius:1px;
+    transform:rotate(45deg);
+  }
+  ul.points b{ font-weight:600; }
+  ul.points .soft{ color:var(--ink-soft); }
+
+  .grid-2{ display:grid; grid-template-columns:1.05fr .95fr; gap:34px; align-items:center; }
+  @media (max-width:860px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .panel{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:22px 24px;
+    box-shadow:0 1px 0 rgba(var(--shadow),.03);
+  }
+
+  .code-cell{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--blue-text);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .code-cell .cell-head{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    padding:7px 14px;
+    border-bottom:1px dashed var(--rule);
+    letter-spacing:.03em;
+  }
+  .code-cell pre{
+    margin:0;
+    padding:14px 16px;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--ink);
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .code-cell .c-str{ color:#2E7D5B; }
+  :root[data-theme="dark"] .code-cell .c-str, @media (prefers-color-scheme:dark){ .code-cell .c-str{ color:#63C695; } }
+  .code-cell .c-num{ color:var(--gold-ink); }
+  .code-cell .c-com{ color:var(--ink-soft); font-style:italic; }
+
+  .cheat{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  .cheat th{
+    text-align:left; font-family:"IBM Plex Mono",monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft);
+    padding:0 12px 10px; font-weight:600;
+  }
+  .cheat td{
+    font-family:"IBM Plex Mono", monospace;
+    padding:11px 12px;
+    border-top:1px solid var(--rule);
+    vertical-align:middle;
+  }
+  .cheat td.old{ color:var(--ink-soft); text-decoration:line-through; text-decoration-color:rgba(var(--shadow),.35); }
+  .cheat td.arrow{ color:var(--gold-ink); font-family:"IBM Plex Sans",sans-serif; width:24px; text-align:center; }
+  .cheat td.new{ color:var(--blue-text); font-weight:600; }
+
+  .ref-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:26px 22px; }
+  @media (max-width:860px){ .ref-grid{ grid-template-columns:repeat(2,1fr); } }
+  .ref-col{ display:flex; flex-direction:column; gap:13px; min-width:0; }
+  .ref-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.08em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .ref-item .name{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    word-break:break-word;
+  }
+  .ref-item .desc{ font-size:12px; color:var(--ink-soft); line-height:1.4; margin-top:2px; }
+
+  .qcount{ display:flex; align-items:baseline; gap:12px; }
+  .qcount .big{ font-family:"Source Serif 4", serif; font-size:clamp(40px,5vw,56px); font-weight:600; color:var(--gold-ink); line-height:1; }
+  .qcount .label{ font-size:14.5px; color:var(--ink-soft); max-width:34ch; line-height:1.5; }
+
+  .qnum-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:20px; }
+  @media (max-width:900px){ .qnum-grid{ grid-template-columns:repeat(3,1fr); } }
+  .qnum-col{ display:flex; flex-direction:column; gap:10px; }
+  .qnum-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:10.5px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .qnum-chips{ display:flex; flex-direction:column; gap:7px; }
+  .qnum-chip{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:3px;
+    padding:5px 9px;
+    text-align:center;
+  }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:12px; }
+  .chip{
+    display:flex; flex-direction:column; gap:4px;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--gold);
+    border-radius:4px;
+    padding:10px 14px;
+    min-width:210px;
+    flex:1 1 260px;
+  }
+  .chip .qid{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px; font-weight:600;
+    color:var(--gold-ink);
+    letter-spacing:.04em;
+  }
+  .chip .qtext{ font-size:13.5px; color:var(--ink); line-height:1.45; }
+
+  /* --- diagram: array indexing --- */
+  .array-diagram{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .array-row{ display:flex; gap:10px; }
+  .array-box{
+    width:64px; height:64px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:18px; font-weight:600;
+    background:var(--paper-raise);
+    border:1.5px solid var(--rule);
+    border-radius:5px;
+    color:var(--ink);
+  }
+  .array-box.hi{
+    background:var(--gold);
+    border-color:var(--gold-ink);
+    color:var(--navy-fixed);
+  }
+  .index-row{ display:flex; gap:10px; }
+  .index-cell{
+    width:64px; text-align:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12px; color:var(--ink-soft);
+  }
+  .index-cell.hi{ color:var(--gold-ink); font-weight:700; }
+  .diagram-caption{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:14px; color:var(--ink);
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:8px 16px;
+  }
+  .diagram-caption .gold{ color:var(--gold-ink); font-weight:600; }
+
+  /* --- cover --- */
+  .slide[data-kind="cover"] .slide-frame{ justify-content:center; }
+  .cover-mark{ display:flex; gap:8px; flex-wrap:wrap; }
+  .cover-mark span{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    padding:5px 10px;
+    border-radius:3px;
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+  }
+  .cover-mark span.hi{ background:var(--gold); border-color:var(--gold-ink); color:var(--navy-fixed); font-weight:700; }
+  .cover-title{ font-size:clamp(40px,6vw,74px); font-weight:600; line-height:1.02; }
+  .cover-rule{ width:96px; height:5px; background:var(--navy-fixed); position:relative; margin:22px 0 16px; }
+  .cover-rule::after{ content:""; position:absolute; left:0; top:8px; width:96px; height:2px; background:var(--gold); }
+
+  /* --- divider (fixed identity, ignores theme -- deliberate, see header note) --- */
+  .slide[data-kind="divider"]{
+    background:var(--navy-fixed);
+    color:#F2F6FB;
+  }
+  .slide[data-kind="divider"] .slide-frame{ justify-content:center; align-items:flex-start; gap:10px; }
+  .divider-num{
+    font-family:"Source Serif 4", serif;
+    font-size:clamp(90px,13vw,168px);
+    font-weight:600;
+    line-height:.85;
+    color:var(--gold-fixed);
+  }
+  .divider-title{ font-size:clamp(30px,4vw,48px); font-weight:600; color:#F2F6FB; }
+  .divider-sub{ font-size:clamp(14px,1.3vw,18px); color:#B9CBE0; max-width:52ch; }
+  .divider-rule{ width:64px; height:3px; background:var(--gold-fixed); margin:6px 0 14px; }
+
+  /* --- chrome: controls + progress --- */
+  .chrome{
+    position:fixed; left:0; right:0; bottom:0;
+    display:flex; align-items:center; gap:18px;
+    padding:14px min(9vw,96px);
+    z-index:20;
+    pointer-events:none;
+  }
+  .chrome > *{ pointer-events:auto; }
+  .progress-track{
+    position:relative;
+    flex:1;
+    height:3px;
+    background:rgba(var(--grid),.7);
+    border-radius:2px;
+  }
+  .progress-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    background:var(--gold);
+    border-radius:2px;
+    width:0%;
+    transition:width .35s ease;
+  }
+  .progress-tick{
+    position:absolute; top:-3px;
+    width:2px; height:9px;
+    background:var(--ink-soft);
+    opacity:.5;
+    transform:translateX(-1px);
+  }
+  .idx-readout{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+    min-width:92px;
+  }
+  .navbtn{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.04em;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    color:var(--ink);
+    border-radius:4px;
+    padding:8px 14px;
+    cursor:pointer;
+  }
+  .navbtn:hover{ border-color:var(--blue-text); }
+  .navbtn:focus-visible, a:focus-visible, button:focus-visible{
+    outline:2px solid var(--gold-ink);
+    outline-offset:2px;
+  }
+  .navbtn:disabled{ opacity:.35; cursor:default; }
+
+  a{ color:var(--blue-text); }
+
+  .signoff{ font-family:"Source Serif 4", serif; font-style:italic; color:var(--ink-soft); font-size:15px; }
+
+  @media (max-width:640px){
+    .slide{ padding:56px 22px 88px; }
+    .array-box, .index-cell{ width:44px; }
+    .array-box{ height:44px; font-size:14px; }
+  }
+</style>
+
+<div id="deck">
+
+  <section class="slide" data-kind="cover" data-tick="1">
+    <div class="slide-frame">
+      <div class="eyebrow">CS108 &middot; Lab 06</div>
+      <div class="cover-rule"></div>
+      <h1 class="cover-title">Examining the<br>Therapeutic Touch</h1>
+      <p class="lede" style="margin-top:6px;">Testing a chance model: statistics, simulation, and the p-value.</p>
+      <div class="cover-mark" style="margin-top:28px;">
+        <span class="hi">arr[0]</span>
+        <span>arr[1]</span>
+        <span>arr[2]</span>
+        <span>arr[3]</span>
+        <span>arr[4]</span>
+        <span>&hellip;</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">About This Deck</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Library Changes</h2>
+        <p class="lede">This copy trades the class's <span class="code-inline">datascience</span> library for plain NumPy and pandas &mdash; the tools you'll actually keep using after this course. The exercises didn't change; only the syntax around them did.</p>
+        <table class="cheat">
+          <tr><th>datascience</th><th></th><th>numpy / pandas</th></tr>
+          <tr><td class="old">from datascience import *</td><td class="arrow">&rarr;</td><td class="new">import pandas as pd</td></tr>
+          <tr><td class="old">make_array(...)</td><td class="arrow">&rarr;</td><td class="new">np.array([...])</td></tr>
+          <tr><td class="old">arr.item(i)</td><td class="arrow">&rarr;</td><td class="new">arr[i]</td></tr>
+          <tr><td class="old">Table().with_column(...)</td><td class="arrow">&rarr;</td><td class="new">pd.DataFrame({ ... })</td></tr>
+          <tr><td class="old">tbl.hist()</td><td class="arrow">&rarr;</td><td class="new">df.plot.hist()</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Reference</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Functions and Methods in This Lab</h2>
+        <div class="ref-grid" style="grid-template-columns:repeat(3,1fr);">
+          <div class="ref-col">
+            <h3>Built-in Python</h3>
+            <div class="ref-item"><div class="name">def name(params): ...</div><div class="desc">Define a function; use return to hand back a value.</div></div>
+            <div class="ref-item"><div class="name">print(value, ...)</div><div class="desc">Display values; does not return them.</div></div>
+            <div class="ref-item"><div class="name">str(value)</div><div class="desc">Convert a value to a string.</div></div>
+            <div class="ref-item"><div class="name">len(sequence)</div><div class="desc">Number of items in an array.</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>NumPy</h3>
+            <div class="ref-item"><div class="name">np.array([...])</div><div class="desc">Create an array from a list.</div></div>
+            <div class="ref-item"><div class="name">np.arange(n)</div><div class="desc">Array 0, 1, ..., n-1.</div></div>
+            <div class="ref-item"><div class="name">np.append(arr, value)</div><div class="desc">New array with value added at the end.</div></div>
+            <div class="ref-item"><div class="name">np.count_nonzero(arr)</div><div class="desc">Count the True values in a boolean array.</div></div>
+            <div class="ref-item"><div class="name">np.random.seed(n)</div><div class="desc">Fix the random state so results repeat.</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>Helpers and Plots</h3>
+            <div class="ref-item"><div class="name">sample_proportions(n, probs)</div><div class="desc">Simulate n draws; return the proportion in each category.</div></div>
+            <div class="ref-item"><div class="name">pd.DataFrame({...})</div><div class="desc">Build a table from named columns.</div></div>
+            <div class="ref-item"><div class="name">df.plot.hist()</div><div class="desc">Histogram of a column.</div></div>
+            <div class="ref-item"><div class="name">plt.scatter(x, y)</div><div class="desc">Draw a point; used to mark the observed statistic.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Reference</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Questions in This Lab</h2>
+        <div class="qcount">
+          <div class="big">10</div>
+          <div class="label">questions in 1 section.</div>
+        </div>
+        <div class="qnum-grid" style="grid-template-columns:repeat(3,1fr);">
+          <div class="qnum-col">
+            <h3>Model and Statistic</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">1.1</div><div class="qnum-chip">1.2</div><div class="qnum-chip">1.3</div>
+              <div class="qnum-chip">1.4</div><div class="qnum-chip">1.5</div><div class="qnum-chip">1.6</div>
+            </div>
+          </div>
+          <div class="qnum-col">
+            <h3>Simulation</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">1.7</div><div class="qnum-chip">1.8</div>
+            </div>
+          </div>
+          <div class="qnum-col">
+            <h3>p-value and Conclusion</h3>
+            <div class="qnum-chips">
+              <div class="qnum-chip">1.9</div><div class="qnum-chip">1.10</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Chapter 11 &middot; Review</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Steps of a Hypothesis Test</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><b>1. Hypotheses.</b> The null hypothesis is a specific chance model. The alternative hypothesis states that the null model is not correct.</li>
+            <li><b>2. Test statistic.</b> A number that summarizes how much the observed data differ from what the null model predicts.</li>
+            <li><b>3. Observed statistic.</b> Calculated from the actual study data.</li>
+            <li><b>4. Null distribution.</b> Simulate data under the null model, calculate the statistic for each simulation, and repeat many times.</li>
+            <li><b>5. Compare.</b> Is the observed statistic typical or unusual under the null model?</li>
+            <li><b>6. p-value and conclusion.</b> State whether the result is &ldquo;consistent&rdquo; with the model.</li>
+          </ul>
+          <div class="panel">
+            <p class="lede" style="margin:0;">This lab walks through these steps once, using one real experiment. You used the same routine on the gacha game &mdash; here it is with two categories instead of four.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">1</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">What Is the Therapeutic Touch</div>
+      <div class="divider-sub">Emily Rosa's experiment, her chance model, and a simulation-based test of it.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1 &middot; Emily's Experiment</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Emily Rosa's Experiment</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>Therapeutic Touch (TT) practitioners claim they can feel a person's <b>Human Energy Field</b>.</li>
+            <li>Emily recruited <b>21 practitioners</b>. Each put their hands through a screen they could not see through.</li>
+            <li>Emily flipped a fair coin and held out her <b>left or right hand</b> depending on the result. The practitioner said which hand it was.</li>
+            <li>Across <b>210</b> trials, practitioners picked the correct hand <b>44%</b> of the time.</li>
+          </ul>
+          <div class="panel">
+            <div class="eyebrow" style="margin-bottom:12px;">At a glance</div>
+            <p class="mono" style="margin:0 0 6px;">trials&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 210</p>
+            <p class="mono" style="margin:0 0 6px;">observed&nbsp;&nbsp;&nbsp;&nbsp;= 0.44 correct</p>
+            <p class="mono" style="margin:0;">question&nbsp;&nbsp;&nbsp;&nbsp;= guessing, or sensing?</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.1 &middot; 1.2 &middot; Model and Hypotheses</div>
+      <div class="slide-body">
+        <h2 class="title-lg">The Model and the Hypotheses</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>A <b>model</b> is a set of assumptions about how data are generated, including assumptions about chance.</li>
+            <li>The <b>null hypothesis</b> is a specific chance model describing how the data were generated. It must be precise enough to simulate data.</li>
+            <li>The <b>alternative hypothesis</b> states that the null model is not correct. It usually does not explain why or how the model fails.</li>
+            <li>Emily was testing whether the practitioners' answers behave like <i>chance</i>, not whether TT works.</li>
+          </ul>
+          <div class="panel">
+            <div class="eyebrow" style="margin-bottom:12px;">Think about</div>
+            <p class="lede" style="margin:0 0 10px;">If the practitioners can sense nothing, what process produces their answers?</p>
+            <p class="lede" style="margin:0;">On average, how often would that process pick the correct hand?</p>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 1.1</div><div class="qtext">Describe Emily's model for how likely a practitioner is to pick the correct hand, and the alternative it is meant to discredit.</div></div>
+          <div class="chip"><div class="qid">Question 1.2</div><div class="qtext">Using that model, give the proportion of correct picks we would expect on average.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.3 &middot; 1.4 &middot; Choosing a Statistic</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Choosing a Test Statistic</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>A <b>test statistic</b> summarizes how much the observed data differ from what the null model predicts.</li>
+            <li>The statistic should align with the alternative hypothesis: unusually large or small values may indicate disagreement with the null model.</li>
+            <li>The <b>observed test statistic</b> is calculated from the actual study data.</li>
+            <li>For each candidate, ask: <b>can it be negative?</b> What values can it take?</li>
+          </ul>
+          <div class="panel">
+            <div class="eyebrow" style="margin-bottom:12px;">Checklist for a statistic</div>
+            <p class="lede" style="margin:0 0 8px;">&bull; One number per dataset</p>
+            <p class="lede" style="margin:0 0 8px;">&bull; Can be computed for the real data and for each simulation</p>
+            <p class="lede" style="margin:0;">&bull; Its possible values match the histogram you expect</p>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 1.3</div><div class="qtext">Decide which of the listed statistics Emily can use to compare observed outcomes with her model.</div></div>
+          <div class="chip"><div class="qid">Question 1.4</div><div class="qtext">Explain why that statistic is appropriate and how it connects to your model from Question 1.1.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.5 &middot; 1.6 &middot; Functions</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Defining and Calling Functions</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>A function takes <b>parameters</b>, does work, and uses <code>return</code> to hand back a value.</li>
+            <li><code>print</code> only displays a value; the caller cannot use it. A function you want to reuse must <code>return</code>.</li>
+            <li>Pay attention to units: the lab tells you whether inputs and outputs are <b>proportions</b> or <b>percentages</b>.</li>
+            <li>Call the function on the values from the experiment to get the observed statistic.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>def area(width, height):
+    return width * height
+
+area(3, 4)   <span class="c-com"># 12</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 1.5</div><div class="qtext">Define a function that takes an expected proportion and an actual proportion and returns the chosen statistic as a percentage.</div></div>
+          <div class="chip"><div class="qid">Question 1.6</div><div class="qtext">Use your function to compute the observed statistic from Emily's experiment.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.7 &middot; Simulating One Experiment</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Simulating with sample_proportions</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>sample_proportions(n, probs)</code> simulates <b>n</b> draws from categories with the given probabilities (they sum to 1).</li>
+            <li>It returns an array of the <b>proportion</b> in each category, in the same order as <code>probs</code>.</li>
+            <li>Every run gives different values &mdash; that is the chance variation we want to study.</li>
+            <li><code>np.random.seed(n)</code> fixes the random state so everyone gets the same numbers.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>coin_proportions = np.array([0.5, 0.5])
+ten_flips = sample_proportions(10, coin_proportions)
+ten_flips   <span class="c-com"># e.g. array([0.6, 0.4])</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 1.7</div><div class="qtext">Build the model proportions, simulate Emily's 210 hand choices once, and compute the statistic for that one simulation.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.8 &middot; Repeating the Simulation</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Simulating Many Times</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>Package <b>one</b> simulation into a function that returns <b>one</b> statistic.</li>
+            <li>Start with an empty array. In a <code>for</code> loop, compute one value and <code>np.append</code> it.</li>
+            <li><code>np.append</code> returns a new array, so assign the result back to the variable.</li>
+            <li>When you do not use the loop variable, the loop just repeats the code a fixed number of times.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>def one_roll_is_six():
+    return np.random.choice(np.arange(1, 7)) == 6
+
+results = np.array([])
+for i in np.arange(1000):
+    results = np.append(results, one_roll_is_six())</pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 1.8</div><div class="qtext">Define a function that simulates 210 hand choices and returns one statistic, then collect 1,000 of them under Emily's model.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.8 &middot; The Null Distribution</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Visualizing the Simulated Statistics</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>The <b>null distribution</b> shows the values the test statistic could produce if the null hypothesis were true.</li>
+            <li>A histogram shows which statistic values are <b>typical</b> or <b>unusual</b> under the null model.</li>
+            <li>If the observed statistic is typical of the null distribution, the data are <b>consistent</b> with the null hypothesis.</li>
+            <li>If it is unusual, the data provide evidence against the null hypothesis and support the alternative.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>t = pd.DataFrame({'Simulated Statistics': simulated_statistics})
+t.plot.hist(density=True, bins=20)
+plt.scatter(observed_statistic, 0, color='red', s=100, zorder=2)</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.9 &middot; The p-value</div>
+      <div class="slide-body">
+        <h2 class="title-lg">The p-value</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>A <b>p-value</b> is the probability, assuming the null hypothesis is true, of obtaining the observed statistic, or one more extreme, in the direction of the alternative.</li>
+            <li>A small p-value means the observed result is unusual under the null model, i.e. <b>statistically significant</b>.</li>
+            <li>Conventional standards: below <b>5%</b> is statistically significant; below <b>1%</b> is highly statistically significant.</li>
+            <li>With a simulation, estimate it as the fraction of simulated statistics that are as extreme as the observed one. <code>np.count_nonzero</code> counts the <code>True</code> values in a boolean array.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>sims = np.array([1.2, 4.8, 0.3, 5.1, 2.2])
+np.count_nonzero(sims &gt;= 4.0) / len(sims)   <span class="c-com"># 0.4</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 1.9</div><div class="qtext">Calculate the proportion of your simulated statistics that are greater than or equal to the observed statistic.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.10 &middot; Conclusion</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Stating a Conclusion</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>State whether the result is &ldquo;<b>consistent</b>&rdquo; with the model.</li>
+            <li>A small p-value is evidence against the null hypothesis; the result would be unusual if the null model were true.</li>
+            <li>Failing to reject the null hypothesis does not prove that it is true.</li>
+            <li>Rejecting a model does not explain why it failed or establish a cause.</li>
+            <li>Report the observed statistic, the p-value, and the null distribution so readers can evaluate the evidence.</li>
+          </ul>
+          <div class="panel">
+            <div class="eyebrow" style="margin-bottom:12px;">Discuss</div>
+            <p class="lede" style="margin:0 0 10px;">Is the data more consistent with practitioners randomly guessing?</p>
+            <p class="lede" style="margin:0;">What does your answer say about what Emily's experiment found?</p>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Question 1.10</div><div class="qtext">Reflect on whether the data are consistent with random guessing, and discuss your reasoning with your peers.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content" data-tick="1">
+    <div class="slide-frame">
+      <div class="eyebrow">Wrap-Up</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Wrap-Up and Resources</h2>
+        <ul class="points">
+          <li>Stuck on a specific question? <b>Reread the hint inside that cell</b> before asking someone else for the answer &mdash; most of them spell out the exact move.</li>
+          <li>The <a href="https://www.data8.org/sp26/reference/">Python Reference</a> lists the array and table methods used in this lab.</li>
+          <li>Save your notebook before you're done. If you finish early, ask a staff member to check you off.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="chrome">
+  <button class="navbtn" id="prevBtn" aria-label="Previous slide">&larr; prev</button>
+  <div class="progress-track" id="track">
+    <div class="progress-fill" id="fill"></div>
+  </div>
+  <div class="idx-readout mono" id="readout">arr[00 / 00]</div>
+  <button class="navbtn" id="nextBtn" aria-label="Next slide">next &rarr;</button>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var current = 0;
+
+  var fill = document.getElementById('fill');
+  var readout = document.getElementById('readout');
+  var track = document.getElementById('track');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+
+  slides.forEach(function(s, i){
+    if (s.getAttribute('data-tick') === '1'){
+      var t = document.createElement('div');
+      t.className = 'progress-tick';
+      t.style.left = (i/(total-1)*100) + '%';
+      track.appendChild(t);
+    }
+  });
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  function render(){
+    slides.forEach(function(s, i){ s.classList.toggle('active', i === current); });
+    fill.style.width = (current/(total-1)*100) + '%';
+    readout.textContent = 'arr[' + pad(current) + ' / ' + pad(total-1) + ']';
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+  }
+
+  function go(delta){
+    current = Math.max(0, Math.min(total - 1, current + delta));
+    render();
+  }
+
+  prevBtn.addEventListener('click', function(){ go(-1); });
+  nextBtn.addEventListener('click', function(){ go(1); });
+  track.addEventListener('click', function(e){
+    var r = track.getBoundingClientRect();
+    var pct = (e.clientX - r.left) / r.width;
+    current = Math.round(pct * (total - 1));
+    render();
+  });
+
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown'){ e.preventDefault(); go(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace'){ e.preventDefault(); go(-1); }
+    else if (e.key === 'Home'){ current = 0; render(); }
+    else if (e.key === 'End'){ current = total - 1; render(); }
+  });
+
+  render();
+})();
+</script>
