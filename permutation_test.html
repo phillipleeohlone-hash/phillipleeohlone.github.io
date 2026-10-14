@@ -1,0 +1,1339 @@
+<title>From Model to Shuffle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap">
+<style>
+  :root{
+    --paper:#F1F4F8;
+    --paper-raise:#FFFFFF;
+    --ink:#152433;
+    --ink-soft:#4C5F72;
+    --rule:#D5DEE8;
+    --grid: 213,222,232;
+    --blue:#003262;
+    --blue-text:#003262;
+    --gold:#FDB515;
+    --gold-ink:#6B4A05;
+    --shadow: 20,36,51;
+    --navy-fixed:#00284F;
+    --gold-fixed:#FDB515;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0B1926;
+      --paper-raise:#122232;
+      --ink:#E9F1F8;
+      --ink-soft:#96ACC2;
+      --rule:#22384E;
+      --grid: 34,56,78;
+      --blue-text:#84B6E8;
+      --gold-ink:#FDB515;
+      --shadow: 0,0,0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0B1926;
+    --paper-raise:#122232;
+    --ink:#E9F1F8;
+    --ink-soft:#96ACC2;
+    --rule:#22384E;
+    --grid: 34,56,78;
+    --blue-text:#84B6E8;
+    --gold-ink:#FDB515;
+    --shadow: 0,0,0;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    overflow:hidden;
+    height:100vh;
+    width:100vw;
+  }
+  ::selection{ background:var(--gold); color:var(--navy-fixed); }
+
+  h1,h2,h3{ font-family:"Source Serif 4", Georgia, serif; text-wrap:balance; margin:0; }
+
+  .mono{ font-family:"IBM Plex Mono", "Courier New", monospace; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--blue-text);
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:.6em;
+  }
+  .eyebrow::before{
+    content:"";
+    width:18px; height:2px;
+    background:var(--gold);
+    display:inline-block;
+  }
+
+  code, .code-inline{
+    font-family:"IBM Plex Mono", monospace;
+    background:rgba(var(--grid),.55);
+    padding:.12em .42em;
+    border-radius:3px;
+    font-size:.92em;
+  }
+
+  #deck{
+    position:relative;
+    width:100vw;
+    height:100vh;
+  }
+
+  .slide{
+    position:absolute;
+    inset:0;
+    display:none;
+    padding:min(6.5vh,64px) min(9vw,96px) min(9vh,72px);
+    opacity:0;
+  }
+  .slide.active{
+    display:flex;
+    flex-direction:column;
+    animation: rise .48s ease both;
+  }
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .slide.active{ animation:none; opacity:1; }
+  }
+
+  .slide-frame{
+    width:100%;
+    height:100%;
+    max-width:1180px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    min-height:0;
+  }
+
+  .slide-body{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:28px;
+    padding-right:4px;
+  }
+
+  .title-lg{ font-size:clamp(30px,3.6vw,46px); font-weight:600; line-height:1.08; color:var(--ink); }
+  .title-md{ font-size:clamp(24px,2.6vw,32px); font-weight:600; line-height:1.15; color:var(--ink); }
+
+  .lede{ font-size:clamp(15px,1.25vw,18px); color:var(--ink-soft); line-height:1.55; max-width:62ch; }
+
+  ul.points{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; max-width:66ch; }
+  ul.points li{
+    position:relative;
+    padding-left:28px;
+    font-size:clamp(14.5px,1.15vw,17px);
+    line-height:1.55;
+    color:var(--ink);
+  }
+  ul.points li::before{
+    content:"";
+    position:absolute; left:0; top:.55em;
+    width:8px; height:8px;
+    background:var(--gold);
+    border-radius:1px;
+    transform:rotate(45deg);
+  }
+  ul.points b{ font-weight:600; }
+  ul.points .soft{ color:var(--ink-soft); }
+
+  .grid-2{ display:grid; grid-template-columns:1.05fr .95fr; gap:34px; align-items:center; }
+  @media (max-width:860px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .panel{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:22px 24px;
+    box-shadow:0 1px 0 rgba(var(--shadow),.03);
+  }
+
+  .code-cell{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--blue-text);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .code-cell .cell-head{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    padding:7px 14px;
+    border-bottom:1px dashed var(--rule);
+    letter-spacing:.03em;
+  }
+  .code-cell pre{
+    margin:0;
+    padding:14px 16px;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--ink);
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .code-cell .c-str{ color:#2E7D5B; }
+  :root[data-theme="dark"] .code-cell .c-str, @media (prefers-color-scheme:dark){ .code-cell .c-str{ color:#63C695; } }
+  .code-cell .c-num{ color:var(--gold-ink); }
+  .code-cell .c-com{ color:var(--ink-soft); font-style:italic; }
+
+  .cheat{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  .cheat th{
+    text-align:left; font-family:"IBM Plex Mono",monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft);
+    padding:0 12px 10px; font-weight:600;
+  }
+  .cheat td{
+    font-family:"IBM Plex Mono", monospace;
+    padding:11px 12px;
+    border-top:1px solid var(--rule);
+    vertical-align:middle;
+  }
+  .cheat td.old{ color:var(--ink-soft); text-decoration:line-through; text-decoration-color:rgba(var(--shadow),.35); }
+  .cheat td.arrow{ color:var(--gold-ink); font-family:"IBM Plex Sans",sans-serif; width:24px; text-align:center; }
+  .cheat td.new{ color:var(--blue-text); font-weight:600; }
+
+  .ref-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:26px 22px; }
+  @media (max-width:860px){ .ref-grid{ grid-template-columns:repeat(2,1fr); } }
+  .ref-col{ display:flex; flex-direction:column; gap:13px; min-width:0; }
+  .ref-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.08em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .ref-item .name{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    word-break:break-word;
+  }
+  .ref-item .desc{ font-size:12px; color:var(--ink-soft); line-height:1.4; margin-top:2px; }
+
+  .qcount{ display:flex; align-items:baseline; gap:12px; }
+  .qcount .big{ font-family:"Source Serif 4", serif; font-size:clamp(40px,5vw,56px); font-weight:600; color:var(--gold-ink); line-height:1; }
+  .qcount .label{ font-size:14.5px; color:var(--ink-soft); max-width:34ch; line-height:1.5; }
+
+  .qnum-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:20px; }
+  @media (max-width:900px){ .qnum-grid{ grid-template-columns:repeat(3,1fr); } }
+  .qnum-col{ display:flex; flex-direction:column; gap:10px; }
+  .qnum-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:10.5px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .qnum-chips{ display:flex; flex-direction:column; gap:7px; }
+  .qnum-chip{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:3px;
+    padding:5px 9px;
+    text-align:center;
+  }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:12px; }
+  .chip{
+    display:flex; flex-direction:column; gap:4px;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--gold);
+    border-radius:4px;
+    padding:10px 14px;
+    min-width:210px;
+    flex:1 1 260px;
+  }
+  .chip .qid{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px; font-weight:600;
+    color:var(--gold-ink);
+    letter-spacing:.04em;
+  }
+  .chip .qtext{ font-size:13.5px; color:var(--ink); line-height:1.45; }
+
+  /* --- diagram: array indexing --- */
+  .array-diagram{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .array-row{ display:flex; gap:10px; }
+  .array-box{
+    width:64px; height:64px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:18px; font-weight:600;
+    background:var(--paper-raise);
+    border:1.5px solid var(--rule);
+    border-radius:5px;
+    color:var(--ink);
+  }
+  .array-box.hi{
+    background:var(--gold);
+    border-color:var(--gold-ink);
+    color:var(--navy-fixed);
+  }
+  .index-row{ display:flex; gap:10px; }
+  .index-cell{
+    width:64px; text-align:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12px; color:var(--ink-soft);
+  }
+  .index-cell.hi{ color:var(--gold-ink); font-weight:700; }
+  .diagram-caption{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:14px; color:var(--ink);
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:8px 16px;
+  }
+  .diagram-caption .gold{ color:var(--gold-ink); font-weight:600; }
+
+  /* --- cover --- */
+  .slide[data-kind="cover"] .slide-frame{ justify-content:center; }
+  .cover-mark{ display:flex; gap:8px; flex-wrap:wrap; }
+  .cover-mark span{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    padding:5px 10px;
+    border-radius:3px;
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+  }
+  .cover-mark span.hi{ background:var(--gold); border-color:var(--gold-ink); color:var(--navy-fixed); font-weight:700; }
+  .cover-title{ font-size:clamp(40px,6vw,74px); font-weight:600; line-height:1.02; }
+  .cover-rule{ width:96px; height:5px; background:var(--navy-fixed); position:relative; margin:22px 0 16px; }
+  .cover-rule::after{ content:""; position:absolute; left:0; top:8px; width:96px; height:2px; background:var(--gold); }
+
+  /* --- divider (fixed identity, ignores theme -- deliberate, see header note) --- */
+  .slide[data-kind="divider"]{
+    background:var(--navy-fixed);
+    color:#F2F6FB;
+  }
+  .slide[data-kind="divider"] .slide-frame{ justify-content:center; align-items:flex-start; gap:10px; }
+  .divider-num{
+    font-family:"Source Serif 4", serif;
+    font-size:clamp(90px,13vw,168px);
+    font-weight:600;
+    line-height:.85;
+    color:var(--gold-fixed);
+  }
+  .divider-title{ font-size:clamp(30px,4vw,48px); font-weight:600; color:#F2F6FB; }
+  .divider-sub{ font-size:clamp(14px,1.3vw,18px); color:#B9CBE0; max-width:52ch; }
+  .divider-rule{ width:64px; height:3px; background:var(--gold-fixed); margin:6px 0 14px; }
+
+  /* --- chrome: controls + progress --- */
+  .chrome{
+    position:fixed; left:0; right:0; bottom:0;
+    display:flex; align-items:center; gap:18px;
+    padding:14px min(9vw,96px);
+    z-index:20;
+    pointer-events:none;
+  }
+  .chrome > *{ pointer-events:auto; }
+  .progress-track{
+    position:relative;
+    flex:1;
+    height:3px;
+    background:rgba(var(--grid),.7);
+    border-radius:2px;
+  }
+  .progress-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    background:var(--gold);
+    border-radius:2px;
+    width:0%;
+    transition:width .35s ease;
+  }
+  .progress-tick{
+    position:absolute; top:-3px;
+    width:2px; height:9px;
+    background:var(--ink-soft);
+    opacity:.5;
+    transform:translateX(-1px);
+  }
+  .idx-readout{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+    min-width:92px;
+  }
+  .navbtn{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.04em;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    color:var(--ink);
+    border-radius:4px;
+    padding:8px 14px;
+    cursor:pointer;
+  }
+  .navbtn:hover{ border-color:var(--blue-text); }
+  .navbtn:focus-visible, a:focus-visible, button:focus-visible{
+    outline:2px solid var(--gold-ink);
+    outline-offset:2px;
+  }
+  .navbtn:disabled{ opacity:.35; cursor:default; }
+
+  a{ color:var(--blue-text); }
+
+  .signoff{ font-family:"Source Serif 4", serif; font-style:italic; color:var(--ink-soft); font-size:15px; }
+
+  @media (max-width:640px){
+    .slide{ padding:56px 22px 88px; }
+    .array-box, .index-cell{ width:44px; }
+    .array-box{ height:44px; font-size:14px; }
+  }
+  /* --- additions for this deck --- */
+  .cheat.plain td{ font-family:"IBM Plex Sans",sans-serif; font-size:14.5px; }
+  .cheat.plain td code{ font-size:.9em; }
+  .cheat.plain td.rowhead{ font-weight:600; color:var(--blue-text); width:28%; }
+  .flow{ display:flex; align-items:center; justify-content:center; gap:18px; flex-wrap:wrap; }
+  .flow-step{ display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .flow-cap{ font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.06em; color:var(--ink-soft); text-transform:uppercase; }
+  .flow-arrow{ font-size:26px; color:var(--gold-ink); }
+  .flow-pair{ display:flex; gap:12px; }
+  table.mini{ border-collapse:collapse; background:var(--paper-raise); border:1px solid var(--rule); border-radius:4px; font-family:"IBM Plex Mono",monospace; font-size:13px; }
+  table.mini th{ background:rgba(var(--grid),.55); font-size:11.5px; padding:5px 12px; text-align:center; color:var(--ink-soft); }
+  table.mini td{ padding:5px 12px; border-top:1px solid var(--rule); text-align:center; }
+  table.mini.hi-gold{ border-color:var(--gold-ink); }
+  table.mini.hi-gold th{ background:var(--gold); color:var(--navy-fixed); }
+  .slide-body{ justify-content:safe center; }
+  table.mini.big{ font-size:16px; }
+  table.mini.big th{ font-size:13px; padding:7px 18px; }
+  table.mini.big td{ padding:7px 18px; }
+  .shuffle-demo{ display:flex; flex-direction:column; gap:8px; align-items:flex-start; }
+  .sd-row{ display:flex; gap:8px; align-items:center; }
+  .sd-name{ width:128px; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em; }
+  .sd-box{ width:56px; height:40px; display:flex; align-items:center; justify-content:center; font-family:"IBM Plex Mono",monospace; font-size:14px; font-weight:600; background:var(--paper-raise); border:1.5px solid var(--rule); border-radius:5px; color:var(--ink); }
+  .sd-box.lab-c{ background:var(--gold); border-color:var(--gold-ink); color:var(--navy-fixed); }
+  .sd-box.lab-d{ background:var(--navy-fixed); border-color:var(--navy-fixed); color:#F2F6FB; }
+  .sd-gap{ margin-left:136px; font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--gold-ink); font-weight:600; }
+  ol.recipe{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; max-width:70ch; }
+  ol.recipe li{ display:flex; gap:14px; align-items:flex-start; font-size:clamp(14.5px,1.15vw,17px); line-height:1.5; }
+  ol.recipe .n{ flex:none; width:28px; height:28px; border-radius:50%; background:var(--gold); color:var(--navy-fixed); font-family:"IBM Plex Mono",monospace; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; }
+  .hist-pair{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:860px){ .hist-pair{ grid-template-columns:1fr; } }
+  .hist-panel svg{ width:100%; height:auto; display:block; }
+  .hist-panel .bars rect{ fill:var(--ink-soft); opacity:.45; }
+  .hist-panel .axis{ stroke:var(--ink-soft); stroke-width:1.5; }
+  .hist-panel .dot{ fill:#D14343; stroke:var(--paper-raise); stroke-width:2; }
+  .hist-cap{ margin-top:10px; font-size:15px; color:var(--ink); }
+  .hist-sub{ margin-top:4px; font-size:13.5px; color:var(--ink-soft); line-height:1.5; }
+  .mini-head{ font-family:"IBM Plex Mono",monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); margin-bottom:10px; }</style>
+<div id="deck">
+
+  <!-- COVER -->
+  <section class="slide" data-kind="cover" data-tick="1">
+    <div class="slide-frame">
+      <div class="eyebrow">CS108 &middot; Pre-Lab 7 Activity</div>
+      <div class="cover-rule"></div>
+      <h1 class="cover-title">From a Model<br>to a Shuffle</h1>
+      <p class="lede" style="margin-top:6px;">Group by, shuffling labels, and the permutation test, one step at a time.</p>
+      <div class="cover-mark" style="margin-top:28px;">
+        <span class="hi">arr[0]</span>
+        <span>arr[1]</span>
+        <span>arr[2]</span>
+        <span>arr[3]</span>
+        <span>arr[4]</span>
+        <span>&hellip;</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 0. HOW IT WORKS ===================== -->
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">0</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">How a Permutation Test Works</div>
+      <div class="divider-sub">The idea and the reason it is valid, before any code.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">How It Works &middot; The Question</div>
+      <div class="slide-body">
+        <h2 class="title-lg">What a Permutation Test Asks</h2>
+        <p class="lede">A made-up example: hours of sleep for 3 cats and 3 dogs. The cats' average is <b>15</b> hours and the dogs' average is <b>10</b>, a gap of <b>5</b>. Is that gap real, or could luck produce it?</p>
+        <div class="grid-2">
+          <ul class="points">
+            <li><b>Null hypothesis:</b> species makes no difference to sleep. Any gap in our sample is due to chance.</li>
+            <li><b>Alternative hypothesis:</b> cats sleep more than dogs, on average.</li>
+            <li><b>Test statistic:</b> average cat hours minus average dog hours. Observed value: <b>5</b>.</li>
+            <li>The key question: <b>if the null were true, how often would chance alone give a gap this big?</b></li>
+          </ul>
+          <table class="mini big">
+            <tr><th>pet</th><th>hours</th></tr>
+            <tr><td>cat</td><td>14</td></tr>
+            <tr><td>dog</td><td>10</td></tr>
+            <tr><td>cat</td><td>16</td></tr>
+            <tr><td>dog</td><td>9</td></tr>
+            <tr><td>dog</td><td>11</td></tr>
+            <tr><td>cat</td><td>15</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">How It Works &middot; The Reason</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Why Shuffling Labels Works</h2>
+        <p class="lede">If the null is true, a pet's species has <b>nothing to do</b> with how long it sleeps. Then the labels &ldquo;cat&rdquo; and &ldquo;dog&rdquo; are just tags, and any other way of handing out the tags was equally likely to happen.</p>
+        <div class="shuffle-demo">
+          <div class="sd-row"><div class="sd-name">hours</div>
+            <div class="sd-box">14</div><div class="sd-box">10</div><div class="sd-box">16</div><div class="sd-box">9</div><div class="sd-box">11</div><div class="sd-box">15</div></div>
+          <div class="sd-row"><div class="sd-name">real labels</div>
+            <div class="sd-box lab-c">cat</div><div class="sd-box lab-d">dog</div><div class="sd-box lab-c">cat</div><div class="sd-box lab-d">dog</div><div class="sd-box lab-d">dog</div><div class="sd-box lab-c">cat</div></div>
+          <div class="sd-gap">gap = 5</div>
+          <div class="sd-row"><div class="sd-name">shuffled labels</div>
+            <div class="sd-box lab-d">dog</div><div class="sd-box lab-c">cat</div><div class="sd-box lab-c">cat</div><div class="sd-box lab-d">dog</div><div class="sd-box lab-c">cat</div><div class="sd-box lab-d">dog</div></div>
+          <div class="sd-gap">gap = &minus;0.33</div>
+        </div>
+        <ul class="points">
+          <li>The <b>hours never move</b>. Only which rows carry which label changes.</li>
+          <li>Each shuffle is a &ldquo;what if the tags had landed differently?&rdquo; world. It shows a gap that <b>luck of labeling alone</b> can produce.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">How It Works &middot; The Recipe</div>
+      <div class="slide-body">
+        <h2 class="title-lg">The Five Moves</h2>
+        <ol class="recipe">
+          <li><span class="n">1</span><div><b>Compute the observed statistic</b> from the real labels (the gap of 5).</div></li>
+          <li><span class="n">2</span><div><b>Shuffle the labels</b> at random. Keep the same number of cats and dogs.</div></li>
+          <li><span class="n">3</span><div><b>Compute the statistic</b> for the shuffled table. This is one simulated gap.</div></li>
+          <li><span class="n">4</span><div><b>Repeat</b> steps 2 and 3 thousands of times to collect many simulated gaps.</div></li>
+          <li><span class="n">5</span><div><b>Compare.</b> The p-value is the fraction of simulated gaps at least as extreme as the real one.</div></li>
+        </ol>
+        <p class="lede">Why keep the group sizes? The real study had 3 cats and 3 dogs, so every simulated world must too. Shuffling does this automatically: it reorders the labels without adding or dropping any.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">How It Works &middot; Reading the Result</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Where Does the Real Result Land?</h2>
+        <p class="lede">Each bar shows how often a simulated gap fell in that range. The red dot is the real gap.</p>
+        <div class="hist-pair">
+          <div class="panel hist-panel">
+            <svg viewBox="0 0 360 160" role="img" aria-label="Histogram with the red dot far out in the right tail">
+              <g class="bars">
+                <rect x="10"  y="148" width="28" height="2"/>
+                <rect x="40"  y="140" width="28" height="10"/>
+                <rect x="70"  y="124" width="28" height="26"/>
+                <rect x="100" y="98"  width="28" height="52"/>
+                <rect x="130" y="68"  width="28" height="82"/>
+                <rect x="160" y="52"  width="28" height="98"/>
+                <rect x="190" y="68"  width="28" height="82"/>
+                <rect x="220" y="98"  width="28" height="52"/>
+                <rect x="250" y="124" width="28" height="26"/>
+                <rect x="280" y="140" width="28" height="10"/>
+                <rect x="310" y="148" width="28" height="2"/>
+              </g>
+              <line x1="6" y1="150" x2="354" y2="150" class="axis"/>
+              <circle cx="334" cy="146" r="7" class="dot"/>
+            </svg>
+            <div class="hist-cap"><b>Dot far out in the tail</b></div>
+            <div class="hist-sub">Chance rarely makes a gap this big. The p-value is small, so the data are hard to explain with the null.</div>
+          </div>
+          <div class="panel hist-panel">
+            <svg viewBox="0 0 360 160" role="img" aria-label="Histogram with the red dot near the middle">
+              <g class="bars">
+                <rect x="10"  y="148" width="28" height="2"/>
+                <rect x="40"  y="140" width="28" height="10"/>
+                <rect x="70"  y="124" width="28" height="26"/>
+                <rect x="100" y="98"  width="28" height="52"/>
+                <rect x="130" y="68"  width="28" height="82"/>
+                <rect x="160" y="52"  width="28" height="98"/>
+                <rect x="190" y="68"  width="28" height="82"/>
+                <rect x="220" y="98"  width="28" height="52"/>
+                <rect x="250" y="124" width="28" height="26"/>
+                <rect x="280" y="140" width="28" height="10"/>
+                <rect x="310" y="148" width="28" height="2"/>
+              </g>
+              <line x1="6" y1="150" x2="354" y2="150" class="axis"/>
+              <circle cx="204" cy="146" r="7" class="dot"/>
+            </svg>
+            <div class="hist-cap"><b>Dot near the middle</b></div>
+            <div class="hist-sub">Chance produces gaps like this all the time. The p-value is large, so the data are consistent with the null.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">How It Works &middot; Interpreting</div>
+      <div class="slide-body">
+        <h2 class="title-lg">What a p-Value Means</h2>
+        <div class="grid-2">
+          <div>
+            <div class="mini-head">It tells you</div>
+            <ul class="points">
+              <li>How surprising your result would be <b>if the null were true</b>.</li>
+              <li>A small p-value is <b>evidence against</b> the null. Many courses use a 5% cutoff.</li>
+              <li>A large p-value means the result is <b>consistent with</b> chance. It does not prove the null.</li>
+            </ul>
+          </div>
+          <div>
+            <div class="mini-head">It does not tell you</div>
+            <ul class="points">
+              <li>The <b>probability that your conclusion is wrong</b>, or that the null is true.</li>
+              <li><b>Why</b> the groups differ. Cause needs random assignment, not just a small p-value.</li>
+              <li>Anything about people <b>outside</b> the data's population.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="lede">Remember: a gap in the sample does not automatically mean a gap in the population. The permutation test is how we check whether chance could explain it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEW METHODS REFERENCE -->
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Reference</div>
+      <div class="slide-body">
+        <h2 class="title-lg">New Methods in This Activity</h2>
+        <div class="ref-grid">
+          <div class="ref-col">
+            <h3>pandas</h3>
+            <div class="ref-item"><div class="name">df.groupby('col')</div><div class="desc">Split a table into groups by the values in one column</div></div>
+            <div class="ref-item"><div class="name">['col'].mean()</div><div class="desc">Average of a column, once per group</div></div>
+            <div class="ref-item"><div class="name">df.copy()</div><div class="desc">An independent copy you can change safely</div></div>
+            <div class="ref-item"><div class="name">df['col'].values</div><div class="desc">A column as a NumPy array</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>NumPy</h3>
+            <div class="ref-item"><div class="name">np.random.permutation(arr)</div><div class="desc">A shuffled copy of an array</div></div>
+            <div class="ref-item"><div class="name">np.zeros(n, dtype=bool)</div><div class="desc">An array of n False values</div></div>
+            <div class="ref-item"><div class="name">arr[mask] and arr[~mask]</div><div class="desc">Keep the True positions, or the opposite ones</div></div>
+            <div class="ref-item"><div class="name">np.random.choice(arr, n, replace=True)</div><div class="desc">Random picks that may repeat</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>Python</h3>
+            <div class="ref-item"><div class="name">set()  and  .add(x)</div><div class="desc">A collection that keeps one copy of each item</div></div>
+            <div class="ref-item"><div class="name">tuple(arr)</div><div class="desc">Turn an array into a tuple a set can hold</div></div>
+            <div class="ref-item"><div class="name">[f() for _ in range(n)]</div><div class="desc">Repeat something n times and collect results</div></div>
+            <div class="ref-item"><div class="name">arr[a:b]  arr[:b]  arr[a:]</div><div class="desc">A slice: items from index a up to, not including, b</div></div>
+            <div class="ref-item"><div class="name">combinations(range(n), k)</div><div class="desc">Every way to choose k of n items (from itertools)</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>Already Used</h3>
+            <div class="ref-item"><div class="name">np.count_nonzero(cond)</div><div class="desc">How many True values</div></div>
+            <div class="ref-item"><div class="name">abs(x)  and  np.abs(arr)</div><div class="desc">Absolute value</div></div>
+            <div class="ref-item"><div class="name">len(arr)</div><div class="desc">Number of items</div></div>
+            <div class="ref-item"><div class="name">plt.hist  plt.scatter</div><div class="desc">Histogram and a marked point</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEPS REFERENCE -->
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Reference</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Steps in This Activity</h2>
+        <div class="qcount">
+          <div class="big">10</div>
+          <div class="label">steps across 4 parts. The deck follows the same order.</div>
+        </div>
+        <div class="qnum-grid" style="grid-template-columns:repeat(4,1fr);">
+          <div class="qnum-col">
+            <h3>1. Group By</h3>
+            <div class="qnum-chips"><div class="qnum-chip">Step 1</div><div class="qnum-chip">Step 2</div></div>
+          </div>
+          <div class="qnum-col">
+            <h3>2. Shuffling</h3>
+            <div class="qnum-chips"><div class="qnum-chip">Step 3</div><div class="qnum-chip">Step 4</div><div class="qnum-chip">Step 5</div></div>
+          </div>
+          <div class="qnum-col">
+            <h3>3. Repeating</h3>
+            <div class="qnum-chips"><div class="qnum-chip">Step 6</div><div class="qnum-chip">Step 7</div><div class="qnum-chip">Step 8</div><div class="qnum-chip">Step 10</div></div>
+          </div>
+          <div class="qnum-col">
+            <h3>4. Checking a Shuffle</h3>
+            <div class="qnum-chips"><div class="qnum-chip">Step 9</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 1. GROUP BY ===================== -->
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">1</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Group By</div>
+      <div class="divider-sub">Split a table by a label and summarize each group. Used in Steps 1&ndash;2.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Steps 1&ndash;2 &middot; Split, Apply, Combine</div>
+      <div class="slide-body">
+        <h2 class="title-lg">What groupby Does</h2>
+        <p class="lede">A made-up table: hours of sleep for 3 cats and 3 dogs. <code>groupby</code> sorts the rows into one pile per label, then computes a summary for each pile.</p>
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-cap">1. The table</div>
+            <table class="mini">
+              <tr><th>pet</th><th>hours</th></tr>
+              <tr><td>cat</td><td>14</td></tr>
+              <tr><td>dog</td><td>10</td></tr>
+              <tr><td>cat</td><td>16</td></tr>
+              <tr><td>dog</td><td>9</td></tr>
+              <tr><td>dog</td><td>11</td></tr>
+              <tr><td>cat</td><td>15</td></tr>
+            </table>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="flow-cap">2. Split by pet</div>
+            <div class="flow-pair">
+              <table class="mini hi-gold">
+                <tr><th colspan="2">cat</th></tr>
+                <tr><td>cat</td><td>14</td></tr>
+                <tr><td>cat</td><td>16</td></tr>
+                <tr><td>cat</td><td>15</td></tr>
+              </table>
+              <table class="mini">
+                <tr><th colspan="2">dog</th></tr>
+                <tr><td>dog</td><td>10</td></tr>
+                <tr><td>dog</td><td>9</td></tr>
+                <tr><td>dog</td><td>11</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="flow-cap">3. Average each pile</div>
+            <table class="mini">
+              <tr><th>pet</th><th>mean hours</th></tr>
+              <tr><td>cat</td><td>15.0</td></tr>
+              <tr><td>dog</td><td>10.0</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Steps 1&ndash;2 &middot; Syntax</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Pick a Column, Pick a Summary</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>groupby('pet')</code> says <b>which column makes the groups</b>.</li>
+            <li><code>['hours']</code> says <b>which column to summarize</b>.</li>
+            <li><code>.mean()</code> says <b>how to summarize</b>. Others: <code>.sum()</code>, <code>.count()</code>, <code>.min()</code>, <code>.max()</code>, <code>.median()</code>.</li>
+            <li>Read it left to right: <i>split by pet, take hours, average them.</i></li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[1]:</div>
+<pre>pets.groupby(<span class="c-str">'pet'</span>)[<span class="c-str">'hours'</span>].mean()</pre>
+            <div class="cell-head" style="border-top:1px dashed var(--rule);">Out[1]:</div>
+<pre>pet
+cat    <span class="c-num">15.0</span>
+dog    <span class="c-num">10.0</span>
+Name: hours, dtype: float64</pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Step 2</div><div class="qtext">Use groupby to find the average score of each group in the activity's table.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Steps 2, 5, 6 &middot; Using the Result</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Looking Up a Group's Value</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>The result is a <b>Series</b> whose row labels are the group names.</li>
+            <li>Look up a group by its <b>name</b>, not by a position number: <code>means['cat']</code>.</li>
+            <li>Names are <b>case sensitive</b> and must match the table exactly.</li>
+            <li>Because each lookup is a plain number, you can do arithmetic on them, like a difference of two groups.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[2]:</div>
+<pre>means = pets.groupby(<span class="c-str">'pet'</span>)[<span class="c-str">'hours'</span>].mean()
+means[<span class="c-str">'cat'</span>]
+<span class="c-com"># 15.0</span>
+
+means[<span class="c-str">'cat'</span>] - means[<span class="c-str">'dog'</span>]
+<span class="c-com"># 5.0</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Troubleshooting</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Common groupby Mistakes</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><b>Leaving out the column.</b> <code>pets.groupby('pet').mean()</code> averages <i>every</i> number column, not just the one you wanted.</li>
+            <li><b>Misspelling a group name.</b> <code>means['Cat']</code> raises a <code>KeyError</code> because the label is <code>'cat'</code>.</li>
+            <li><b>Expecting the table to change.</b> <code>groupby</code> never edits <code>pets</code>. It returns a new result.</li>
+            <li><b>Forgetting the brackets and quotes.</b> Column and group names are strings: <code>['hours']</code>, not <code>[hours]</code>.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[3]:</div>
+<pre>pets.groupby(<span class="c-str">'pet'</span>).mean()
+<span class="c-com"># every numeric column is averaged</span>
+
+means[<span class="c-str">'Cat'</span>]
+<span class="c-com"># KeyError: 'Cat'</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 2. SHUFFLING ===================== -->
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">2</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Shuffling</div>
+      <div class="divider-sub">Reorder labels at random and see what stays the same. Used in Steps 3&ndash;5.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Steps 3 and 5 &middot; Random Order</div>
+      <div class="slide-body">
+        <h2 class="title-lg">np.random.permutation</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>It returns a <b>shuffled copy</b> of an array.</li>
+            <li>The <b>original is not changed</b>.</li>
+            <li>Every item appears <b>exactly as many times</b> as before. Only the order changes.</li>
+            <li>Run it again and you get a <b>different order</b>.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[4]:</div>
+<pre>letters = np.array([<span class="c-str">'A'</span>, <span class="c-str">'A'</span>, <span class="c-str">'B'</span>, <span class="c-str">'B'</span>])
+np.random.permutation(letters)
+<span class="c-com"># e.g. ['B' 'A' 'A' 'B']</span>
+
+letters
+<span class="c-com"># still ['A' 'A' 'B' 'B']</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Step 3</div><div class="qtext">Shuffle the labels of a small table and watch which column changes.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Steps 3 and 5 &middot; Table Basics</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Copying a Table and Replacing a Column</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>pets.copy()</code> makes a separate table, so changing the copy <b>leaves the original safe</b>.</li>
+            <li><code>shuffled['pet'].values</code> hands you that column as an <b>array</b>, ready to shuffle.</li>
+            <li>Assigning to <code>shuffled['pet']</code> <b>replaces the whole column</b> with the shuffled version.</li>
+            <li>The <code>hours</code> column is never touched, so each number stays in its row.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[5]:</div>
+<pre>shuffled = pets.copy()
+shuffled[<span class="c-str">'pet'</span>] = np.random.permutation(
+    shuffled[<span class="c-str">'pet'</span>].values)
+shuffled.head(<span class="c-num">3</span>)
+<span class="c-com"># first 3 rows; 'pet' is mixed up,</span>
+<span class="c-com"># 'hours' is in the same order</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Step 4 &middot; Counting Arrangements</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Keeping Only Different Arrangements</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>A <b>set</b> stores each item once. Adding something already inside does nothing.</li>
+            <li><code>seen.add(x)</code> puts <code>x</code> in the set. <code>len(seen)</code> counts what is inside.</li>
+            <li>A set cannot hold an array or a list. Convert first with <code>tuple(...)</code>.</li>
+            <li>So: shuffle many times, add each result as a tuple, and the set keeps only the <b>different</b> arrangements.</li>
+            <li><b>Not guaranteed:</b> random shuffling is not a sure way to find <i>every</i> arrangement. With few possibilities and many shuffles it works almost every time, but a rare arrangement can be missed.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[6]:</div>
+<pre>seen = set()
+seen.add((<span class="c-str">'A'</span>, <span class="c-str">'B'</span>))
+seen.add((<span class="c-str">'B'</span>, <span class="c-str">'A'</span>))
+seen.add((<span class="c-str">'A'</span>, <span class="c-str">'B'</span>))   <span class="c-com"># duplicate</span>
+len(seen)
+<span class="c-com"># 2</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Step 4</div><div class="qtext">Collect the different arrangements from many shuffles and count them. Then think about whether random shuffling is guaranteed to find all of them.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Step 4 &middot; Slicing</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Slicing: Taking a Piece</h2>
+        <p class="lede">A slice <code>arr[start:stop]</code> takes a <b>run of consecutive items</b>. It works the same on arrays and lists. Remember that counting starts at 0.</p>
+        <div class="array-diagram">
+          <div class="array-row">
+            <div class="array-box hi">7</div>
+            <div class="array-box hi">3</div>
+            <div class="array-box hi">9</div>
+            <div class="array-box">4</div>
+            <div class="array-box">6</div>
+            <div class="array-box">2</div>
+          </div>
+          <div class="index-row">
+            <div class="index-cell hi">0</div>
+            <div class="index-cell hi">1</div>
+            <div class="index-cell hi">2</div>
+            <div class="index-cell">3</div>
+            <div class="index-cell">4</div>
+            <div class="index-cell">5</div>
+          </div>
+          <div class="diagram-caption">arr[<span class="gold">:3</span>] &rarr; <span class="gold">[7, 3, 9]</span> &mdash; stops <i>before</i> index 3</div>
+        </div>
+        <ul class="points">
+          <li><b>start</b> is included. <b>stop</b> is <b>not</b> included.</li>
+          <li>Here <code>arr[:3]</code> takes indexes <b>0, 1, 2</b> and stops before 3.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Step 4 &middot; Slicing</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Slicing Shortcuts</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>Leave out <b>start</b> to begin at the front: <code>arr[:3]</code>.</li>
+            <li>Leave out <b>stop</b> to go to the end: <code>arr[3:]</code>.</li>
+            <li>The pieces <code>arr[:3]</code> and <code>arr[3:]</code> together are the <b>whole array</b>, with nothing repeated.</li>
+            <li>A negative number counts from the end: <code>arr[-2:]</code> is the last two.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[7]:</div>
+<pre>arr = np.array([<span class="c-num">7</span>, <span class="c-num">3</span>, <span class="c-num">9</span>, <span class="c-num">4</span>, <span class="c-num">6</span>, <span class="c-num">2</span>])
+
+arr[:<span class="c-num">3</span>]     <span class="c-com"># [7 3 9]   first 3</span>
+arr[<span class="c-num">3</span>:]     <span class="c-com"># [4 6 2]   from index 3 on</span>
+arr[<span class="c-num">1</span>:<span class="c-num">4</span>]    <span class="c-com"># [3 9 4]   index 1, 2, 3</span>
+arr[-<span class="c-num">2</span>:]    <span class="c-com"># [6 2]     last 2</span>
+
+arr[:<span class="c-num">3</span>].mean()   <span class="c-com"># 6.33...</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Step 4</div><div class="qtext">In the given cell, slices split the six values into a first group of 3 and a second group of 3. Read each slice and say which values it picks.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Step 4 &middot; Reading a Given Cell</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Listing Every Arrangement</h2>
+        <p class="lede">In Step 4 a cell is <b>given</b> that lists all possible arrangements <b>on purpose</b>, so nothing is left to chance (unlike random shuffling). You do not write it, but you should be able to read it. It uses two ideas.</p>
+        <div class="grid-2">
+          <div>
+            <ul class="points">
+              <li><code>combinations(range(4), 2)</code> lists every way to choose <b>2 of 4</b> positions.</li>
+              <li>A <b>mask</b> is an array of True/False the same length as your data. <code>arr[mask]</code> keeps the True positions. <code>arr[~mask]</code> keeps the rest (<code>~</code> flips True and False).</li>
+            </ul>
+          </div>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[7]:</div>
+<pre><span class="c-com"># from itertools import combinations</span>
+list(combinations(range(<span class="c-num">4</span>), <span class="c-num">2</span>))
+<span class="c-com"># [(0,1), (0,2), (0,3),</span>
+<span class="c-com">#  (1,2), (1,3), (2,3)]</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Step 4 &middot; Masks</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Choosing Positions with a Mask</h2>
+        <div class="array-diagram">
+          <div class="array-row">
+            <div class="array-box hi">5</div>
+            <div class="array-box">8</div>
+            <div class="array-box hi">3</div>
+            <div class="array-box">9</div>
+          </div>
+          <div class="index-row">
+            <div class="index-cell hi">0</div>
+            <div class="index-cell">1</div>
+            <div class="index-cell hi">2</div>
+            <div class="index-cell">3</div>
+          </div>
+          <div class="diagram-caption">mask positions <span class="gold">0</span> and <span class="gold">2</span> are True</div>
+        </div>
+        <div class="code-cell" style="max-width:640px;margin:0 auto;width:100%;">
+          <div class="cell-head">In&nbsp;[8]:</div>
+<pre>arr  = np.array([<span class="c-num">5</span>, <span class="c-num">8</span>, <span class="c-num">3</span>, <span class="c-num">9</span>])
+mask = np.zeros(<span class="c-num">4</span>, dtype=bool)   <span class="c-com"># [F F F F]</span>
+mask[[<span class="c-num">0</span>, <span class="c-num">2</span>]] = True               <span class="c-com"># [T F T F]</span>
+
+arr[mask]     <span class="c-com"># [5 3]  the chosen positions</span>
+arr[~mask]    <span class="c-com"># [8 9]  all the others</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 3. REPEATING ===================== -->
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">3</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Repeating</div>
+      <div class="divider-sub">Turn one shuffle into thousands and turn the results into a p-value. Used in Steps 6&ndash;8 and 10.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Step 6 &middot; Functions</div>
+      <div class="slide-body">
+        <h2 class="title-lg">A Function That Returns a Number</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>A function packages steps so you can run them again with one call.</li>
+            <li><code>return</code> sends a value back. Without it, the call gives you nothing to keep.</li>
+            <li>This function takes <b>no inputs</b>, but still needs the parentheses: <code>one_roll()</code>.</li>
+            <li>Because the steps include randomness, <b>each call can give a different answer</b>.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[9]:</div>
+<pre>def one_roll():
+    return np.random.randint(<span class="c-num">1</span>, <span class="c-num">7</span>)
+
+one_roll()   <span class="c-com"># 4</span>
+one_roll()   <span class="c-com"># 1</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Step 6</div><div class="qtext">Wrap one shuffle and its statistic into a function that returns the statistic.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Step 7 &middot; Repetition</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Repeating with a List Comprehension</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>[one_roll() for _ in range(5)]</code> calls the function <b>5 times</b> and collects the results in a list.</li>
+            <li><code>_</code> is just a throwaway name. We need the repeat, not the counter.</li>
+            <li>Wrap it in <code>np.array(...)</code> so you can compare and count the values later.</li>
+            <li>It is a shorter version of a <code>for</code> loop that appends to a list.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[10]:</div>
+<pre>rolls = np.array([one_roll() <span class="c-str">for</span> _ <span class="c-str">in</span> range(<span class="c-num">5</span>)])
+rolls
+<span class="c-com"># array([3, 6, 1, 1, 4])</span>
+
+len(rolls)
+<span class="c-com"># 5</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Step 7</div><div class="qtext">Repeat your function 5,000 times and keep the results in an array.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Steps 4 and 8 &middot; Counting</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Counting for a p-Value</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>Comparing an array to a number gives an array of <b>True/False</b>, one per value.</li>
+            <li><code>np.count_nonzero(...)</code> counts the <b>True</b> values.</li>
+            <li>Divide by <code>len(...)</code> to turn the count into a <b>fraction</b>.</li>
+            <li>That fraction is the p-value: how often chance alone gave a result <b>at least as extreme</b> as the real one.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[11]:</div>
+<pre>sims = np.array([<span class="c-num">2</span>, -<span class="c-num">1</span>, <span class="c-num">4</span>, <span class="c-num">0</span>, <span class="c-num">3</span>])
+sims &gt;= <span class="c-num">3</span>
+<span class="c-com"># [False False True False True]</span>
+
+np.count_nonzero(sims &gt;= <span class="c-num">3</span>)
+<span class="c-com"># 2</span>
+
+np.count_nonzero(sims &gt;= <span class="c-num">3</span>) / len(sims)
+<span class="c-com"># 0.4</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Step 8</div><div class="qtext">Find the fraction of shuffled results at least as big as the observed result.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Step 10 &middot; The Alternative Decides</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Choosing the Direction</h2>
+        <p class="lede">Which shuffled values count as &ldquo;at least as extreme&rdquo; depends on what the alternative hypothesis says. Here <code>obs</code> is the real result and <code>sims</code> are the shuffled results.</p>
+        <table class="cheat plain">
+          <tr><th>The alternative says</th><th>Count shuffled values that are</th></tr>
+          <tr><td class="rowhead">Higher</td><td>&ge; the real result &nbsp;&rarr;&nbsp; <code>sims &gt;= obs</code></td></tr>
+          <tr><td class="rowhead">Lower</td><td>&le; the real result &nbsp;&rarr;&nbsp; <code>sims &lt;= obs</code></td></tr>
+          <tr><td class="rowhead">Different (either way)</td><td>as far from 0 as the real result &nbsp;&rarr;&nbsp; <code>np.abs(sims) &gt;= abs(obs)</code></td></tr>
+        </table>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Step 10</div><div class="qtext">Compute the three p-values and explain why one of them lands near 1.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Step 8 &middot; Plotting</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Showing the Result on a Histogram</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>plt.hist</code> draws the shuffled results. This is what <b>chance alone</b> produces.</li>
+            <li><code>plt.scatter</code> puts a dot at the real result.</li>
+            <li>A real result far out in a tail means a small p-value. A real result in the middle means a large one.</li>
+            <li>This cell is <b>given</b> in the notebook. Just run it and read the picture.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[12]:</div>
+<pre>plt.hist(sims, bins=<span class="c-num">25</span>, density=True,
+         color=<span class="c-str">'gray'</span>, alpha=<span class="c-num">0.7</span>)
+plt.scatter(obs, <span class="c-num">0</span>, color=<span class="c-str">'red'</span>,
+            s=<span class="c-num">100</span>, zorder=<span class="c-num">3</span>)</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 4. CHECKING A SHUFFLE ===================== -->
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">4</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Checking a Shuffle</div>
+      <div class="divider-sub">Decide whether a shuffle is valid by testing it, not by guessing. Used in Step 9.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Step 9 &middot; Three Tools</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Three Ways to Mix Up Data</h2>
+        <p class="lede">Step 9 gives you three shuffle functions built from these tools. First, what each one does.</p>
+        <table class="cheat plain">
+          <tr><th>Tool</th><th>What it does</th></tr>
+          <tr><td class="rowhead"><code>np.random.permutation(arr)</code></td><td>Reorders the items. Each item is used exactly once.</td></tr>
+          <tr><td class="rowhead"><code>np.random.choice(arr, size, replace=True)</code></td><td>Picks items at random. An item can be picked more than once, or never.</td></tr>
+          <tr><td class="rowhead"><code>df.sample(frac=1)</code></td><td>Reorders whole rows. Each row stays together.</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Step 9 &middot; Strategy</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Questions to Ask of a Shuffle</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>After shuffling, are there still <b>the same number</b> of rows in each group?</li>
+            <li>Does a score ever end up <b>attached to a different label</b> than before?</li>
+            <li>If you shuffle 200 times, does the statistic <b>change</b> from shuffle to shuffle?</li>
+            <li>Use the given <code>check_shuffle</code> output to answer these, then decide which shuffles you trust.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[13]:</div>
+<pre>check_shuffle(some_shuffle)
+<span class="c-com"># {'always 12 app?': ...,</span>
+<span class="c-com">#  'statistic changes?': ...}</span></pre>
+          </div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="qid">Step 9</div><div class="qtext">Say which shuffles are valid, and explain what is wrong with any that are not.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="slide" data-kind="content" data-tick="1">
+    <div class="slide-frame">
+      <div class="eyebrow">Wrap-Up</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Wrap-Up and Resources</h2>
+        <ul class="points">
+          <li>Stuck on a step? <b>Reread its hint</b> first, then look back at the matching slide in this deck.</li>
+          <li>Use the <b>check cells</b> (&#9989; / &#10060;) after each step before moving on.</li>
+          <li>Lab 7 uses the same pieces on a new data set: <b>group, shuffle, repeat, count</b>.</li>
+          <li>Reading: <a href="https://inferentialthinking.com/chapters/12/1/AB_Testing.html">Textbook 12.1, A/B Testing</a>.</li>
+          <li>Save your notebook when you are done. If you finish early, ask a staff member to check you off.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+
+
+
+
+<div class="chrome">
+  <button class="navbtn" id="prevBtn" aria-label="Previous slide">&larr; prev</button>
+  <div class="progress-track" id="track">
+    <div class="progress-fill" id="fill"></div>
+  </div>
+  <div class="idx-readout mono" id="readout">arr[00 / 00]</div>
+  <button class="navbtn" id="nextBtn" aria-label="Next slide">next &rarr;</button>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var current = 0;
+
+  var fill = document.getElementById('fill');
+  var readout = document.getElementById('readout');
+  var track = document.getElementById('track');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+
+  slides.forEach(function(s, i){
+    if (s.getAttribute('data-tick') === '1'){
+      var t = document.createElement('div');
+      t.className = 'progress-tick';
+      t.style.left = (i/(total-1)*100) + '%';
+      track.appendChild(t);
+    }
+  });
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  function render(){
+    slides.forEach(function(s, i){ s.classList.toggle('active', i === current); });
+    fill.style.width = (current/(total-1)*100) + '%';
+    readout.textContent = 'arr[' + pad(current) + ' / ' + pad(total-1) + ']';
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+  }
+
+  function go(delta){
+    current = Math.max(0, Math.min(total - 1, current + delta));
+    render();
+  }
+
+  prevBtn.addEventListener('click', function(){ go(-1); });
+  nextBtn.addEventListener('click', function(){ go(1); });
+  track.addEventListener('click', function(e){
+    var r = track.getBoundingClientRect();
+    var pct = (e.clientX - r.left) / r.width;
+    current = Math.round(pct * (total - 1));
+    render();
+  });
+
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown'){ e.preventDefault(); go(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace'){ e.preventDefault(); go(-1); }
+    else if (e.key === 'Home'){ current = 0; render(); }
+    else if (e.key === 'End'){ current = total - 1; render(); }
+  });
+
+  render();
+})();
+</script>
