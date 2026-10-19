@@ -1,0 +1,579 @@
+<title>Permutation Test Prompt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap">
+<style>
+  :root{
+    --paper:#F1F4F8;
+    --paper-raise:#FFFFFF;
+    --ink:#152433;
+    --ink-soft:#4C5F72;
+    --rule:#D5DEE8;
+    --grid: 213,222,232;
+    --blue:#003262;
+    --blue-text:#003262;
+    --gold:#FDB515;
+    --gold-ink:#6B4A05;
+    --shadow: 20,36,51;
+    --navy-fixed:#00284F;
+    --gold-fixed:#FDB515;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0B1926;
+      --paper-raise:#122232;
+      --ink:#E9F1F8;
+      --ink-soft:#96ACC2;
+      --rule:#22384E;
+      --grid: 34,56,78;
+      --blue-text:#84B6E8;
+      --gold-ink:#FDB515;
+      --shadow: 0,0,0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0B1926;
+    --paper-raise:#122232;
+    --ink:#E9F1F8;
+    --ink-soft:#96ACC2;
+    --rule:#22384E;
+    --grid: 34,56,78;
+    --blue-text:#84B6E8;
+    --gold-ink:#FDB515;
+    --shadow: 0,0,0;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    overflow:hidden;
+    height:100vh;
+    width:100vw;
+  }
+  ::selection{ background:var(--gold); color:var(--navy-fixed); }
+
+  h1,h2,h3{ font-family:"Source Serif 4", Georgia, serif; text-wrap:balance; margin:0; }
+
+  .mono{ font-family:"IBM Plex Mono", "Courier New", monospace; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--blue-text);
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:.6em;
+  }
+  .eyebrow::before{
+    content:"";
+    width:18px; height:2px;
+    background:var(--gold);
+    display:inline-block;
+  }
+
+  code, .code-inline{
+    font-family:"IBM Plex Mono", monospace;
+    background:rgba(var(--grid),.55);
+    padding:.12em .42em;
+    border-radius:3px;
+    font-size:.92em;
+  }
+
+  #deck{
+    position:relative;
+    width:100vw;
+    height:100vh;
+  }
+
+  .slide{
+    position:absolute;
+    inset:0;
+    display:none;
+    padding:min(6.5vh,64px) min(9vw,96px) min(9vh,72px);
+    opacity:0;
+  }
+  .slide.active{
+    display:flex;
+    flex-direction:column;
+    animation: rise .48s ease both;
+  }
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .slide.active{ animation:none; opacity:1; }
+  }
+
+  .slide-frame{
+    width:100%;
+    height:100%;
+    max-width:1180px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    min-height:0;
+  }
+
+  .slide-body{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:28px;
+    padding-right:4px;
+  }
+
+  .title-lg{ font-size:clamp(30px,3.6vw,46px); font-weight:600; line-height:1.08; color:var(--ink); }
+  .title-md{ font-size:clamp(24px,2.6vw,32px); font-weight:600; line-height:1.15; color:var(--ink); }
+
+  .lede{ font-size:clamp(15px,1.25vw,18px); color:var(--ink-soft); line-height:1.55; max-width:62ch; }
+
+  ul.points{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; max-width:66ch; }
+  ul.points li{
+    position:relative;
+    padding-left:28px;
+    font-size:clamp(14.5px,1.15vw,17px);
+    line-height:1.55;
+    color:var(--ink);
+  }
+  ul.points li::before{
+    content:"";
+    position:absolute; left:0; top:.55em;
+    width:8px; height:8px;
+    background:var(--gold);
+    border-radius:1px;
+    transform:rotate(45deg);
+  }
+  ul.points b{ font-weight:600; }
+  ul.points .soft{ color:var(--ink-soft); }
+
+  .grid-2{ display:grid; grid-template-columns:1.05fr .95fr; gap:34px; align-items:center; }
+  @media (max-width:860px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .panel{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:22px 24px;
+    box-shadow:0 1px 0 rgba(var(--shadow),.03);
+  }
+
+  .code-cell{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--blue-text);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .code-cell .cell-head{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    padding:7px 14px;
+    border-bottom:1px dashed var(--rule);
+    letter-spacing:.03em;
+  }
+  .code-cell pre{
+    margin:0;
+    padding:14px 16px;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--ink);
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .code-cell .c-str{ color:#2E7D5B; }
+  :root[data-theme="dark"] .code-cell .c-str, @media (prefers-color-scheme:dark){ .code-cell .c-str{ color:#63C695; } }
+  .code-cell .c-num{ color:var(--gold-ink); }
+  .code-cell .c-com{ color:var(--ink-soft); font-style:italic; }
+
+  .cheat{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  .cheat th{
+    text-align:left; font-family:"IBM Plex Mono",monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft);
+    padding:0 12px 10px; font-weight:600;
+  }
+  .cheat td{
+    font-family:"IBM Plex Mono", monospace;
+    padding:11px 12px;
+    border-top:1px solid var(--rule);
+    vertical-align:middle;
+  }
+  .cheat td.old{ color:var(--ink-soft); text-decoration:line-through; text-decoration-color:rgba(var(--shadow),.35); }
+  .cheat td.arrow{ color:var(--gold-ink); font-family:"IBM Plex Sans",sans-serif; width:24px; text-align:center; }
+  .cheat td.new{ color:var(--blue-text); font-weight:600; }
+
+  .ref-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:26px 22px; }
+  @media (max-width:860px){ .ref-grid{ grid-template-columns:repeat(2,1fr); } }
+  .ref-col{ display:flex; flex-direction:column; gap:13px; min-width:0; }
+  .ref-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.08em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .ref-item .name{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    word-break:break-word;
+  }
+  .ref-item .desc{ font-size:12px; color:var(--ink-soft); line-height:1.4; margin-top:2px; }
+
+  .qcount{ display:flex; align-items:baseline; gap:12px; }
+  .qcount .big{ font-family:"Source Serif 4", serif; font-size:clamp(40px,5vw,56px); font-weight:600; color:var(--gold-ink); line-height:1; }
+  .qcount .label{ font-size:14.5px; color:var(--ink-soft); max-width:34ch; line-height:1.5; }
+
+  .qnum-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:20px; }
+  @media (max-width:900px){ .qnum-grid{ grid-template-columns:repeat(3,1fr); } }
+  .qnum-col{ display:flex; flex-direction:column; gap:10px; }
+  .qnum-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:10.5px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .qnum-chips{ display:flex; flex-direction:column; gap:7px; }
+  .qnum-chip{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:3px;
+    padding:5px 9px;
+    text-align:center;
+  }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:12px; }
+  .chip{
+    display:flex; flex-direction:column; gap:4px;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--gold);
+    border-radius:4px;
+    padding:10px 14px;
+    min-width:210px;
+    flex:1 1 260px;
+  }
+  .chip .qid{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px; font-weight:600;
+    color:var(--gold-ink);
+    letter-spacing:.04em;
+  }
+  .chip .qtext{ font-size:13.5px; color:var(--ink); line-height:1.45; }
+
+  /* --- diagram: array indexing --- */
+  .array-diagram{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .array-row{ display:flex; gap:10px; }
+  .array-box{
+    width:64px; height:64px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:18px; font-weight:600;
+    background:var(--paper-raise);
+    border:1.5px solid var(--rule);
+    border-radius:5px;
+    color:var(--ink);
+  }
+  .array-box.hi{
+    background:var(--gold);
+    border-color:var(--gold-ink);
+    color:var(--navy-fixed);
+  }
+  .index-row{ display:flex; gap:10px; }
+  .index-cell{
+    width:64px; text-align:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12px; color:var(--ink-soft);
+  }
+  .index-cell.hi{ color:var(--gold-ink); font-weight:700; }
+  .diagram-caption{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:14px; color:var(--ink);
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:8px 16px;
+  }
+  .diagram-caption .gold{ color:var(--gold-ink); font-weight:600; }
+
+  /* --- cover --- */
+  .slide[data-kind="cover"] .slide-frame{ justify-content:center; }
+  .cover-mark{ display:flex; gap:8px; flex-wrap:wrap; }
+  .cover-mark span{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    padding:5px 10px;
+    border-radius:3px;
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+  }
+  .cover-mark span.hi{ background:var(--gold); border-color:var(--gold-ink); color:var(--navy-fixed); font-weight:700; }
+  .cover-title{ font-size:clamp(40px,6vw,74px); font-weight:600; line-height:1.02; }
+  .cover-rule{ width:96px; height:5px; background:var(--navy-fixed); position:relative; margin:22px 0 16px; }
+  .cover-rule::after{ content:""; position:absolute; left:0; top:8px; width:96px; height:2px; background:var(--gold); }
+
+  /* --- divider (fixed identity, ignores theme -- deliberate, see header note) --- */
+  .slide[data-kind="divider"]{
+    background:var(--navy-fixed);
+    color:#F2F6FB;
+  }
+  .slide[data-kind="divider"] .slide-frame{ justify-content:center; align-items:flex-start; gap:10px; }
+  .divider-num{
+    font-family:"Source Serif 4", serif;
+    font-size:clamp(90px,13vw,168px);
+    font-weight:600;
+    line-height:.85;
+    color:var(--gold-fixed);
+  }
+  .divider-title{ font-size:clamp(30px,4vw,48px); font-weight:600; color:#F2F6FB; }
+  .divider-sub{ font-size:clamp(14px,1.3vw,18px); color:#B9CBE0; max-width:52ch; }
+  .divider-rule{ width:64px; height:3px; background:var(--gold-fixed); margin:6px 0 14px; }
+
+  /* --- chrome: controls + progress --- */
+  .chrome{
+    position:fixed; left:0; right:0; bottom:0;
+    display:flex; align-items:center; gap:18px;
+    padding:14px min(9vw,96px);
+    z-index:20;
+    pointer-events:none;
+  }
+  .chrome > *{ pointer-events:auto; }
+  .progress-track{
+    position:relative;
+    flex:1;
+    height:3px;
+    background:rgba(var(--grid),.7);
+    border-radius:2px;
+  }
+  .progress-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    background:var(--gold);
+    border-radius:2px;
+    width:0%;
+    transition:width .35s ease;
+  }
+  .progress-tick{
+    position:absolute; top:-3px;
+    width:2px; height:9px;
+    background:var(--ink-soft);
+    opacity:.5;
+    transform:translateX(-1px);
+  }
+  .idx-readout{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+    min-width:92px;
+  }
+  .navbtn{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.04em;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    color:var(--ink);
+    border-radius:4px;
+    padding:8px 14px;
+    cursor:pointer;
+  }
+  .navbtn:hover{ border-color:var(--blue-text); }
+  .navbtn:focus-visible, a:focus-visible, button:focus-visible{
+    outline:2px solid var(--gold-ink);
+    outline-offset:2px;
+  }
+  .navbtn:disabled{ opacity:.35; cursor:default; }
+
+  a{ color:var(--blue-text); }
+
+  .signoff{ font-family:"Source Serif 4", serif; font-style:italic; color:var(--ink-soft); font-size:15px; }
+
+  @media (max-width:640px){
+    .slide{ padding:56px 22px 88px; }
+    .array-box, .index-cell{ width:44px; }
+    .array-box{ height:44px; font-size:14px; }
+  }
+  /* --- additions for this deck --- */
+  .cheat.plain td{ font-family:"IBM Plex Sans",sans-serif; font-size:14.5px; }
+  .cheat.plain td code{ font-size:.9em; }
+  .cheat.plain td.rowhead{ font-weight:600; color:var(--blue-text); width:28%; }
+  .flow{ display:flex; align-items:center; justify-content:center; gap:18px; flex-wrap:wrap; }
+  .flow-step{ display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .flow-cap{ font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.06em; color:var(--ink-soft); text-transform:uppercase; }
+  .flow-arrow{ font-size:26px; color:var(--gold-ink); }
+  .flow-pair{ display:flex; gap:12px; }
+  table.mini{ border-collapse:collapse; background:var(--paper-raise); border:1px solid var(--rule); border-radius:4px; font-family:"IBM Plex Mono",monospace; font-size:13px; }
+  table.mini th{ background:rgba(var(--grid),.55); font-size:11.5px; padding:5px 12px; text-align:center; color:var(--ink-soft); }
+  table.mini td{ padding:5px 12px; border-top:1px solid var(--rule); text-align:center; }
+  table.mini.hi-gold{ border-color:var(--gold-ink); }
+  table.mini.hi-gold th{ background:var(--gold); color:var(--navy-fixed); }
+  .slide-body{ justify-content:safe center; }
+  table.mini.big{ font-size:16px; }
+  table.mini.big th{ font-size:13px; padding:7px 18px; }
+  table.mini.big td{ padding:7px 18px; }
+  .shuffle-demo{ display:flex; flex-direction:column; gap:8px; align-items:flex-start; }
+  .sd-row{ display:flex; gap:8px; align-items:center; }
+  .sd-name{ width:128px; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em; }
+  .sd-box{ width:56px; height:40px; display:flex; align-items:center; justify-content:center; font-family:"IBM Plex Mono",monospace; font-size:14px; font-weight:600; background:var(--paper-raise); border:1.5px solid var(--rule); border-radius:5px; color:var(--ink); }
+  .sd-box.lab-c{ background:var(--gold); border-color:var(--gold-ink); color:var(--navy-fixed); }
+  .sd-box.lab-d{ background:var(--navy-fixed); border-color:var(--navy-fixed); color:#F2F6FB; }
+  .sd-gap{ margin-left:136px; font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--gold-ink); font-weight:600; }
+  ol.recipe{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; max-width:70ch; }
+  ol.recipe li{ display:flex; gap:14px; align-items:flex-start; font-size:clamp(14.5px,1.15vw,17px); line-height:1.5; }
+  ol.recipe .n{ flex:none; width:28px; height:28px; border-radius:50%; background:var(--gold); color:var(--navy-fixed); font-family:"IBM Plex Mono",monospace; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; }
+  .hist-pair{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:860px){ .hist-pair{ grid-template-columns:1fr; } }
+  .hist-panel svg{ width:100%; height:auto; display:block; }
+  .hist-panel .bars rect{ fill:var(--ink-soft); opacity:.45; }
+  .hist-panel .axis{ stroke:var(--ink-soft); stroke-width:1.5; }
+  .hist-panel .dot{ fill:#D14343; stroke:var(--paper-raise); stroke-width:2; }
+  .hist-cap{ margin-top:10px; font-size:15px; color:var(--ink); }
+  .hist-sub{ margin-top:4px; font-size:13.5px; color:var(--ink-soft); line-height:1.5; }
+  .mini-head{ font-family:"IBM Plex Mono",monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); margin-bottom:10px; }</style>
+<div id="deck">
+
+  <section class="slide" data-kind="content" data-tick="1">
+    <div class="slide-frame">
+      <div class="eyebrow">Background</div>
+      <div class="slide-body">
+        <h2 class="title-lg">About the Data</h2>
+        <ul class="points">
+          <li>The data come from a sample of newborns in a <b>large hospital system</b>. The textbook treats it as a simple random sample, even though the sampling was done in multiple stages.</li>
+          <li>There are <b>1,174 mother-baby pairs</b>: 459 mothers who smoked during pregnancy and 715 who did not.</li>
+          <li>For each pair, the table records: the baby's <b>birth weight</b> (ounces), <b>gestational days</b>, the mother's <b>age</b> (years), <b>height</b> (inches), <b>pregnancy weight</b> (pounds), and whether the mother <b>smoked</b> during pregnancy.</li>
+          <li>More detail about a larger version of this data set is in <i>Stat Labs</i> by Deborah Nolan and Terry Speed.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Background</div>
+      <div class="slide-body">
+        <h2 class="title-lg">What the Study Was Asking</h2>
+        <ul class="points">
+          <li>One aim of the study was to see whether <b>maternal smoking was associated with birth weight</b>. In the textbook, babies of mothers who smoked weighed about 9 ounces less on average in this sample, and a permutation test supported that difference.</li>
+          <li>The textbook then uses <b>the same data and the same method</b> to compare other attributes of the two groups, such as the mothers' ages.</li>
+          <li>In this activity you ask that different question: <b>mothers' ages</b>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Prompt</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Were Mothers Who Smoked Younger?</h2>
+        <ul class="points">
+          <li>Researchers studied <b>1,174 mother-baby pairs</b> at a large hospital system. <b>459</b> of the mothers smoked during pregnancy and <b>715</b> did not.</li>
+          <li>Using <code>baby.csv</code> (columns <code>Maternal Age</code> and <code>Maternal Smoker</code>), test whether mothers who smoked were <b>younger on average</b> than mothers who did not.</li>
+          <li>Report your analysis following the <b>four steps</b> from the textbook: the hypotheses, the test statistic, the distribution under the null, and the conclusion.</li>
+          <li><b>Hint:</b> remember that association is not causation. Think about what you are actually comparing: the <b>ages of two groups of mothers</b>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content" data-tick="1">
+    <div class="slide-frame">
+      <div class="eyebrow">Deliverables</div>
+      <div class="slide-body">
+        <h2 class="title-lg">What to Turn In</h2>
+        <ol class="recipe">
+          <li><span class="n">1</span><div><b>Hypotheses.</b> The null and the alternative, in words.</div></li>
+          <li><span class="n">2</span><div><b>Test statistic.</b> How it is calculated, which sign favors the alternative, and its observed value.</div></li>
+          <li><span class="n">3</span><div><b>Simulation.</b> Your code and a histogram of at least 5,000 simulated statistics, with the observed value marked.</div></li>
+          <li><span class="n">4</span><div><b>P-value and conclusion.</b> The p-value, your decision at the 5% cutoff, and what it means in plain language.</div></li>
+          <li><span class="n">5</span><div><b>Cause.</b> One or two sentences on what the result does and does not show.</div></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+
+
+
+
+<div class="chrome">
+  <button class="navbtn" id="prevBtn" aria-label="Previous slide">&larr; prev</button>
+  <div class="progress-track" id="track">
+    <div class="progress-fill" id="fill"></div>
+  </div>
+  <div class="idx-readout mono" id="readout">arr[00 / 00]</div>
+  <button class="navbtn" id="nextBtn" aria-label="Next slide">next &rarr;</button>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var current = 0;
+
+  var fill = document.getElementById('fill');
+  var readout = document.getElementById('readout');
+  var track = document.getElementById('track');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+
+  slides.forEach(function(s, i){
+    if (s.getAttribute('data-tick') === '1'){
+      var t = document.createElement('div');
+      t.className = 'progress-tick';
+      t.style.left = (i/(total-1)*100) + '%';
+      track.appendChild(t);
+    }
+  });
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  function render(){
+    slides.forEach(function(s, i){ s.classList.toggle('active', i === current); });
+    fill.style.width = (current/(total-1)*100) + '%';
+    readout.textContent = 'arr[' + pad(current) + ' / ' + pad(total-1) + ']';
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+  }
+
+  function go(delta){
+    current = Math.max(0, Math.min(total - 1, current + delta));
+    render();
+  }
+
+  prevBtn.addEventListener('click', function(){ go(-1); });
+  nextBtn.addEventListener('click', function(){ go(1); });
+  track.addEventListener('click', function(e){
+    var r = track.getBoundingClientRect();
+    var pct = (e.clientX - r.left) / r.width;
+    current = Math.round(pct * (total - 1));
+    render();
+  });
+
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown'){ e.preventDefault(); go(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace'){ e.preventDefault(); go(-1); }
+    else if (e.key === 'Home'){ current = 0; render(); }
+    else if (e.key === 'End'){ current = total - 1; render(); }
+  });
+
+  render();
+})();
+</script>
