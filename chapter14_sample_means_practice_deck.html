@@ -742,11 +742,11 @@ np.mean(np.abs(scores - np.mean(scores))
         <h2 class="title-lg">Standard Units (z-Scores)</h2>
         <div class="grid-2">
           <ul class="points">
-            <li><b>Standard units</b>, also called <b>z-scores</b>, say how many SDs a value is from the mean: <code>z = (value &minus; mean) / SD</code>.</li>
-            <li>A positive z is above the mean and a negative z is below it. <code>z = 2</code> means 2 SDs above average.</li>
-            <li>The <b>standard normal curve</b> is the bell curve measured in standard units. Its mean is <b>0</b>, its SD is <b>1</b>, and its points of inflection are at <b>&minus;1</b> and <b>+1</b>.</li>
-            <li>The total area under the curve is <b>1</b> (100%). The area over a stretch of the axis is the <b>proportion of values</b> in that stretch.</li>
-            <li>This is the curve behind the empirical rule: the area between &minus;1 and +1 is about 68%.</li>
+            <li><b>Standard units</b>, also called <b>z-scores</b>, show how many SDs a value is from the mean: <code>z = (value &minus; mean) / SD</code>.</li>
+            <li>A positive z is above the mean and a negative z is below it. For example, <code>z = 2</code> means the value is 2 SDs above average.</li>
+            <li>The <b>standard normal curve</b> is a bell-shaped curve measured in standard units. It has a mean of <b>0</b> and an SD of <b>1</b>, it is symmetric around 0, and its points of inflection are at <b>&minus;1</b> and <b>+1</b>.</li>
+            <li>The total area under the curve is <b>1</b>, or 100%. Areas under the curve represent <b>proportions of values</b>.</li>
+            <li>For approximately bell-shaped data, about <b>68%</b> of values fall within 1 SD of the mean, about <b>95%</b> within 2 SDs, and about <b>99.73%</b> within 3 SDs.</li>
           </ul>
           <div class="code-cell">
             <div class="cell-head">Given code: just run it and read it</div>
@@ -772,11 +772,10 @@ z_scores = (scores - np.mean(scores)) / np.std(scores)</pre>
         <h2 class="title-lg">The Cumulative Distribution Function</h2>
         <div class="grid-2">
           <ul class="points">
-            <li>The <b>cumulative distribution function (CDF)</b> at <code>z</code> is the <b>area under the standard normal curve to the left of z</b>. It is the proportion of values at or below z.</li>
-            <li>The CDF is always between 0 and 1, and it only goes up as z increases.</li>
+            <li>The <b>cumulative distribution function (CDF)</b> at <code>z</code> is the <b>area under the standard normal curve to the left of z</b>. Since areas represent proportions, it is the proportion of values at or below z.</li>
+            <li>The total area is 1, so the CDF is always between 0 and 1, and it only goes up as z increases.</li>
             <li>To find the area <b>between</b> two values, subtract two CDFs: <code>cdf(b) &minus; cdf(a)</code>.</li>
-            <li>This is how the empirical rule percentages come from the curve. These areas are close to 68%, 95% and 99.73%.</li>
-            <li>It describes <b>bell-shaped</b> data only. It does not describe the skewed flight delays.</li>
+            <li>Applied to 1, 2 and 3 SDs this gives about 68%, 95% and 99.73%. These are approximations for <b>normal-shaped</b> data, not for skewed data like the flight delays.</li>
           </ul>
           <div class="code-cell">
             <div class="cell-head">Given code: you do not need to write it</div>
