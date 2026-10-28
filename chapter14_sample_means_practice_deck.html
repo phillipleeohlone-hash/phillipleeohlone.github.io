@@ -520,6 +520,7 @@
             <h3>Python</h3>
             <div class="ref-item"><div class="name">def f(table, label, n):</div><div class="desc">A function whose inputs are a table, a column name, and a number</div></div>
             <div class="ref-item"><div class="name">for i in np.arange(n):</div><div class="desc">Repeat n times</div></div>
+            <div class="ref-item"><div class="name">norm.cdf(z)</div><div class="desc">Given code: the area under the standard normal curve to the left of z</div></div>
           </div>
         </div>
       </div>
@@ -729,6 +730,66 @@ np.mean(np.abs(scores - np.mean(scores))
         </div>
         <div class="chip-row">
           <div class="chip"><div class="qid">Step 4</div><div class="qtext">Find the fraction of heights within 1 and within 2 SDs, and compare with the skewed delays.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Extra &middot; Standard Units and the Standard Normal Curve</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Standard Units (z-Scores)</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li><b>Standard units</b>, also called <b>z-scores</b>, say how many SDs a value is from the mean: <code>z = (value &minus; mean) / SD</code>.</li>
+            <li>A positive z is above the mean and a negative z is below it. <code>z = 2</code> means 2 SDs above average.</li>
+            <li>The <b>standard normal curve</b> is the bell curve measured in standard units. Its mean is <b>0</b>, its SD is <b>1</b>, and its points of inflection are at <b>&minus;1</b> and <b>+1</b>.</li>
+            <li>The total area under the curve is <b>1</b> (100%). The area over a stretch of the axis is the <b>proportion of values</b> in that stretch.</li>
+            <li>This is the curve behind the empirical rule: the area between &minus;1 and +1 is about 68%.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">Given code: just run it and read it</div>
+<pre><span class="c-com"># test scores: mean 70, SD 5</span>
+mean, sd = <span class="c-num">70</span>, <span class="c-num">5</span>
+
+z = (<span class="c-num">63</span> - mean) / sd
+z
+<span class="c-com"># -1.4  (63 is 1.4 SDs below the mean)</span>
+
+<span class="c-com"># the same idea for a whole array</span>
+z_scores = (scores - np.mean(scores)) / np.std(scores)</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Extra &middot; The CDF</div>
+      <div class="slide-body">
+        <h2 class="title-lg">The Cumulative Distribution Function</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>The <b>cumulative distribution function (CDF)</b> at <code>z</code> is the <b>area under the standard normal curve to the left of z</b>. It is the proportion of values at or below z.</li>
+            <li>The CDF is always between 0 and 1, and it only goes up as z increases.</li>
+            <li>To find the area <b>between</b> two values, subtract two CDFs: <code>cdf(b) &minus; cdf(a)</code>.</li>
+            <li>This is how the empirical rule percentages come from the curve. These areas are close to 68%, 95% and 99.73%.</li>
+            <li>It describes <b>bell-shaped</b> data only. It does not describe the skewed flight delays.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">Given code: you do not need to write it</div>
+<pre><span class="c-kw">from</span> scipy.stats <span class="c-kw">import</span> norm
+
+norm.cdf(-<span class="c-num">1.4</span>)
+<span class="c-com"># 0.0808  about 8% of values are at or below z = -1.4</span>
+
+<span class="c-com"># area within 1, 2 and 3 SDs</span>
+norm.cdf(<span class="c-num">1</span>) - norm.cdf(-<span class="c-num">1</span>)   <span class="c-com"># 0.6827</span>
+norm.cdf(<span class="c-num">2</span>) - norm.cdf(-<span class="c-num">2</span>)   <span class="c-com"># 0.9545</span>
+norm.cdf(<span class="c-num">3</span>) - norm.cdf(-<span class="c-num">3</span>)   <span class="c-com"># 0.9973</span></pre>
+          </div>
         </div>
       </div>
     </div>
