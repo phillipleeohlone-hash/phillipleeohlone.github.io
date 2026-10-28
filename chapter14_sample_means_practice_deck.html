@@ -780,7 +780,8 @@ z_scores = (scores - np.mean(scores)) / np.std(scores)</pre>
           </ul>
           <div class="code-cell">
             <div class="cell-head">Given code: you do not need to write it</div>
-<pre><span class="c-kw">from</span> scipy.stats <span class="c-kw">import</span> norm
+<pre><span class="c-com"># !pip install scipy   (uncomment only if the import below fails)</span>
+<span class="c-kw">from</span> scipy.stats <span class="c-kw">import</span> norm
 
 norm.cdf(-<span class="c-num">1.4</span>)
 <span class="c-com"># 0.0808  about 8% of values are at or below z = -1.4</span>
