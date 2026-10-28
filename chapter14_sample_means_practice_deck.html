@@ -520,7 +520,7 @@
             <h3>Python</h3>
             <div class="ref-item"><div class="name">def f(table, label, n):</div><div class="desc">A function whose inputs are a table, a column name, and a number</div></div>
             <div class="ref-item"><div class="name">for i in np.arange(n):</div><div class="desc">Repeat n times</div></div>
-            <div class="ref-item"><div class="name">norm.cdf(z)</div><div class="desc">Given code: the area under the standard normal curve to the left of z</div></div>
+            <div class="ref-item"><div class="name">stats.norm.cdf(z)</div><div class="desc">Given code: the area under the standard normal curve to the left of z</div></div>
           </div>
         </div>
       </div>
@@ -780,15 +780,15 @@ z_scores = (scores - np.mean(scores)) / np.std(scores)</pre>
           <div class="code-cell">
             <div class="cell-head">Given code: you do not need to write it</div>
 <pre><span class="c-com"># !pip install scipy   (uncomment only if the import below fails)</span>
-<span class="c-kw">from</span> scipy.stats <span class="c-kw">import</span> norm
+<span class="c-kw">from</span> scipy <span class="c-kw">import</span> stats
 
-norm.cdf(-<span class="c-num">1.4</span>)
+stats.norm.cdf(-<span class="c-num">1.4</span>)
 <span class="c-com"># 0.0808  about 8% of values are at or below z = -1.4</span>
 
 <span class="c-com"># area within 1, 2 and 3 SDs</span>
-norm.cdf(<span class="c-num">1</span>) - norm.cdf(-<span class="c-num">1</span>)   <span class="c-com"># 0.6827</span>
-norm.cdf(<span class="c-num">2</span>) - norm.cdf(-<span class="c-num">2</span>)   <span class="c-com"># 0.9545</span>
-norm.cdf(<span class="c-num">3</span>) - norm.cdf(-<span class="c-num">3</span>)   <span class="c-com"># 0.9973</span></pre>
+stats.norm.cdf(<span class="c-num">1</span>) - stats.norm.cdf(-<span class="c-num">1</span>)   <span class="c-com"># 0.6827</span>
+stats.norm.cdf(<span class="c-num">2</span>) - stats.norm.cdf(-<span class="c-num">2</span>)   <span class="c-com"># 0.9545</span>
+stats.norm.cdf(<span class="c-num">3</span>) - stats.norm.cdf(-<span class="c-num">3</span>)   <span class="c-com"># 0.9973</span></pre>
           </div>
         </div>
       </div>
