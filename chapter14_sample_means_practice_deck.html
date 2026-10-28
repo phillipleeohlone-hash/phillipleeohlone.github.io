@@ -198,8 +198,6 @@
   .code-cell .c-num{ color:var(--gold-ink); }
   .code-cell .c-com{ color:var(--ink-soft); font-style:italic; }
 
-  /* given code: students only run it and read the output */
-  .code-cell.run-only{ background:linear-gradient(rgba(253,181,21,.11),rgba(253,181,21,.11)), var(--paper-raise); }
   .cheat{ width:100%; border-collapse:collapse; font-size:13.5px; }
   .cheat th{
     text-align:left; font-family:"IBM Plex Mono",monospace; font-size:11px;
@@ -233,6 +231,7 @@
     color:var(--blue-text);
     word-break:break-word;
   }
+  .ref-item.run-only{ background:rgba(var(--grid),.55); padding:6px 8px; border-radius:4px; }
   .ref-item .desc{ font-size:12px; color:var(--ink-soft); line-height:1.4; margin-top:2px; }
 
   .qcount{ display:flex; align-items:baseline; gap:12px; }
@@ -522,7 +521,7 @@
             <h3>Python</h3>
             <div class="ref-item"><div class="name">def f(table, label, n):</div><div class="desc">A function whose inputs are a table, a column name, and a number</div></div>
             <div class="ref-item"><div class="name">for i in np.arange(n):</div><div class="desc">Repeat n times</div></div>
-            <div class="ref-item"><div class="name">stats.norm.cdf(z)</div><div class="desc">Given code: the area under the standard normal curve to the left of z</div></div>
+            <div class="ref-item run-only"><div class="name">stats.norm.cdf(z)</div><div class="desc">Given code: the area under the standard normal curve to the left of z</div></div>
           </div>
         </div>
       </div>
@@ -539,7 +538,6 @@
           <div class="big">9</div>
           <div class="label">steps across 4 parts. The deck follows the same order.</div>
         </div>
-        <p class="lede" style="margin:0;">A code cell with a <span style="background:rgba(253,181,21,.22);padding:.05em .45em;border-radius:3px;">light gold tint</span> is given: you only run it and read the output.</p>
         <div class="qnum-grid" style="grid-template-columns:repeat(4,1fr);">
           <div class="qnum-col">
             <h3>1. Spread</h3>
@@ -751,7 +749,7 @@ np.mean(np.abs(scores - np.mean(scores))
             <li>The total area under the curve is <b>1</b>, or 100%. Areas under the curve represent <b>proportions of values</b>.</li>
             <li>For approximately bell-shaped data, about <b>68%</b> of values fall within 1 SD of the mean, about <b>95%</b> within 2 SDs, and about <b>99.73%</b> within 3 SDs.</li>
           </ul>
-          <div class="code-cell run-only">
+          <div class="code-cell">
             <div class="cell-head">Given code: just run it and read it</div>
 <pre><span class="c-com"># test scores: mean 70, SD 5</span>
 mean, sd = <span class="c-num">70</span>, <span class="c-num">5</span>
@@ -780,7 +778,7 @@ z_scores = (scores - np.mean(scores)) / np.std(scores)</pre>
             <li>To find the area <b>between</b> two values, subtract two CDFs: <code>cdf(b) &minus; cdf(a)</code>.</li>
             <li>Applied to 1, 2 and 3 SDs this gives about 68%, 95% and 99.73%. These are approximations for <b>normal-shaped</b> data, not for skewed data like the flight delays.</li>
           </ul>
-          <div class="code-cell run-only">
+          <div class="code-cell">
             <div class="cell-head">Given code: you do not need to write it</div>
 <pre><span class="c-com"># !pip install scipy   (uncomment only if the import below fails)</span>
 <span class="c-kw">from</span> scipy <span class="c-kw">import</span> stats
