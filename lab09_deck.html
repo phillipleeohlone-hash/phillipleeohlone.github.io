@@ -1,0 +1,976 @@
+<title>Lab 9 Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap">
+<style>
+  :root{
+    --paper:#F1F4F8;
+    --paper-raise:#FFFFFF;
+    --ink:#152433;
+    --ink-soft:#4C5F72;
+    --rule:#D5DEE8;
+    --grid: 213,222,232;
+    --blue:#003262;
+    --blue-text:#003262;
+    --gold:#FDB515;
+    --gold-ink:#6B4A05;
+    --shadow: 20,36,51;
+    --navy-fixed:#00284F;
+    --gold-fixed:#FDB515;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0B1926;
+      --paper-raise:#122232;
+      --ink:#E9F1F8;
+      --ink-soft:#96ACC2;
+      --rule:#22384E;
+      --grid: 34,56,78;
+      --blue-text:#84B6E8;
+      --gold-ink:#FDB515;
+      --shadow: 0,0,0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0B1926;
+    --paper-raise:#122232;
+    --ink:#E9F1F8;
+    --ink-soft:#96ACC2;
+    --rule:#22384E;
+    --grid: 34,56,78;
+    --blue-text:#84B6E8;
+    --gold-ink:#FDB515;
+    --shadow: 0,0,0;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    overflow:hidden;
+    height:100vh;
+    width:100vw;
+  }
+  ::selection{ background:var(--gold); color:var(--navy-fixed); }
+
+  h1,h2,h3{ font-family:"Source Serif 4", Georgia, serif; text-wrap:balance; margin:0; }
+
+  .mono{ font-family:"IBM Plex Mono", "Courier New", monospace; }
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--blue-text);
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:.6em;
+  }
+  .eyebrow::before{
+    content:"";
+    width:18px; height:2px;
+    background:var(--gold);
+    display:inline-block;
+  }
+
+  code, .code-inline{
+    font-family:"IBM Plex Mono", monospace;
+    background:rgba(var(--grid),.55);
+    padding:.12em .42em;
+    border-radius:3px;
+    font-size:.92em;
+  }
+
+  #deck{
+    position:relative;
+    width:100vw;
+    height:100vh;
+  }
+
+  .slide{
+    position:absolute;
+    inset:0;
+    display:none;
+    padding:min(6.5vh,64px) min(9vw,96px) min(9vh,72px);
+    opacity:0;
+  }
+  .slide.active{
+    display:flex;
+    flex-direction:column;
+    animation: rise .48s ease both;
+  }
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .slide.active{ animation:none; opacity:1; }
+  }
+
+  .slide-frame{
+    width:100%;
+    height:100%;
+    max-width:1180px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    min-height:0;
+  }
+
+  .slide-body{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:28px;
+    padding-right:4px;
+  }
+
+  .title-lg{ font-size:clamp(30px,3.6vw,46px); font-weight:600; line-height:1.08; color:var(--ink); }
+  .title-md{ font-size:clamp(24px,2.6vw,32px); font-weight:600; line-height:1.15; color:var(--ink); }
+
+  .lede{ font-size:clamp(15px,1.25vw,18px); color:var(--ink-soft); line-height:1.55; max-width:62ch; }
+
+  ul.points{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; max-width:66ch; }
+  ul.points li{
+    position:relative;
+    padding-left:28px;
+    font-size:clamp(14.5px,1.15vw,17px);
+    line-height:1.55;
+    color:var(--ink);
+  }
+  ul.points li::before{
+    content:"";
+    position:absolute; left:0; top:.55em;
+    width:8px; height:8px;
+    background:var(--gold);
+    border-radius:1px;
+    transform:rotate(45deg);
+  }
+  ul.points b{ font-weight:600; }
+  ul.points .soft{ color:var(--ink-soft); }
+
+  .grid-2{ display:grid; grid-template-columns:1.05fr .95fr; gap:34px; align-items:center; }
+  @media (max-width:860px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .panel{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:22px 24px;
+    box-shadow:0 1px 0 rgba(var(--shadow),.03);
+  }
+
+  .code-cell{
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--blue-text);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .code-cell .cell-head{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    padding:7px 14px;
+    border-bottom:1px dashed var(--rule);
+    letter-spacing:.03em;
+  }
+  .code-cell pre{
+    margin:0;
+    padding:14px 16px;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--ink);
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .code-cell .c-str{ color:#2E7D5B; }
+  :root[data-theme="dark"] .code-cell .c-str{ color:#63C695; }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .code-cell .c-str{ color:#63C695; } }
+  .code-cell .c-kw{ color:var(--blue-text); font-weight:600; }
+  .code-cell .c-num{ color:var(--gold-ink); }
+  .code-cell .c-com{ color:var(--ink-soft); font-style:italic; }
+
+  .cheat{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  .cheat th{
+    text-align:left; font-family:"IBM Plex Mono",monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft);
+    padding:0 12px 10px; font-weight:600;
+  }
+  .cheat td{
+    font-family:"IBM Plex Mono", monospace;
+    padding:11px 12px;
+    border-top:1px solid var(--rule);
+    vertical-align:middle;
+  }
+  .cheat td.old{ color:var(--ink-soft); text-decoration:line-through; text-decoration-color:rgba(var(--shadow),.35); }
+  .cheat td.arrow{ color:var(--gold-ink); font-family:"IBM Plex Sans",sans-serif; width:24px; text-align:center; }
+  .cheat td.new{ color:var(--blue-text); font-weight:600; }
+
+  .ref-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:26px 22px; }
+  @media (max-width:860px){ .ref-grid{ grid-template-columns:repeat(2,1fr); } }
+  .ref-col{ display:flex; flex-direction:column; gap:13px; min-width:0; }
+  .ref-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.08em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .ref-item .name{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    word-break:break-word;
+  }
+  .ref-item .desc{ font-size:12px; color:var(--ink-soft); line-height:1.4; margin-top:2px; }
+
+  .qcount{ display:flex; align-items:baseline; gap:12px; }
+  .qcount .big{ font-family:"Source Serif 4", serif; font-size:clamp(40px,5vw,56px); font-weight:600; color:var(--gold-ink); line-height:1; }
+  .qcount .label{ font-size:14.5px; color:var(--ink-soft); max-width:34ch; line-height:1.5; }
+
+  .qnum-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:20px; }
+  @media (max-width:900px){ .qnum-grid{ grid-template-columns:repeat(3,1fr); } }
+  .qnum-col{ display:flex; flex-direction:column; gap:10px; }
+  .qnum-col h3{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:10.5px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .qnum-chips{ display:flex; flex-direction:column; gap:7px; }
+  .qnum-chip{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px; font-weight:600;
+    color:var(--blue-text);
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:3px;
+    padding:5px 9px;
+    text-align:center;
+  }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:12px; }
+  .chip{
+    display:flex; flex-direction:column; gap:4px;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--gold);
+    border-radius:4px;
+    padding:10px 14px;
+    min-width:210px;
+    flex:1 1 260px;
+  }
+  .chip .qid{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px; font-weight:600;
+    color:var(--gold-ink);
+    letter-spacing:.04em;
+  }
+  .chip .qtext{ font-size:13.5px; color:var(--ink); line-height:1.45; }
+
+  /* --- diagram: array indexing --- */
+  .array-diagram{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .array-row{ display:flex; gap:10px; }
+  .array-box{
+    width:64px; height:64px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:18px; font-weight:600;
+    background:var(--paper-raise);
+    border:1.5px solid var(--rule);
+    border-radius:5px;
+    color:var(--ink);
+  }
+  .array-box.hi{
+    background:var(--gold);
+    border-color:var(--gold-ink);
+    color:var(--navy-fixed);
+  }
+  .index-row{ display:flex; gap:10px; }
+  .index-cell{
+    width:64px; text-align:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12px; color:var(--ink-soft);
+  }
+  .index-cell.hi{ color:var(--gold-ink); font-weight:700; }
+  .diagram-caption{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:14px; color:var(--ink);
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:8px 16px;
+  }
+  .diagram-caption .gold{ color:var(--gold-ink); font-weight:600; }
+
+  /* --- cover --- */
+  .slide[data-kind="cover"] .slide-frame{ justify-content:center; }
+  .cover-mark{ display:flex; gap:8px; flex-wrap:wrap; }
+  .cover-mark span{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    padding:5px 10px;
+    border-radius:3px;
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+  }
+  .cover-mark span.hi{ background:var(--gold); border-color:var(--gold-ink); color:var(--navy-fixed); font-weight:700; }
+  .cover-title{ font-size:clamp(40px,6vw,74px); font-weight:600; line-height:1.02; }
+  .cover-rule{ width:96px; height:5px; background:var(--navy-fixed); position:relative; margin:22px 0 16px; }
+  .cover-rule::after{ content:""; position:absolute; left:0; top:8px; width:96px; height:2px; background:var(--gold); }
+
+  /* --- divider (fixed identity, ignores theme -- deliberate, see header note) --- */
+  .slide[data-kind="divider"]{
+    background:var(--navy-fixed);
+    color:#F2F6FB;
+  }
+  .slide[data-kind="divider"] .slide-frame{ justify-content:center; align-items:flex-start; gap:10px; }
+  .divider-num{
+    font-family:"Source Serif 4", serif;
+    font-size:clamp(90px,13vw,168px);
+    font-weight:600;
+    line-height:.85;
+    color:var(--gold-fixed);
+  }
+  .divider-title{ font-size:clamp(30px,4vw,48px); font-weight:600; color:#F2F6FB; }
+  .divider-sub{ font-size:clamp(14px,1.3vw,18px); color:#B9CBE0; max-width:52ch; }
+  .divider-rule{ width:64px; height:3px; background:var(--gold-fixed); margin:6px 0 14px; }
+
+  /* --- chrome: controls + progress --- */
+  .chrome{
+    position:fixed; left:0; right:0; bottom:0;
+    display:flex; align-items:center; gap:18px;
+    padding:14px min(9vw,96px);
+    z-index:20;
+    pointer-events:none;
+  }
+  .chrome > *{ pointer-events:auto; }
+  .progress-track{
+    position:relative;
+    flex:1;
+    height:3px;
+    background:rgba(var(--grid),.7);
+    border-radius:2px;
+  }
+  .progress-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    background:var(--gold);
+    border-radius:2px;
+    width:0%;
+    transition:width .35s ease;
+  }
+  .progress-tick{
+    position:absolute; top:-3px;
+    width:2px; height:9px;
+    background:var(--ink-soft);
+    opacity:.5;
+    transform:translateX(-1px);
+  }
+  .idx-readout{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+    min-width:92px;
+  }
+  .navbtn{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.04em;
+    background:var(--paper-raise);
+    border:1px solid var(--rule);
+    color:var(--ink);
+    border-radius:4px;
+    padding:8px 14px;
+    cursor:pointer;
+  }
+  .navbtn:hover{ border-color:var(--blue-text); }
+  .navbtn:focus-visible, a:focus-visible, button:focus-visible{
+    outline:2px solid var(--gold-ink);
+    outline-offset:2px;
+  }
+  .navbtn:disabled{ opacity:.35; cursor:default; }
+
+  a{ color:var(--blue-text); }
+
+  .signoff{ font-family:"Source Serif 4", serif; font-style:italic; color:var(--ink-soft); font-size:15px; }
+
+  @media (max-width:640px){
+    .slide{ padding:56px 22px 88px; }
+    .array-box, .index-cell{ width:44px; }
+    .array-box{ height:44px; font-size:14px; }
+  }
+  /* --- additions for this deck --- */
+  .cheat.plain td{ font-family:"IBM Plex Sans",sans-serif; font-size:14.5px; }
+  .cheat.plain td code{ font-size:.9em; }
+  .cheat.plain td.rowhead{ font-weight:600; color:var(--blue-text); width:28%; }
+  .flow{ display:flex; align-items:center; justify-content:center; gap:18px; flex-wrap:wrap; }
+  .flow-step{ display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .flow-cap{ font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.06em; color:var(--ink-soft); text-transform:uppercase; }
+  .flow-arrow{ font-size:26px; color:var(--gold-ink); }
+  .flow-pair{ display:flex; gap:12px; }
+  table.mini{ border-collapse:collapse; background:var(--paper-raise); border:1px solid var(--rule); border-radius:4px; font-family:"IBM Plex Mono",monospace; font-size:13px; }
+  table.mini th{ background:rgba(var(--grid),.55); font-size:11.5px; padding:5px 12px; text-align:center; color:var(--ink-soft); }
+  table.mini td{ padding:5px 12px; border-top:1px solid var(--rule); text-align:center; }
+  table.mini.hi-gold{ border-color:var(--gold-ink); }
+  table.mini.hi-gold th{ background:var(--gold); color:var(--navy-fixed); }
+  .slide-body{ justify-content:safe center; }
+  table.mini.big{ font-size:16px; }
+  table.mini.big th{ font-size:13px; padding:7px 18px; }
+  table.mini.big td{ padding:7px 18px; }
+  .shuffle-demo{ display:flex; flex-direction:column; gap:8px; align-items:flex-start; }
+  .sd-row{ display:flex; gap:8px; align-items:center; }
+  .sd-name{ width:128px; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em; }
+  .sd-box{ width:56px; height:40px; display:flex; align-items:center; justify-content:center; font-family:"IBM Plex Mono",monospace; font-size:14px; font-weight:600; background:var(--paper-raise); border:1.5px solid var(--rule); border-radius:5px; color:var(--ink); }
+  .sd-box.lab-c{ background:var(--gold); border-color:var(--gold-ink); color:var(--navy-fixed); }
+  .sd-box.lab-d{ background:var(--navy-fixed); border-color:var(--navy-fixed); color:#F2F6FB; }
+  .sd-gap{ margin-left:136px; font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--gold-ink); font-weight:600; }
+  ol.recipe{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; max-width:70ch; }
+  ol.recipe li{ display:flex; gap:14px; align-items:flex-start; font-size:clamp(14.5px,1.15vw,17px); line-height:1.5; }
+  ol.recipe .n{ flex:none; width:28px; height:28px; border-radius:50%; background:var(--gold); color:var(--navy-fixed); font-family:"IBM Plex Mono",monospace; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; }
+  .hist-pair{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:860px){ .hist-pair{ grid-template-columns:1fr; } }
+  .hist-panel svg{ width:100%; height:auto; display:block; }
+  .hist-panel .bars rect{ fill:var(--ink-soft); opacity:.45; }
+  .hist-panel .axis{ stroke:var(--ink-soft); stroke-width:1.5; }
+  .hist-panel .dot{ fill:#D14343; stroke:var(--paper-raise); stroke-width:2; }
+  .hist-cap{ margin-top:10px; font-size:15px; color:var(--ink); }
+  .hist-sub{ margin-top:4px; font-size:13.5px; color:var(--ink-soft); line-height:1.5; }
+  .mini-head{ font-family:"IBM Plex Mono",monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); margin-bottom:10px; }  .new-tag{ display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:9.5px; font-weight:700; letter-spacing:.06em; background:var(--gold); color:var(--navy-fixed); border-radius:3px; padding:1px 5px; margin-left:6px; vertical-align:middle; }
+  .hist-panel svg{ color:var(--ink); }
+  .hist-panel text.tl{ fill:var(--ink-soft); font-size:10px; font-family:"IBM Plex Mono",monospace; }
+  .hist-panel .hist-sub b{ font-weight:600; }
+  table.mini tr.hi td{ background:rgba(253,181,21,.38); }
+  table.mini tr.hi2 td{ background:rgba(59,125,216,.25); }
+  table.mini tr.tot td{ font-weight:700; border-top:2px solid var(--ink-soft); }
+  .note-panel{ padding:14px 18px; font-size:14px; line-height:1.55; }
+  table.pred td{ height:38px; border:1px solid var(--rule); }
+  table.pred th{ padding-bottom:8px; }
+  .pipe{ display:flex; flex-direction:column; gap:12px; align-items:center; }
+  .pipe-row{ display:flex; gap:14px; align-items:stretch; justify-content:center; flex-wrap:wrap; }
+  .pbox{ background:var(--paper-raise); border:1px solid var(--rule); border-left:3px solid var(--gold); border-radius:4px; padding:12px 16px; display:flex; flex-direction:column; gap:7px; max-width:330px; }
+  .pbox code{ font-size:12.5px; word-break:break-word; }
+  .pdesc{ font-size:13.5px; color:var(--ink-soft); line-height:1.45; }
+  .tag{ font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:2px 7px; border-radius:3px; align-self:flex-start; }
+  .tag.write{ background:var(--gold); color:var(--navy-fixed); }
+  .tag.given{ border:1px solid var(--ink-soft); color:var(--ink-soft); }
+  .tag.out{ border:1px solid var(--blue-text); color:var(--blue-text); }
+  .pipe-arrow{ align-self:center; font-size:26px; color:var(--gold-ink); }
+  .pipe-down{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); }
+  .sc-panel svg{ width:100%; height:auto; display:block; color:var(--ink); }
+  .sc-panel .pt{ fill:var(--ink-soft); opacity:.55; }
+  .sc-panel .ax{ stroke:var(--ink-soft); stroke-width:1.5; }
+  .sc-panel .zero{ stroke:var(--ink-soft); stroke-width:1; stroke-dasharray:4 4; }
+  .sc-panel .fit{ stroke:#D14343; stroke-width:3; }
+  .sc-panel .band{ fill:var(--gold); opacity:.22; }
+  .sc-panel text{ fill:var(--ink-soft); font-size:11px; font-family:"IBM Plex Mono",monospace; }
+  .trio{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  @media (max-width:860px){ .trio{ grid-template-columns:1fr; } }
+  table.mini td.c0{ background:rgba(253,181,21,.38); }
+  table.mini td.c1{ background:rgba(59,125,216,.25); }
+  table.mini td.dim{ color:var(--ink-soft); opacity:.55; }
+  .cheat.map td{ font-family:"IBM Plex Sans",sans-serif; font-size:14px; }
+</style>
+
+<div id="deck">
+
+  <section class="slide" data-kind="cover" data-tick="1">
+    <div class="slide-frame">
+      <div class="eyebrow">CS108 &middot; Lab 09</div>
+      <div class="cover-rule"></div>
+      <h1 class="cover-title">Regression</h1>
+      <p class="lede" style="margin-top:6px;">Predicting Old Faithful's next eruption with correlation and the regression line.</p>
+      <div class="cover-mark" style="margin-top:28px;">
+        <span class="hi">arr[0]</span><span>arr[1]</span><span>arr[2]</span><span>arr[3]</span><span>arr[4]</span><span>&hellip;</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Reference</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Functions and Methods in This Lab</h2>
+        <p class="lede">Items marked <span class="new-tag">NEW</span> were not in the Chapter 15 practice. This deck shows an example of each.</p>
+        <div class="ref-grid">
+          <div class="ref-col">
+            <h3>pandas</h3>
+            <div class="ref-item"><div class="name">df.plot.scatter('x', 'y')</div><div class="desc">Scatter plot of two columns</div></div>
+            <div class="ref-item"><div class="name">table.iloc[:, 0]</div><div class="desc">Column 0 of a DataFrame, whatever its name</div></div>
+            <div class="ref-item"><div class="name">df.copy()</div><div class="desc">A separate copy, safe to add columns to</div></div>
+            <div class="ref-item"><div class="name">df['new'] = values</div><div class="desc">Add a column</div></div>
+            <div class="ref-item"><div class="name">pd.DataFrame({'a': x, 'b': y})</div><div class="desc">Build a DataFrame from columns</div></div>
+            <div class="ref-item"><div class="name">df[df['col'] &gt;= 90]</div><div class="desc">Keep the rows where a condition is True</div></div>
+            <div class="ref-item"><div class="name">df['col'].apply(f) <span class="new-tag">NEW</span></div><div class="desc">Call f on every value of a column (GIVEN in Section 5)</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>NumPy</h3>
+            <div class="ref-item"><div class="name">np.mean(arr)  np.std(arr)</div><div class="desc">The average and the SD</div></div>
+            <div class="ref-item"><div class="name">np.array([a, b, c])</div><div class="desc">An array of values in order</div></div>
+            <div class="ref-item"><div class="name">abs(arr) <span class="new-tag">NEW</span></div><div class="desc">Absolute value of each item</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>Plotting</h3>
+            <div class="ref-item"><div class="name">plots.plot([x0, x1], [y0, y1])</div><div class="desc">Draw a line segment between two points</div></div>
+            <div class="ref-item"><div class="name">plots.scatter(x, y, label=...)</div><div class="desc">Add points to the current plot (GIVEN cells only)</div></div>
+            <div class="ref-item"><div class="name">plots.legend()</div><div class="desc">Label each set of points</div></div>
+          </div>
+          <div class="ref-col">
+            <h3>Python</h3>
+            <div class="ref-item"><div class="name">def f(table, r):</div><div class="desc">A function whose inputs are a DataFrame and a number</div></div>
+            <div class="ref-item"><div class="name">if / else</div><div class="desc">Choose which line to use</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">Reference</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Questions in This Lab</h2>
+        <div class="qcount">
+          <div class="big">18</div>
+          <div class="label">questions across 5 sections.</div>
+        </div>
+        <div class="qnum-grid">
+          <div class="qnum-col"><h3>1. Old Faithful</h3><div class="qnum-chips"><div class="qnum-chip">1.0</div><div class="qnum-chip">1.1</div><div class="qnum-chip">1.2</div><div class="qnum-chip">1.3</div><div class="qnum-chip">1.4</div><div class="qnum-chip">1.5</div><div class="qnum-chip">1.6</div></div></div>
+          <div class="qnum-col"><h3>2. Regression Line</h3><div class="qnum-chips"><div class="qnum-chip">2.1</div><div class="qnum-chip">2.2</div></div></div>
+          <div class="qnum-col"><h3>3. Investigating</h3><div class="qnum-chips"><div class="qnum-chip">3.1</div><div class="qnum-chip">3.2</div><div class="qnum-chip">3.3</div></div></div>
+          <div class="qnum-col"><h3>4. Accuracy</h3><div class="qnum-chips"><div class="qnum-chip">4.1</div><div class="qnum-chip">4.2</div></div></div>
+          <div class="qnum-col"><h3>5. Divide and Conquer</h3><div class="qnum-chips"><div class="qnum-chip">5.1</div><div class="qnum-chip">5.2</div><div class="qnum-chip">5.3</div><div class="qnum-chip">5.4</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">1</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">How Faithful Is Old Faithful?</div>
+      <div class="divider-sub">Look at the data, convert to standard units, and compute the correlation. Questions 1.0&ndash;1.6.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.0 &middot; The Big Picture</div>
+      <div class="slide-body">
+        <h2 class="title-lg">The Parts of a Regression Analysis</h2>
+        
+        <div class="grid-2">
+          <ul class="points">
+            <li><b>Fitted values</b> (predictions) come from plugging each <i>x</i> value into the line.</li>
+            <li>The <b>correlation coefficient</b> (<i>r</i>) measures the direction and strength of a <b>linear association</b>.</li>
+            <li>The <b>RMSE</b> (root mean squared error) is the typical size of a prediction error. A <b>residual plot</b> shows whether the errors have a pattern.</li>
+            <li>The <b>slope and intercept</b> describe the regression line itself.</li>
+          </ul>
+          <div class="panel note-panel">Question 1.0 asks you to put these four parts in the order you would actually do them. Ask yourself, for each step: <b>what would I need to have done already</b> before I could do this one?</div>
+        </div>
+        <div class="chip-row"><div class="chip"><div class="qid">Question 1.0</div><div class="qtext">Order the four steps of a linear regression analysis, as an array.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.1&ndash;1.2 &middot; Review: df.plot.scatter</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Scatter Plots in pandas</h2>
+        
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>df.plot.scatter('x column', 'y column')</code> draws one point per row.</li>
+            <li>Put the <b>response variable</b> (the one you want to predict) on the <b>vertical</b> axis and the <b>predictor variable</b> on the horizontal axis.</li>
+            <li>Before fitting a line, check: is there a <b>linear association</b>? Is it <b>positive</b> or <b>negative</b>?</li>
+          </ul>
+          <div class="code-cell"><div class="cell-head">Example with a made-up DataFrame</div><pre>shoes = pd.DataFrame({
+    <span class="c-str">'shoe size'</span>: np.array([<span class="c-num">7</span>, <span class="c-num">9</span>, <span class="c-num">10</span>, <span class="c-num">12</span>]),
+    <span class="c-str">'height'</span>: np.array([<span class="c-num">64</span>, <span class="c-num">69</span>, <span class="c-num">70</span>, <span class="c-num">74</span>])})
+
+<span class="c-com"># x first, then y</span>
+shoes.plot.scatter(<span class="c-str">'shoe size'</span>, <span class="c-str">'height'</span>)</pre></div>
+        </div>
+        <div class="chip-row"><div class="chip"><div class="qid">Question 1.1</div><div class="qtext">Make a scatter plot of the eruption data with the response variable on the vertical axis.</div></div><div class="chip"><div class="qid">Question 1.2</div><div class="qtext">Decide whether duration and waiting time have a linear association, and whether it is positive or negative.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.3&ndash;1.4 &middot; Standard Units</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Building a DataFrame in Standard Units</h2>
+        
+        <div class="grid-2">
+          <ul class="points">
+            <li>A value in <b>standard units</b> is <code>(value - average) / SD</code>. Use <code>np.mean</code> for the average and <code>np.std</code> for the SD.</li>
+            <li>Arithmetic on a whole column works on every value at once.</li>
+            <li><code>pd.DataFrame({'name': values, ...})</code> builds a DataFrame from columns. The column names in Question 1.3 must match exactly.</li>
+            <li>In standard units the scatter plot has the <b>same shape</b>. Only the numbers on the axes change, so read the ticks.</li>
+          </ul>
+          <div class="code-cell"><div class="cell-head">Example with made-up values</div><pre>scores = np.array([<span class="c-num">60</span>, <span class="c-num">70</span>, <span class="c-num">80</span>, <span class="c-num">90</span>])
+
+(scores - np.mean(scores)) / np.std(scores)
+<span class="c-com"># array([-1.34, -0.45,  0.45,  1.34])</span></pre></div>
+        </div>
+        <div class="chip-row"><div class="chip"><div class="qid">Question 1.3</div><div class="qtext">Find the means and SDs, then build <code>faithful_standard</code> with both columns in standard units.</div></div><div class="chip"><div class="qid">Question 1.4</div><div class="qtext">Plot the data again, in standard units.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.5 &middot; Picture</div>
+      <div class="slide-body">
+        <h2 class="title-lg">What r Looks Like</h2>
+        
+        <p class="lede" style="margin:0;">Made-up data in standard units. Each panel shows a different correlation.</p>
+        <div class="trio">
+          <div class="panel sc-panel"><svg viewBox="0 0 300 190" role="img" aria-label="scatter plot"><line class="ax" x1="16" y1="174" x2="284" y2="174"/><line class="ax" x1="16" y1="16" x2="16" y2="174"/><circle class="pt" cx="108.0" cy="123.5" r="3.2"/><circle class="pt" cx="159.9" cy="93.1" r="3.2"/><circle class="pt" cx="207.8" cy="86.8" r="3.2"/><circle class="pt" cx="218.5" cy="76.9" r="3.2"/><circle class="pt" cx="202.8" cy="53.2" r="3.2"/><circle class="pt" cx="152.1" cy="89.0" r="3.2"/><circle class="pt" cx="164.7" cy="92.3" r="3.2"/><circle class="pt" cx="139.1" cy="104.8" r="3.2"/><circle class="pt" cx="91.7" cy="130.2" r="3.2"/><circle class="pt" cx="129.3" cy="68.9" r="3.2"/><circle class="pt" cx="192.2" cy="66.8" r="3.2"/><circle class="pt" cx="161.1" cy="89.2" r="3.2"/><circle class="pt" cx="135.9" cy="110.3" r="3.2"/><circle class="pt" cx="103.1" cy="147.0" r="3.2"/><circle class="pt" cx="145.9" cy="95.9" r="3.2"/><circle class="pt" cx="124.2" cy="93.0" r="3.2"/><circle class="pt" cx="151.6" cy="83.6" r="3.2"/><circle class="pt" cx="171.6" cy="80.6" r="3.2"/><circle class="pt" cx="48.7" cy="155.8" r="3.2"/><circle class="pt" cx="146.0" cy="110.7" r="3.2"/><circle class="pt" cx="85.0" cy="128.7" r="3.2"/><circle class="pt" cx="108.5" cy="121.8" r="3.2"/><circle class="pt" cx="94.9" cy="137.4" r="3.2"/><circle class="pt" cx="199.4" cy="50.0" r="3.2"/><circle class="pt" cx="179.7" cy="90.1" r="3.2"/><circle class="pt" cx="172.1" cy="89.6" r="3.2"/><circle class="pt" cx="117.1" cy="139.9" r="3.2"/><circle class="pt" cx="86.1" cy="109.5" r="3.2"/><circle class="pt" cx="133.1" cy="105.9" r="3.2"/><circle class="pt" cx="159.0" cy="91.2" r="3.2"/><circle class="pt" cx="146.8" cy="93.6" r="3.2"/><circle class="pt" cx="180.5" cy="88.6" r="3.2"/><circle class="pt" cx="134.2" cy="110.7" r="3.2"/><circle class="pt" cx="229.8" cy="49.4" r="3.2"/><circle class="pt" cx="179.1" cy="89.1" r="3.2"/><circle class="pt" cx="238.5" cy="44.5" r="3.2"/><circle class="pt" cx="160.9" cy="75.5" r="3.2"/><circle class="pt" cx="139.7" cy="91.9" r="3.2"/><circle class="pt" cx="112.4" cy="98.9" r="3.2"/><circle class="pt" cx="185.9" cy="63.9" r="3.2"/><circle class="pt" cx="196.5" cy="50.6" r="3.2"/><circle class="pt" cx="156.9" cy="88.2" r="3.2"/><circle class="pt" cx="168.1" cy="80.6" r="3.2"/><circle class="pt" cx="137.9" cy="114.0" r="3.2"/><circle class="pt" cx="131.4" cy="107.1" r="3.2"/><circle class="pt" cx="137.0" cy="110.3" r="3.2"/><circle class="pt" cx="66.5" cy="140.3" r="3.2"/><circle class="pt" cx="105.0" cy="130.9" r="3.2"/><circle class="pt" cx="151.7" cy="90.6" r="3.2"/><circle class="pt" cx="155.5" cy="62.7" r="3.2"/><circle class="pt" cx="198.2" cy="78.5" r="3.2"/><circle class="pt" cx="177.9" cy="73.7" r="3.2"/><circle class="pt" cx="168.7" cy="78.1" r="3.2"/><circle class="pt" cx="152.1" cy="102.4" r="3.2"/><circle class="pt" cx="49.4" cy="151.9" r="3.2"/><circle class="pt" cx="152.1" cy="100.0" r="3.2"/><circle class="pt" cx="110.5" cy="111.0" r="3.2"/><circle class="pt" cx="171.7" cy="90.9" r="3.2"/><circle class="pt" cx="137.3" cy="72.1" r="3.2"/><circle class="pt" cx="134.9" cy="93.3" r="3.2"/></svg><div class="hist-cap"><b>Strong positive</b></div><div class="hist-sub">Points hug a rising line. <i>r</i> is close to 1.</div></div>
+          <div class="panel sc-panel"><svg viewBox="0 0 300 190" role="img" aria-label="scatter plot"><line class="ax" x1="16" y1="174" x2="284" y2="174"/><line class="ax" x1="16" y1="16" x2="16" y2="174"/><circle class="pt" cx="200.4" cy="104.0" r="3.2"/><circle class="pt" cx="245.6" cy="122.5" r="3.2"/><circle class="pt" cx="210.8" cy="132.4" r="3.2"/><circle class="pt" cx="144.7" cy="92.7" r="3.2"/><circle class="pt" cx="165.8" cy="61.2" r="3.2"/><circle class="pt" cx="151.2" cy="83.3" r="3.2"/><circle class="pt" cx="161.4" cy="132.8" r="3.2"/><circle class="pt" cx="192.8" cy="56.3" r="3.2"/><circle class="pt" cx="61.1" cy="89.2" r="3.2"/><circle class="pt" cx="74.9" cy="46.3" r="3.2"/><circle class="pt" cx="135.0" cy="99.7" r="3.2"/><circle class="pt" cx="169.5" cy="131.6" r="3.2"/><circle class="pt" cx="127.5" cy="89.9" r="3.2"/><circle class="pt" cx="140.8" cy="100.0" r="3.2"/><circle class="pt" cx="198.7" cy="124.8" r="3.2"/><circle class="pt" cx="179.5" cy="115.8" r="3.2"/><circle class="pt" cx="144.5" cy="106.8" r="3.2"/><circle class="pt" cx="134.5" cy="119.2" r="3.2"/><circle class="pt" cx="83.5" cy="79.5" r="3.2"/><circle class="pt" cx="170.9" cy="87.8" r="3.2"/><circle class="pt" cx="153.9" cy="108.0" r="3.2"/><circle class="pt" cx="106.3" cy="105.5" r="3.2"/><circle class="pt" cx="170.6" cy="72.4" r="3.2"/><circle class="pt" cx="132.3" cy="85.2" r="3.2"/><circle class="pt" cx="133.5" cy="127.0" r="3.2"/><circle class="pt" cx="75.0" cy="88.9" r="3.2"/><circle class="pt" cx="188.1" cy="50.1" r="3.2"/><circle class="pt" cx="114.3" cy="87.6" r="3.2"/><circle class="pt" cx="161.4" cy="118.1" r="3.2"/><circle class="pt" cx="158.2" cy="55.2" r="3.2"/><circle class="pt" cx="122.9" cy="29.7" r="3.2"/><circle class="pt" cx="145.0" cy="91.5" r="3.2"/><circle class="pt" cx="137.1" cy="155.8" r="3.2"/><circle class="pt" cx="136.4" cy="133.7" r="3.2"/><circle class="pt" cx="156.0" cy="45.4" r="3.2"/><circle class="pt" cx="118.9" cy="99.3" r="3.2"/><circle class="pt" cx="177.7" cy="75.8" r="3.2"/><circle class="pt" cx="152.3" cy="79.9" r="3.2"/><circle class="pt" cx="94.9" cy="89.6" r="3.2"/><circle class="pt" cx="165.4" cy="49.5" r="3.2"/><circle class="pt" cx="129.0" cy="88.4" r="3.2"/><circle class="pt" cx="167.8" cy="77.6" r="3.2"/><circle class="pt" cx="42.6" cy="84.8" r="3.2"/><circle class="pt" cx="162.2" cy="86.5" r="3.2"/><circle class="pt" cx="46.3" cy="28.4" r="3.2"/><circle class="pt" cx="126.5" cy="122.3" r="3.2"/><circle class="pt" cx="275.1" cy="125.1" r="3.2"/><circle class="pt" cx="175.4" cy="63.9" r="3.2"/><circle class="pt" cx="192.9" cy="126.3" r="3.2"/><circle class="pt" cx="114.0" cy="88.5" r="3.2"/><circle class="pt" cx="95.2" cy="120.5" r="3.2"/><circle class="pt" cx="141.8" cy="67.7" r="3.2"/><circle class="pt" cx="163.9" cy="93.2" r="3.2"/><circle class="pt" cx="141.1" cy="74.8" r="3.2"/><circle class="pt" cx="115.2" cy="112.4" r="3.2"/><circle class="pt" cx="106.4" cy="97.0" r="3.2"/><circle class="pt" cx="127.7" cy="153.7" r="3.2"/><circle class="pt" cx="218.2" cy="71.5" r="3.2"/><circle class="pt" cx="146.2" cy="82.8" r="3.2"/><circle class="pt" cx="129.5" cy="93.3" r="3.2"/></svg><div class="hist-cap"><b>No linear association</b></div><div class="hist-sub">Little or no linear pattern. <i>r</i> is close to 0.</div></div>
+          <div class="panel sc-panel"><svg viewBox="0 0 300 190" role="img" aria-label="scatter plot"><line class="ax" x1="16" y1="174" x2="284" y2="174"/><line class="ax" x1="16" y1="16" x2="16" y2="174"/><circle class="pt" cx="154.8" cy="104.6" r="3.2"/><circle class="pt" cx="135.3" cy="91.5" r="3.2"/><circle class="pt" cx="149.3" cy="47.4" r="3.2"/><circle class="pt" cx="237.3" cy="122.6" r="3.2"/><circle class="pt" cx="125.1" cy="74.6" r="3.2"/><circle class="pt" cx="130.6" cy="85.0" r="3.2"/><circle class="pt" cx="183.4" cy="101.9" r="3.2"/><circle class="pt" cx="162.9" cy="91.5" r="3.2"/><circle class="pt" cx="125.2" cy="55.3" r="3.2"/><circle class="pt" cx="226.2" cy="168.7" r="3.2"/><circle class="pt" cx="227.5" cy="134.9" r="3.2"/><circle class="pt" cx="138.0" cy="107.8" r="3.2"/><circle class="pt" cx="234.2" cy="105.6" r="3.2"/><circle class="pt" cx="90.3" cy="90.0" r="3.2"/><circle class="pt" cx="221.7" cy="99.0" r="3.2"/><circle class="pt" cx="79.7" cy="46.0" r="3.2"/><circle class="pt" cx="169.5" cy="112.5" r="3.2"/><circle class="pt" cx="146.0" cy="80.6" r="3.2"/><circle class="pt" cx="136.1" cy="99.0" r="3.2"/><circle class="pt" cx="180.7" cy="87.1" r="3.2"/><circle class="pt" cx="108.8" cy="68.5" r="3.2"/><circle class="pt" cx="118.4" cy="57.4" r="3.2"/><circle class="pt" cx="101.3" cy="59.2" r="3.2"/><circle class="pt" cx="219.8" cy="139.8" r="3.2"/><circle class="pt" cx="125.4" cy="54.4" r="3.2"/><circle class="pt" cx="168.1" cy="99.5" r="3.2"/><circle class="pt" cx="141.8" cy="68.2" r="3.2"/><circle class="pt" cx="199.0" cy="109.3" r="3.2"/><circle class="pt" cx="105.5" cy="58.2" r="3.2"/><circle class="pt" cx="113.0" cy="105.6" r="3.2"/><circle class="pt" cx="123.3" cy="56.0" r="3.2"/><circle class="pt" cx="160.6" cy="118.0" r="3.2"/><circle class="pt" cx="117.6" cy="85.2" r="3.2"/><circle class="pt" cx="172.8" cy="91.5" r="3.2"/><circle class="pt" cx="176.8" cy="134.8" r="3.2"/><circle class="pt" cx="199.1" cy="102.8" r="3.2"/><circle class="pt" cx="176.5" cy="102.3" r="3.2"/><circle class="pt" cx="215.3" cy="99.3" r="3.2"/><circle class="pt" cx="136.8" cy="90.6" r="3.2"/><circle class="pt" cx="129.6" cy="107.2" r="3.2"/><circle class="pt" cx="121.4" cy="106.2" r="3.2"/><circle class="pt" cx="121.3" cy="100.5" r="3.2"/><circle class="pt" cx="92.3" cy="70.2" r="3.2"/><circle class="pt" cx="169.9" cy="104.1" r="3.2"/><circle class="pt" cx="156.7" cy="83.2" r="3.2"/><circle class="pt" cx="57.6" cy="28.6" r="3.2"/><circle class="pt" cx="146.8" cy="98.5" r="3.2"/><circle class="pt" cx="119.4" cy="92.5" r="3.2"/><circle class="pt" cx="111.0" cy="71.6" r="3.2"/><circle class="pt" cx="139.5" cy="80.4" r="3.2"/><circle class="pt" cx="206.2" cy="158.7" r="3.2"/><circle class="pt" cx="156.8" cy="109.6" r="3.2"/><circle class="pt" cx="61.8" cy="60.9" r="3.2"/><circle class="pt" cx="166.5" cy="87.0" r="3.2"/><circle class="pt" cx="112.2" cy="90.3" r="3.2"/><circle class="pt" cx="225.7" cy="142.1" r="3.2"/><circle class="pt" cx="129.7" cy="43.2" r="3.2"/><circle class="pt" cx="148.2" cy="158.6" r="3.2"/><circle class="pt" cx="142.5" cy="61.6" r="3.2"/><circle class="pt" cx="114.2" cy="95.4" r="3.2"/></svg><div class="hist-cap"><b>Moderate negative</b></div><div class="hist-sub">A loose falling cloud. <i>r</i> is between &minus;1 and 0.</div></div>
+        </div>
+        <div class="chip-row"><div class="chip"><div class="qid">Question 1.5</div><div class="qtext">Guess which number is closest to the correlation. Remember which values <i>r</i> can take, and assign the <b>choice number</b> (1&ndash;5), not the value of <i>r</i>.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">1.6 &middot; The Correlation Coefficient</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Computing r</h2>
+        
+        <div class="grid-2">
+          <ul class="points">
+            <li>Convert both variables to <b>standard units</b>, multiply each pair of values, and <b>average</b> those products. That average is <i>r</i> (Chapter 15.1).</li>
+            <li>It is always between <b>&minus;1 and 1</b> and has <b>no units</b>.</li>
+            <li>It measures <b>linear association</b> only. A strong curved pattern can still have <i>r</i> near 0.</li>
+          </ul>
+          <div class="code-cell"><div class="cell-head">Multiplying two columns, row by row</div><pre>pairs = pd.DataFrame({
+    <span class="c-str">'a'</span>: np.array([<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>]),
+    <span class="c-str">'b'</span>: np.array([<span class="c-num">10</span>, <span class="c-num">20</span>, <span class="c-num">30</span>])})
+
+pairs[<span class="c-str">'a'</span>] * pairs[<span class="c-str">'b'</span>]
+<span class="c-com"># 10, 40, 90  (one product per row)</span></pre></div>
+        </div>
+        <div class="chip-row"><div class="chip"><div class="qid">Question 1.6</div><div class="qtext">Compute <i>r</i> using <code>faithful_standard</code>.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">2</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">The Regression Line</div>
+      <div class="divider-sub">From standard units back to minutes. Questions 2.1&ndash;2.2.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">2.1&ndash;2.2 &middot; Slope and Intercept</div>
+      <div class="slide-body">
+        <h2 class="title-lg">The Regression Line in Original Units</h2>
+        
+        <div class="grid-2">
+          <ul class="points">
+            <li>In standard units the regression line is <b>predicted y = r &times; x</b>. The GIVEN cell draws it.</li>
+            <li>Going back to original units <b>stretches</b> the line: horizontally by the SD of <i>x</i> (less steep) and vertically by the SD of <i>y</i> (more steep).</li>
+            <li>The line always passes through <b>(average x, average y)</b>. The lab shows how that gives the intercept.</li>
+            <li>The slope is how much the predicted <i>y</i> changes, on average, when <i>x</i> increases by one unit. Its units are <b>units of y per unit of x</b>: here, minutes of waiting per minute of eruption.</li>
+          </ul>
+          <div class="code-cell"><div class="cell-head">Example with made-up numbers</div><pre><span class="c-com"># hours studied (x) and exam score (y)</span>
+r = <span class="c-num">0.5</span>
+x_mean, x_sd = <span class="c-num">10</span>, <span class="c-num">4</span>
+y_mean, y_sd = <span class="c-num">70</span>, <span class="c-num">12</span>
+
+slope = r * y_sd / x_sd          <span class="c-com"># 1.5 points per hour</span>
+intercept = y_mean - slope * x_mean   <span class="c-com"># 55</span></pre></div>
+        </div>
+        <div class="chip-row"><div class="chip"><div class="qid">Question 2.1</div><div class="qtext">Calculate the slope in original units.</div></div><div class="chip"><div class="qid">Question 2.2</div><div class="qtext">Calculate the intercept in original units.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">3</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Investigating the Regression Line</div>
+      <div class="divider-sub">Predictions, residuals, and the residual plot. Questions 3.1&ndash;3.3.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">3.1&ndash;3.3 &middot; Adding Columns Safely</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Predictions and Residuals as Columns</h2>
+        
+        <div class="grid-2">
+          <ul class="points">
+            <li>A <b>fitted value</b> (prediction) is <b>slope &times; x + intercept</b>. It works on a whole column at once, so no <code>for</code> loop.</li>
+            <li><code>df['new column'] = values</code> <b>changes df itself</b>. Section 5 expects <code>faithful</code> to have only its two original columns.</li>
+            <li>So start from <code>faithful.copy()</code>, then add the column to the copy. Do the same with <code>faithful_predictions.copy()</code> for the residuals.</li>
+            <li>A <b>residual</b> (prediction error) is <b>observed value &minus; predicted value</b>. The residuals average 0, so they should add up to about 0.</li>
+          </ul>
+          <div class="code-cell"><div class="cell-head">Example with the made-up shoes DataFrame</div><pre>new = shoes.copy()
+new[<span class="c-str">'feet'</span>] = shoes[<span class="c-str">'height'</span>] / <span class="c-num">12</span>
+
+<span class="c-com"># shoes is unchanged.</span>
+<span class="c-com"># new has one more column: feet</span></pre></div>
+        </div>
+        <div class="chip-row"><div class="chip"><div class="qid">Question 3.1</div><div class="qtext">Predict the wait after a 2-minute and a 5-minute eruption.</div></div><div class="chip"><div class="qid">Question 3.2</div><div class="qtext">Add a <code>predicted wait</code> column to a new DataFrame.</div></div><div class="chip"><div class="qid">Question 3.3</div><div class="qtext">Add a <code>residual</code> column and check that the residuals add up to about 0.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">3.3 &middot; Picture</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Reading a Residual Plot</h2>
+        
+        <p class="lede" style="margin:0;">Predictor variable on the horizontal axis, residuals on the vertical axis. The dashed line is 0. Made-up data.</p>
+        <div class="hist-pair">
+          <div class="panel sc-panel"><svg viewBox="0 0 300 190" role="img" aria-label="scatter plot"><line class="ax" x1="16" y1="174" x2="284" y2="174"/><line class="ax" x1="16" y1="16" x2="16" y2="174"/><line class="zero" x1="16" y1="95.0" x2="284" y2="95.0"/><circle class="pt" cx="149.2" cy="59.5" r="3.2"/><circle class="pt" cx="127.3" cy="80.7" r="3.2"/><circle class="pt" cx="141.9" cy="131.7" r="3.2"/><circle class="pt" cx="162.5" cy="135.1" r="3.2"/><circle class="pt" cx="243.3" cy="86.4" r="3.2"/><circle class="pt" cx="117.5" cy="97.0" r="3.2"/><circle class="pt" cx="236.8" cy="88.9" r="3.2"/><circle class="pt" cx="79.9" cy="150.2" r="3.2"/><circle class="pt" cx="157.0" cy="71.1" r="3.2"/><circle class="pt" cx="188.1" cy="105.7" r="3.2"/><circle class="pt" cx="256.1" cy="91.7" r="3.2"/><circle class="pt" cx="229.0" cy="88.6" r="3.2"/><circle class="pt" cx="168.1" cy="82.8" r="3.2"/><circle class="pt" cx="101.7" cy="57.1" r="3.2"/><circle class="pt" cx="67.3" cy="96.7" r="3.2"/><circle class="pt" cx="129.0" cy="89.5" r="3.2"/><circle class="pt" cx="212.4" cy="147.2" r="3.2"/><circle class="pt" cx="47.7" cy="79.5" r="3.2"/><circle class="pt" cx="77.0" cy="78.0" r="3.2"/><circle class="pt" cx="82.9" cy="73.4" r="3.2"/><circle class="pt" cx="187.4" cy="122.5" r="3.2"/><circle class="pt" cx="227.0" cy="99.0" r="3.2"/><circle class="pt" cx="214.7" cy="84.3" r="3.2"/><circle class="pt" cx="123.0" cy="100.7" r="3.2"/><circle class="pt" cx="252.8" cy="108.8" r="3.2"/><circle class="pt" cx="145.9" cy="84.6" r="3.2"/><circle class="pt" cx="78.7" cy="77.7" r="3.2"/><circle class="pt" cx="59.5" cy="119.4" r="3.2"/><circle class="pt" cx="253.7" cy="111.0" r="3.2"/><circle class="pt" cx="175.2" cy="97.1" r="3.2"/><circle class="pt" cx="250.4" cy="97.0" r="3.2"/><circle class="pt" cx="82.5" cy="92.1" r="3.2"/><circle class="pt" cx="51.4" cy="112.9" r="3.2"/><circle class="pt" cx="228.5" cy="98.3" r="3.2"/><circle class="pt" cx="84.4" cy="71.6" r="3.2"/><circle class="pt" cx="65.9" cy="92.8" r="3.2"/><circle class="pt" cx="107.7" cy="93.0" r="3.2"/><circle class="pt" cx="180.4" cy="82.0" r="3.2"/><circle class="pt" cx="247.4" cy="115.6" r="3.2"/><circle class="pt" cx="110.5" cy="73.1" r="3.2"/><circle class="pt" cx="242.7" cy="99.9" r="3.2"/><circle class="pt" cx="204.0" cy="96.7" r="3.2"/><circle class="pt" cx="85.2" cy="91.0" r="3.2"/><circle class="pt" cx="226.0" cy="93.8" r="3.2"/><circle class="pt" cx="196.9" cy="111.9" r="3.2"/><circle class="pt" cx="195.9" cy="74.1" r="3.2"/><circle class="pt" cx="55.2" cy="104.1" r="3.2"/><circle class="pt" cx="248.8" cy="126.8" r="3.2"/><circle class="pt" cx="51.5" cy="117.5" r="3.2"/><circle class="pt" cx="227.3" cy="106.0" r="3.2"/><circle class="pt" cx="119.6" cy="118.5" r="3.2"/><circle class="pt" cx="116.2" cy="133.3" r="3.2"/><circle class="pt" cx="153.4" cy="90.6" r="3.2"/><circle class="pt" cx="255.9" cy="98.4" r="3.2"/><circle class="pt" cx="108.2" cy="111.7" r="3.2"/><circle class="pt" cx="216.5" cy="90.4" r="3.2"/><circle class="pt" cx="157.3" cy="95.1" r="3.2"/><circle class="pt" cx="235.0" cy="104.9" r="3.2"/><circle class="pt" cx="221.7" cy="101.3" r="3.2"/><circle class="pt" cx="96.3" cy="108.5" r="3.2"/></svg><div class="hist-cap"><b>Good linear fit</b></div><div class="hist-sub">A roughly random cloud around 0, balanced above and below, with similar spread throughout.</div></div>
+          <div class="panel sc-panel"><svg viewBox="0 0 300 190" role="img" aria-label="scatter plot"><line class="ax" x1="16" y1="174" x2="284" y2="174"/><line class="ax" x1="16" y1="16" x2="16" y2="174"/><line class="zero" x1="16" y1="95.0" x2="284" y2="95.0"/><circle class="pt" cx="139.3" cy="113.5" r="3.2"/><circle class="pt" cx="52.9" cy="59.3" r="3.2"/><circle class="pt" cx="251.3" cy="43.0" r="3.2"/><circle class="pt" cx="129.4" cy="120.4" r="3.2"/><circle class="pt" cx="251.3" cy="50.5" r="3.2"/><circle class="pt" cx="79.2" cy="90.6" r="3.2"/><circle class="pt" cx="183.1" cy="104.1" r="3.2"/><circle class="pt" cx="216.7" cy="94.3" r="3.2"/><circle class="pt" cx="182.3" cy="116.0" r="3.2"/><circle class="pt" cx="132.8" cy="126.6" r="3.2"/><circle class="pt" cx="42.6" cy="24.2" r="3.2"/><circle class="pt" cx="135.6" cy="121.8" r="3.2"/><circle class="pt" cx="125.5" cy="128.1" r="3.2"/><circle class="pt" cx="249.4" cy="52.9" r="3.2"/><circle class="pt" cx="255.8" cy="56.2" r="3.2"/><circle class="pt" cx="252.0" cy="49.9" r="3.2"/><circle class="pt" cx="257.2" cy="49.9" r="3.2"/><circle class="pt" cx="76.1" cy="74.5" r="3.2"/><circle class="pt" cx="45.0" cy="32.2" r="3.2"/><circle class="pt" cx="103.6" cy="89.5" r="3.2"/><circle class="pt" cx="40.1" cy="38.6" r="3.2"/><circle class="pt" cx="64.9" cy="77.9" r="3.2"/><circle class="pt" cx="167.2" cy="138.0" r="3.2"/><circle class="pt" cx="83.2" cy="89.2" r="3.2"/><circle class="pt" cx="174.7" cy="125.1" r="3.2"/><circle class="pt" cx="123.3" cy="107.9" r="3.2"/><circle class="pt" cx="99.5" cy="88.6" r="3.2"/><circle class="pt" cx="254.8" cy="55.1" r="3.2"/><circle class="pt" cx="79.9" cy="88.8" r="3.2"/><circle class="pt" cx="235.4" cy="57.0" r="3.2"/><circle class="pt" cx="156.0" cy="134.9" r="3.2"/><circle class="pt" cx="186.4" cy="123.4" r="3.2"/><circle class="pt" cx="70.5" cy="70.7" r="3.2"/><circle class="pt" cx="204.7" cy="98.8" r="3.2"/><circle class="pt" cx="237.0" cy="82.9" r="3.2"/><circle class="pt" cx="82.6" cy="86.6" r="3.2"/><circle class="pt" cx="143.9" cy="125.9" r="3.2"/><circle class="pt" cx="184.2" cy="114.8" r="3.2"/><circle class="pt" cx="144.3" cy="120.0" r="3.2"/><circle class="pt" cx="206.3" cy="86.6" r="3.2"/><circle class="pt" cx="182.2" cy="108.8" r="3.2"/><circle class="pt" cx="108.5" cy="118.4" r="3.2"/><circle class="pt" cx="190.4" cy="100.2" r="3.2"/><circle class="pt" cx="211.0" cy="90.4" r="3.2"/><circle class="pt" cx="141.8" cy="119.1" r="3.2"/><circle class="pt" cx="170.2" cy="125.9" r="3.2"/><circle class="pt" cx="180.1" cy="123.9" r="3.2"/><circle class="pt" cx="144.8" cy="123.0" r="3.2"/><circle class="pt" cx="58.2" cy="50.6" r="3.2"/><circle class="pt" cx="129.4" cy="116.6" r="3.2"/><circle class="pt" cx="212.1" cy="94.2" r="3.2"/><circle class="pt" cx="200.0" cy="103.0" r="3.2"/><circle class="pt" cx="54.9" cy="55.3" r="3.2"/><circle class="pt" cx="145.1" cy="125.7" r="3.2"/><circle class="pt" cx="169.6" cy="120.3" r="3.2"/><circle class="pt" cx="157.4" cy="138.1" r="3.2"/><circle class="pt" cx="71.8" cy="79.6" r="3.2"/><circle class="pt" cx="182.8" cy="108.6" r="3.2"/><circle class="pt" cx="194.1" cy="107.8" r="3.2"/><circle class="pt" cx="158.0" cy="111.3" r="3.2"/></svg><div class="hist-cap"><b>Nonlinearity</b></div><div class="hist-sub">A curved pattern suggests a straight line does not represent the relationship well (Chapter 15.5).</div></div>
+        </div>
+        <div class="panel note-panel">Old Faithful's residual plot has <b>two separate clouds</b>. That comes from the durations falling into two clusters, not from a pattern in the residuals themselves.</div>
+        
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">4</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">How Accurate Are Different Predictions?</div>
+      <div class="divider-sub">When the line can and can't be trusted. Questions 4.1&ndash;4.2.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">4.1&ndash;4.2 &middot; Extrapolation</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Predicting Outside the Data</h2>
+        
+        <div class="grid-2">
+          <div class="panel sc-panel"><svg viewBox="0 0 420 210" role="img" aria-label="scatter plot"><rect class="band" x="132.4" y="16" width="155.2" height="178"/><line class="ax" x1="16" y1="194" x2="404" y2="194"/><line class="ax" x1="16" y1="16" x2="16" y2="194"/><circle class="pt" cx="283.5" cy="70.2" r="3.2"/><circle class="pt" cx="247.9" cy="83.5" r="3.2"/><circle class="pt" cx="208.9" cy="87.3" r="3.2"/><circle class="pt" cx="215.8" cy="77.3" r="3.2"/><circle class="pt" cx="195.7" cy="114.1" r="3.2"/><circle class="pt" cx="243.3" cy="101.3" r="3.2"/><circle class="pt" cx="174.2" cy="89.1" r="3.2"/><circle class="pt" cx="170.5" cy="105.4" r="3.2"/><circle class="pt" cx="240.5" cy="77.6" r="3.2"/><circle class="pt" cx="172.0" cy="102.0" r="3.2"/><circle class="pt" cx="285.8" cy="84.4" r="3.2"/><circle class="pt" cx="245.3" cy="110.4" r="3.2"/><circle class="pt" cx="160.9" cy="138.2" r="3.2"/><circle class="pt" cx="135.7" cy="130.2" r="3.2"/><circle class="pt" cx="225.2" cy="103.6" r="3.2"/><circle class="pt" cx="153.2" cy="104.9" r="3.2"/><circle class="pt" cx="210.0" cy="95.1" r="3.2"/><circle class="pt" cx="225.5" cy="85.6" r="3.2"/><circle class="pt" cx="257.9" cy="88.3" r="3.2"/><circle class="pt" cx="192.6" cy="97.2" r="3.2"/><circle class="pt" cx="217.1" cy="87.5" r="3.2"/><circle class="pt" cx="258.8" cy="99.2" r="3.2"/><circle class="pt" cx="153.3" cy="138.9" r="3.2"/><circle class="pt" cx="184.5" cy="131.3" r="3.2"/><circle class="pt" cx="257.9" cy="61.5" r="3.2"/><circle class="pt" cx="188.0" cy="112.9" r="3.2"/><circle class="pt" cx="276.8" cy="63.1" r="3.2"/><circle class="pt" cx="145.4" cy="146.1" r="3.2"/><circle class="pt" cx="145.6" cy="157.0" r="3.2"/><circle class="pt" cx="188.8" cy="116.8" r="3.2"/><circle class="pt" cx="204.4" cy="95.8" r="3.2"/><circle class="pt" cx="189.4" cy="116.6" r="3.2"/><circle class="pt" cx="166.6" cy="114.0" r="3.2"/><circle class="pt" cx="201.9" cy="96.4" r="3.2"/><circle class="pt" cx="271.2" cy="71.8" r="3.2"/><circle class="pt" cx="277.9" cy="78.8" r="3.2"/><circle class="pt" cx="229.6" cy="96.1" r="3.2"/><circle class="pt" cx="172.2" cy="117.9" r="3.2"/><circle class="pt" cx="222.8" cy="101.6" r="3.2"/><circle class="pt" cx="156.8" cy="123.5" r="3.2"/><circle class="pt" cx="142.1" cy="158.6" r="3.2"/><circle class="pt" cx="255.8" cy="84.7" r="3.2"/><circle class="pt" cx="173.8" cy="119.4" r="3.2"/><circle class="pt" cx="157.3" cy="129.1" r="3.2"/><circle class="pt" cx="259.6" cy="88.1" r="3.2"/><line class="fit" x1="16.0" y1="176.2" x2="404.0" y2="33.8"/><text x="150" y="30">range of the data</text><text x="322" y="150">outside</text></svg></div>
+          <ul class="points">
+            <li>The line was fit only to the data in the <b>shaded range</b>.</li>
+            <li>The line keeps going forever, but the relationship may not continue beyond the observed data.</li>
+            <li>Making predictions for <i>x</i> values <b>outside the range of the data</b> is called <b>extrapolation</b>. These predictions may be unreliable.</li>
+            <li>For each prediction, compare the <i>x</i> value with the shortest and longest eruptions in the data, and ask whether it even makes physical sense.</li>
+          </ul>
+        </div>
+        <div class="chip-row"><div class="chip"><div class="qid">Question 4.1</div><div class="qtext">Predict the wait for eruptions of 0, 2.5, and 60 minutes.</div></div><div class="chip"><div class="qid">Question 4.2</div><div class="qtext">For each prediction, decide whether it is reliable and explain why.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="divider" data-tick="1">
+    <div class="slide-frame">
+      <div class="divider-num">5</div>
+      <div class="divider-rule"></div>
+      <div class="divider-title">Divide and Conquer</div>
+      <div class="divider-sub">One regression line for each cluster of eruptions. Questions 5.1&ndash;5.4.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">5 &middot; Picture</div>
+      <div class="slide-body">
+        <h2 class="title-lg">One Line or Two?</h2>
+        
+        <div class="grid-2">
+          <div class="panel sc-panel"><svg viewBox="0 0 420 210" role="img" aria-label="scatter plot"><line x1="210" y1="16" x2="210" y2="194" class="zero"/><line class="ax" x1="16" y1="194" x2="404" y2="194"/><line class="ax" x1="16" y1="16" x2="16" y2="194"/><circle class="pt" cx="133.0" cy="154.3" r="3.2"/><circle class="pt" cx="117.3" cy="160.1" r="3.2"/><circle class="pt" cx="107.6" cy="157.5" r="3.2"/><circle class="pt" cx="97.1" cy="156.7" r="3.2"/><circle class="pt" cx="149.9" cy="153.8" r="3.2"/><circle class="pt" cx="75.2" cy="152.1" r="3.2"/><circle class="pt" cx="142.0" cy="143.0" r="3.2"/><circle class="pt" cx="74.7" cy="147.8" r="3.2"/><circle class="pt" cx="63.9" cy="147.1" r="3.2"/><circle class="pt" cx="75.7" cy="163.0" r="3.2"/><circle class="pt" cx="58.4" cy="173.2" r="3.2"/><circle class="pt" cx="135.4" cy="154.1" r="3.2"/><circle class="pt" cx="72.7" cy="143.4" r="3.2"/><circle class="pt" cx="110.4" cy="163.2" r="3.2"/><circle class="pt" cx="81.4" cy="153.2" r="3.2"/><circle class="pt" cx="89.6" cy="143.9" r="3.2"/><circle class="pt" cx="131.0" cy="114.6" r="3.2"/><circle class="pt" cx="108.1" cy="163.1" r="3.2"/><circle class="pt" cx="80.7" cy="153.1" r="3.2"/><circle class="pt" cx="127.1" cy="145.7" r="3.2"/><circle class="pt" cx="68.7" cy="148.5" r="3.2"/><circle class="pt" cx="58.8" cy="172.0" r="3.2"/><circle class="pt" cx="122.2" cy="147.6" r="3.2"/><circle class="pt" cx="137.5" cy="147.1" r="3.2"/><circle class="pt" cx="129.0" cy="157.7" r="3.2"/><circle class="pt" cx="122.4" cy="160.6" r="3.2"/><circle class="pt" cx="145.1" cy="156.2" r="3.2"/><circle class="pt" cx="144.6" cy="132.7" r="3.2"/><circle class="pt" cx="109.8" cy="137.4" r="3.2"/><circle class="pt" cx="72.0" cy="151.6" r="3.2"/><circle class="pt" cx="345.5" cy="61.6" r="3.2"/><circle class="pt" cx="262.7" cy="73.0" r="3.2"/><circle class="pt" cx="280.9" cy="73.9" r="3.2"/><circle class="pt" cx="296.9" cy="77.3" r="3.2"/><circle class="pt" cx="358.9" cy="60.3" r="3.2"/><circle class="pt" cx="361.6" cy="67.3" r="3.2"/><circle class="pt" cx="274.1" cy="80.4" r="3.2"/><circle class="pt" cx="323.4" cy="62.7" r="3.2"/><circle class="pt" cx="345.4" cy="49.3" r="3.2"/><circle class="pt" cx="308.6" cy="82.3" r="3.2"/><circle class="pt" cx="285.4" cy="74.6" r="3.2"/><circle class="pt" cx="266.5" cy="99.0" r="3.2"/><circle class="pt" cx="256.9" cy="91.0" r="3.2"/><circle class="pt" cx="254.0" cy="103.7" r="3.2"/><circle class="pt" cx="254.4" cy="104.1" r="3.2"/><circle class="pt" cx="333.1" cy="69.9" r="3.2"/><circle class="pt" cx="317.6" cy="80.7" r="3.2"/><circle class="pt" cx="256.6" cy="83.6" r="3.2"/><circle class="pt" cx="357.8" cy="62.7" r="3.2"/><circle class="pt" cx="363.5" cy="58.9" r="3.2"/><circle class="pt" cx="297.1" cy="71.2" r="3.2"/><circle class="pt" cx="291.0" cy="84.7" r="3.2"/><circle class="pt" cx="350.7" cy="57.3" r="3.2"/><circle class="pt" cx="326.2" cy="80.7" r="3.2"/><circle class="pt" cx="335.5" cy="57.9" r="3.2"/><circle class="pt" cx="270.0" cy="89.2" r="3.2"/><circle class="pt" cx="333.6" cy="58.0" r="3.2"/><circle class="pt" cx="300.3" cy="85.9" r="3.2"/><circle class="pt" cx="255.3" cy="107.0" r="3.2"/><circle class="pt" cx="254.4" cy="76.3" r="3.2"/><circle class="pt" cx="279.6" cy="82.8" r="3.2"/><circle class="pt" cx="276.1" cy="104.9" r="3.2"/><circle class="pt" cx="280.1" cy="58.9" r="3.2"/><circle class="pt" cx="354.9" cy="51.5" r="3.2"/><circle class="pt" cx="295.1" cy="94.6" r="3.2"/><circle class="pt" cx="273.0" cy="75.2" r="3.2"/><circle class="pt" cx="261.0" cy="78.7" r="3.2"/><circle class="pt" cx="255.3" cy="93.7" r="3.2"/><circle class="pt" cx="296.0" cy="72.3" r="3.2"/><circle class="pt" cx="297.7" cy="100.3" r="3.2"/><line class="fit" x1="41.9" y1="170.3" x2="378.1" y2="39.7"/><line class="fit" style="stroke:#3B7DD8;stroke-width:4" x1="54.8" y1="162.0" x2="151.8" y2="144.2"/><line class="fit" style="stroke:#3B7DD8;stroke-width:4" x1="248.8" y1="87.2" x2="365.2" y2="60.5"/><text x="205" y="30">split here</text></svg></div>
+          <ul class="points">
+            <li>When the data falls into <b>clusters</b>, you can split it and fit a separate line to each part. Made-up data shown.</li>
+            <li>Each short <span style="color:#3B7DD8;font-weight:600;">blue</span> line follows its own cluster. The long <span style="color:#D14343;font-weight:600;">red</span> line tries to serve both.</li>
+            <li>Within one cluster the <i>x</i> values cover a narrower range, so <i>r</i> is often <b>weaker</b> than for all the data together.</li>
+          </ul>
+        </div>
+        
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">5.1 &middot; Review: .iloc[:, 0]</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Filtering Rows and Selecting Columns by Position</h2>
+        
+        <div class="grid-2">
+          <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;">
+            <table class="mini big">
+              <tr><th>column 0</th><th>column 1</th></tr>
+              <tr><td class="c0">3</td><td class="c1">9</td></tr>
+              <tr><td class="c0">5</td><td class="c1">40</td></tr>
+              <tr><td class="c0">2</td><td class="c1">25</td></tr>
+            </table>
+            <div class="diagram-caption"><span class="gold">table.iloc[:, 0]</span> &rarr; gold &nbsp;&nbsp; table.iloc[:, 1] &rarr; blue</div>
+          </div>
+          <ul class="points">
+            <li><b>Filtering rows:</b> <code>scores[scores['grade'] &gt;= 90]</code> keeps the rows where the condition is True.</li>
+            <li><code>table.iloc[:, 0]</code> is <b>column 0</b> and <code>table.iloc[:, 1]</code> is <b>column 1</b>, whatever their names. The <code>:</code> means all rows.</li>
+            <li>That lets <code>corr_coeff</code> work on <b>any</b> two-column DataFrame. <code>standardize</code> (GIVEN) keeps the columns in the same order.</li>
+          </ul>
+        </div>
+        <div class="chip-row"><div class="chip"><div class="qid">Question 5.1</div><div class="qtext">Write <code>corr_coeff</code>, then compute <i>r</i> separately for eruptions below and above 3 minutes.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">5.2&ndash;5.3 &middot; Functions</div>
+      <div class="slide-body">
+        <h2 class="title-lg">A Line for Each Cluster</h2>
+        
+        <div class="grid-2">
+          <ul class="points">
+            <li><code>slope_of(table, r)</code> and <code>intercept_of(table, r)</code> take a <b>whole DataFrame</b> and its <i>r</i>. Inside, use <code>.iloc[:, 0]</code> for <i>x</i> and <code>.iloc[:, 1]</code> for <i>y</i>.</li>
+            <li>They use the same formulas as Section 2, just written once so they work for any table.</li>
+            <li><code>predict_wait</code> uses <code>if</code> / <code>else</code> to pick a line. Every branch must <code>return</code>.</li>
+          </ul>
+          <div class="code-cell"><div class="cell-head">Example with made-up shipping rates</div><pre><span class="c-kw">def</span> shipping_cost(weight):
+    <span class="c-kw">if</span> weight &lt; <span class="c-num">10</span>:
+        <span class="c-kw">return</span> <span class="c-num">2</span> * weight + <span class="c-num">5</span>
+    <span class="c-kw">else</span>:
+        <span class="c-kw">return</span> <span class="c-num">1.5</span> * weight + <span class="c-num">10</span>
+
+shipping_cost(<span class="c-num">4</span>)    <span class="c-com"># 13</span>
+shipping_cost(<span class="c-num">20</span>)   <span class="c-com"># 40.0</span></pre></div>
+        </div>
+        <div class="chip-row"><div class="chip"><div class="qid">Question 5.2</div><div class="qtext">Complete <code>slope_of</code> and <code>intercept_of</code> for a DataFrame and its <i>r</i>.</div></div><div class="chip"><div class="qid">Question 5.3</div><div class="qtext">Write <code>predict_wait</code>, which picks the right line based on the duration.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">5.4 &middot; Comparing Predictions</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Is Two Lines Better Than One?</h2>
+        
+        <div class="grid-2">
+          <ul class="points">
+            <li>The GIVEN cell uses <code>faithful['duration'].apply(predict_wait)</code>, which calls your function on <b>every</b> duration and returns the results as a column.</li>
+            <li><code>abs</code> turns every value into its distance from 0, so <code>np.mean(abs(...))</code> is the average distance from 0.</li>
+            <li>Answer Question 5.4 before you run the cell that prints the comparison, then check yourself.</li>
+          </ul>
+          <div class="code-cell"><div class="cell-head">Example with made-up values</div><pre>sizes = pd.Series([<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>])
+sizes.apply(shipping_cost)
+<span class="c-com"># 7, 9, 11</span>
+
+np.mean(abs(np.array([<span class="c-num">-2</span>, <span class="c-num">1</span>, <span class="c-num">3</span>])))
+<span class="c-com"># 2.0</span></pre></div>
+        </div>
+        <div class="chip-row"><div class="chip"><div class="qid">Question 5.4</div><div class="qtext">Decide whether <code>predict_wait</code> is more or less accurate than a single line, and how you could tell.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content" data-tick="1">
+    <div class="slide-frame">
+      <div class="eyebrow">Wrap-Up</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Wrap-Up</h2>
+        <ul class="points">
+          <li>Stuck on a question? <b>Reread its hint</b>, then look back at the matching slide here or in the Chapter 15 practice deck.</li>
+          <li>The residuals average 0, so they should add up to about 0. It is a quick check that your fitted values and residuals are right.</li>
+          <li>Keep <code>faithful</code> unchanged by working on copies. Section 5 depends on it.</li>
+          <li>Recommended reading: Chapter 14.2 (Variability), 15.1 (Correlation), and 15.2 (The Regression Line).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+
+<div class="chrome">
+  <button class="navbtn" id="prevBtn" aria-label="Previous slide">&larr; prev</button>
+  <div class="progress-track" id="track">
+    <div class="progress-fill" id="fill"></div>
+  </div>
+  <div class="idx-readout mono" id="readout">arr[00 / 00]</div>
+  <button class="navbtn" id="nextBtn" aria-label="Next slide">next &rarr;</button>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var current = 0;
+
+  var fill = document.getElementById('fill');
+  var readout = document.getElementById('readout');
+  var track = document.getElementById('track');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+
+  slides.forEach(function(s, i){
+    if (s.getAttribute('data-tick') === '1'){
+      var t = document.createElement('div');
+      t.className = 'progress-tick';
+      t.style.left = (i/(total-1)*100) + '%';
+      track.appendChild(t);
+    }
+  });
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  function render(){
+    slides.forEach(function(s, i){ s.classList.toggle('active', i === current); });
+    fill.style.width = (current/(total-1)*100) + '%';
+    readout.textContent = 'arr[' + pad(current) + ' / ' + pad(total-1) + ']';
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+  }
+
+  function go(delta){
+    current = Math.max(0, Math.min(total - 1, current + delta));
+    render();
+  }
+
+  prevBtn.addEventListener('click', function(){ go(-1); });
+  nextBtn.addEventListener('click', function(){ go(1); });
+  track.addEventListener('click', function(e){
+    var r = track.getBoundingClientRect();
+    var pct = (e.clientX - r.left) / r.width;
+    current = Math.round(pct * (total - 1));
+    render();
+  });
+
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown'){ e.preventDefault(); go(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace'){ e.preventDefault(); go(-1); }
+    else if (e.key === 'Home'){ current = 0; render(); }
+    else if (e.key === 'End'){ current = total - 1; render(); }
+  });
+
+  render();
+})();
+</script>
