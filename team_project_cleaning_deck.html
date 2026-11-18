@@ -502,7 +502,7 @@
           </div>
           <div class="ref-col">
             <h3>Values</h3>
-            <div class="ref-item"><div class="name">df['col'].value_counts()</div><div class="desc">Every distinct value and how often it appears. Shows spellings that should match.</div></div>
+            <div class="ref-item"><div class="name">df['col'].value_counts()</div><div class="desc">Counts how many times each distinct value appears, most common first. Shows spellings that should match.</div></div>
             <div class="ref-item"><div class="name">df['col'].unique()</div><div class="desc">The distinct values only</div></div>
           </div>
           <div class="ref-col">
@@ -651,7 +651,7 @@ len(df)                   <span class="c-com"># 117</span></pre>
         <div class="grid-2">
           <ul class="points">
             <li>Sometimes a row is real data that doesn't belong in your question, like a city from another country in a study of U.S. cities.</li>
-            <li><code>value_counts()</code> on a category column is the fastest way to notice a value that shouldn't be there.</li>
+            <li><code>value_counts()</code> counts how many times each distinct value appears in a column, from most to least common. On a category column, it's the fastest way to notice a value that shouldn't be there.</li>
             <li>Keep the rows you want with a condition inside <code>df[ ]</code>.</li>
             <li class="soft">Explain in your comment why the row doesn't belong. Dropping data needs a reason.</li>
           </ul>
