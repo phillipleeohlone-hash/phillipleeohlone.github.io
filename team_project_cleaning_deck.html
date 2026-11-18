@@ -192,7 +192,8 @@
     white-space:pre;
   }
   .code-cell .c-str{ color:#2E7D5B; }
-  :root[data-theme="dark"] .code-cell .c-str, @media (prefers-color-scheme:dark){ .code-cell .c-str{ color:#63C695; } }
+  :root[data-theme="dark"] .code-cell .c-str{ color:#63C695; }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .code-cell .c-str{ color:#63C695; } }
   .code-cell .c-num{ color:var(--gold-ink); }
   .code-cell .c-com{ color:var(--ink-soft); font-style:italic; }
 
