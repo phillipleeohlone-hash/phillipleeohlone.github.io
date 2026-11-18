@@ -455,14 +455,14 @@
     <div class="slide-frame">
       <div class="eyebrow">Your Task</div>
       <div class="slide-body">
-        <h2 class="title-lg">Cleaning Your Team's Dataset</h2>
+        <h2 class="title-lg">Cleaning Two Datasets</h2>
         <p class="lede">Real datasets almost never arrive ready to use. Part of your project is working out what's wrong with yours and fixing it.</p>
         <div class="steps">
-          <div class="panel step"><div class="n">1</div><h3>Pick</h3><p>Choose one dataset from the project menu.</p></div>
-          <div class="panel step"><div class="n">2</div><h3>Clean</h3><p>Figure out what cleaning steps it needs, then do them in a Jupyter notebook.</p></div>
-          <div class="panel step"><div class="n">3</div><h3>Submit</h3><p>Turn in the cleaned dataset (a CSV file) and the notebook you used to clean it.</p></div>
+          <div class="panel step"><div class="n">1</div><h3>Pick</h3><p>As a group, choose two datasets from the shared folder.</p></div>
+          <div class="panel step"><div class="n">2</div><h3>Clean</h3><p>Figure out what cleaning steps each one needs, then do them in a Jupyter notebook.</p></div>
+          <div class="panel step"><div class="n">3</div><h3>Submit</h3><p>Turn in one cleaned CSV file per dataset, plus the notebook you used to clean them.</p></div>
         </div>
-        <p class="lede">The examples in this deck are small made-up tables. Your dataset may have some of these problems, all of them, or ones not shown here.</p>
+        <p class="lede">The examples in this deck are small made-up tables. Your datasets may have some of these problems, all of them, or ones not shown here. They don't have to be the datasets you use for your team project.</p>
       </div>
     </div>
   </section>
@@ -494,6 +494,7 @@
             <h3>Column Types</h3>
             <div class="ref-item"><div class="name">df.info()</div><div class="desc">Lists each column's type. A column of numbers listed as <code>object</code> has text mixed in.</div></div>
             <div class="ref-item"><div class="name">df.dtypes</div><div class="desc">Just the types, without counts</div></div>
+            <div class="ref-item"><div class="name">df.columns</div><div class="desc">The column names. Look for columns your question won't use.</div></div>
           </div>
           <div class="ref-col">
             <h3>Rows</h3>
@@ -544,6 +545,7 @@
           </div>
           <div class="ref-col">
             <h3>Columns and Saving</h3>
+            <div class="ref-item"><div class="name">df.drop(columns=['a', 'b'])</div><div class="desc">Remove columns you don't need</div></div>
             <div class="ref-item"><div class="name">df.rename(columns={...})</div><div class="desc">Give columns new names</div></div>
             <div class="ref-item"><div class="name">df['new'] = ...</div><div class="desc">Add a column computed from others</div></div>
             <div class="ref-item"><div class="name">.round(1)</div><div class="desc">Round to one decimal place</div></div>
@@ -566,9 +568,11 @@
           <tr><td>Duplicate rows</td><td><code>df.duplicated().sum()</code> is more than 0</td><td class="mono">drop_duplicates()</td></tr>
           <tr><td>Rows outside your study</td><td>An unexpected value in <code>value_counts()</code></td><td class="mono">df[condition]</td></tr>
           <tr><td>Numbers stored as text</td><td><code>info()</code> lists a number column as <code>object</code></td><td class="mono">str.replace + astype</td></tr>
+          <tr><td>Blank cells</td><td><code>df.isna().sum()</code> is more than 0 for a column</td><td class="mono">dropna(subset=[...])</td></tr>
           <tr><td>Missing-value symbols</td><td><code>..</code>, <code>*</code>, <code>-</code> or <code>N/A</code> in a number column</td><td class="mono">pd.to_numeric(errors='coerce')</td></tr>
           <tr><td>Lost leading zeros</td><td>An ID column with too few digits</td><td class="mono">astype(str).str.zfill(n)</td></tr>
           <tr><td>Inconsistent categories</td><td>One group listed more than once in <code>value_counts()</code></td><td class="mono">str.strip / lower / upper</td></tr>
+          <tr><td>Unneeded columns</td><td>Columns that are empty, repeated, or not part of your question</td><td class="mono">drop(columns=[...])</td></tr>
           <tr><td>Awkward column names</td><td>Spaces, capitals or symbols in names</td><td class="mono">rename(columns=...)</td></tr>
           <tr><td>Missing a needed column</td><td>Only counts, when you need rates or changes</td><td class="mono">df['new'] = ...</td></tr>
         </table>
@@ -749,6 +753,34 @@ df[<span class="c-str">'test_score'</span>].isna().sum()</pre>
     </div>
   </section>
 
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">2.3 &middot; Blank Cells</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Deciding What to Do With Blanks</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>A blank cell shows up as <code>NaN</code>. <code>df.isna().sum()</code> counts the blanks in each column.</li>
+            <li>If the column is <b>essential</b> to your question, drop the rows that are blank in it with <code>dropna(subset=[...])</code>.</li>
+            <li>If a column is mostly blank and you don't need it, drop the <b>column</b> instead (see 3.4).</li>
+            <li class="soft">Either way, write in your comment how many rows or columns you lost and why. Don't drop blanks without saying so.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>df.isna().sum()
+<span class="c-com"># city          0</span>
+<span class="c-com"># test_score    9</span>
+<span class="c-com"># notes       110</span>
+
+<span class="c-com"># Our question needs test_score: drop rows without one</span>
+df = df.dropna(subset=[<span class="c-str">'test_score'</span>]).copy()
+len(df)   <span class="c-com"># check: 9 fewer rows</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== Section 3: IDs and categories ===== -->
   <section class="slide" data-kind="divider" data-tick="1">
     <div class="slide-frame">
@@ -769,7 +801,7 @@ df[<span class="c-str">'test_score'</span>].isna().sum()</pre>
             <li>Many ID codes have a fixed number of digits. A U.S. ZIP code is always <b>5 digits</b>: Boston's is <code>02134</code>.</li>
             <li>When a code is read as a number, its leading zero disappears: <code>02134</code> becomes <code>2134</code>.</li>
             <li>This matters when you <b>merge</b> two files: <code>2134</code> and <code>"02134"</code> won't match.</li>
-            <li class="soft">IDs are labels, not quantities, so store them as text. Check the dataset's README for how many digits each code should have.</li>
+            <li class="soft">IDs are labels, not quantities, so store them as text. Check the dataset's documentation, if it has any, for how many digits each code should have.</li>
           </ul>
           <div class="stack">
             <table class="cheat">
@@ -841,6 +873,33 @@ df = df.rename(columns={
     <span class="c-str">'Days with Data'</span>: <span class="c-str">'days_measured'</span>,
 })
 df.columns</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-kind="content">
+    <div class="slide-frame">
+      <div class="eyebrow">3.4 &middot; Unneeded Columns</div>
+      <div class="slide-body">
+        <h2 class="title-lg">Dropping Columns You Don't Need</h2>
+        <div class="grid-2">
+          <ul class="points">
+            <li>Look at <code>df.columns</code>. Some columns add clutter: free-text notes, a link to the source, a column that is blank or the same in every row, or a copy of another column.</li>
+            <li>A column like <code>Unnamed: 0</code> is usually row numbers from a file saved without <code>index=False</code>.</li>
+            <li><code>drop(columns=[...])</code> takes a list of names. It returns a new table, so assign it back.</li>
+            <li class="soft">Keep any column you might use for your project. Say in your comment why each dropped column isn't needed.</li>
+          </ul>
+          <div class="code-cell">
+            <div class="cell-head">In&nbsp;[&nbsp;]:</div>
+            <pre>df.columns
+<span class="c-com"># 'Unnamed: 0', 'city', 'state', 'population',</span>
+<span class="c-com"># 'notes', 'source_url'</span>
+
+<span class="c-com"># Row numbers, free-text notes and links: not needed</span>
+df = df.drop(columns=[<span class="c-str">'Unnamed: 0'</span>, <span class="c-str">'notes'</span>,
+                      <span class="c-str">'source_url'</span>])</pre>
           </div>
         </div>
       </div>
@@ -953,7 +1012,7 @@ df.describe()                <span class="c-com"># any odd values?</span></pre>
         <h2 class="title-lg">Saving the Cleaned Dataset</h2>
         <div class="grid-2">
           <ul class="points">
-            <li><code>to_csv</code> writes your cleaned table to a new CSV file. This is the file you submit.</li>
+            <li><code>to_csv</code> writes your cleaned table to a new CSV file. Do this for each of your two datasets, and name each file after its dataset. These are the files you submit.</li>
             <li>Use <code>index=False</code>. Otherwise pandas adds an extra unnamed column of row numbers.</li>
             <li><b>Save to a new file name.</b> Never overwrite the original. Your notebook should always start from the raw file.</li>
             <li class="soft">Read the saved file back in and run <code>info()</code> once more to confirm it saved correctly. ID columns with leading zeros need <code>dtype={'zip': str}</code> when you read them back.</li>
@@ -980,10 +1039,10 @@ check.info()</pre>
         <h2 class="title-lg">Organizing Your Cleaning Notebook</h2>
         <div class="grid-2">
           <ul class="points">
-            <li><b>Top:</b> a markdown cell naming your dataset and listing every problem you found, in a short numbered list.</li>
+            <li><b>Top:</b> for each dataset, a markdown cell naming it and listing every problem you found, in a short numbered list.</li>
             <li><b>Load:</b> read the original file and run your checks, so the problems are visible.</li>
-            <li><b>Fix:</b> one problem per code cell, each starting with a <code>#</code> comment.</li>
-            <li><b>Check and save:</b> rerun the checks, then save the cleaned CSV.</li>
+            <li><b>Fix:</b> one problem per code cell, each starting with a <code>#</code> comment saying what you noticed and why you fixed it that way.</li>
+            <li><b>Check and save:</b> rerun the checks, then save the cleaned CSV. Give each dataset its own section with a heading.</li>
             <li class="soft">Before you submit, choose <b>Kernel &rarr; Restart &amp; Run All</b>. The notebook should run top to bottom with no errors and produce the same cleaned file.</li>
           </ul>
           <div class="code-cell">
@@ -1010,10 +1069,10 @@ Saved as cities_clean.csv</pre>
       <div class="slide-body">
         <h2 class="title-lg">Before You Submit</h2>
         <ul class="points">
-          <li><b>The cleaned dataset:</b> a new CSV file, saved with <code>index=False</code>.</li>
-          <li><b>The cleaning notebook:</b> a list of the problems you found, one fix per code cell with a comment, and your checks before and after.</li>
+          <li><b>The cleaned datasets:</b> one new CSV file per dataset, saved with <code>index=False</code>.</li>
+          <li><b>The cleaning notebook:</b> for each dataset, a list of the problems you found, one fix per code cell with a comment explaining why, and your checks before and after.</li>
           <li>The notebook runs from top to bottom with <b>Restart &amp; Run All</b>, starting from the original file.</li>
-          <li>Read your dataset's section in the <b>README</b> first. It describes every column, which helps you tell what looks wrong.</li>
+          <li>If a dataset comes with documentation, read it first. It describes every column, which helps you tell what looks wrong.</li>
         </ul>
       </div>
     </div>
